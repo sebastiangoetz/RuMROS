@@ -1,0 +1,17 @@
+*.jar
+!gradle/wrapper/gradle-wrapper.jar
+!libs/*.jar
+.project
+.classpath
+.idea/
+.gradle/
+/build/
+/src/gen
+/src/gen-res
+/*.png
+uml.md
+/public/
+
+/ros2_serialization_utils/build
+/ros2_serialization_utils/install
+/ros2_serialization_utils/log

@@ -1,0 +1,16 @@
+/**/*:
+  ros__parameters:
+    broker:
+      host: localhost
+      port: 1883
+    bridge:
+      ros2mqtt:
+        ros_topics: 
+          - /odom
+        /odom:
+          mqtt_topic: odom
+      mqtt2ros:
+        mqtt_topics: 
+          - odom
+        odom:
+          ros_topic: /odom

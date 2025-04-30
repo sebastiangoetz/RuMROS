@@ -1,0 +1,72 @@
+<?xml version='1.0' encoding='ASCII'?>
+<sdf version='1.7'>
+  <world name='rumros_warehouse'>
+    <physics name='1ms' type='ignored'>
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+    <plugin name='ignition::gazebo::systems::Physics' filename='libignition-gazebo-physics-system.so'/>
+    <plugin name='ignition::gazebo::systems::UserCommands' filename='libignition-gazebo-user-commands-system.so'/>
+    <plugin name='ignition::gazebo::systems::SceneBroadcaster' filename='libignition-gazebo-scene-broadcaster-system.so'/>
+    <plugin name='ignition::gazebo::systems::Imu' filename='ignition-gazebo-imu-system'/>
+    <plugin name='ignition::gazebo::systems::Sensors' filename='ignition-gazebo-sensors-system'>
+      <render_engine>ogre2</render_engine>
+    </plugin>    
+
+    <include>
+      <uri>
+        https://fuel.gazebosim.org/1.0/OpenRobotics/models/Sun
+      </uri>
+    </include>
+
+    <include>
+      <name>floor</name>
+      <uri>model://floor</uri>
+      <pose>0 0 -0.1 0 0 0</pose>
+      <static>true</static>
+    </include>
+
+    <include>
+      <name>wall1</name>
+      <uri>model://wall</uri>
+      <pose>-6 0 -0.1 0 0 0</pose>
+    </include>
+
+    <include>
+      <name>wall2</name>
+      <uri>model://wall</uri>
+      <pose>6 0 -0.1 0 0 0</pose>
+    </include>
+
+    <include>
+      <name>wall3</name>
+      <uri>model://wall</uri>
+      <pose>0 6 -0.1 0 0 1.57079632679</pose>
+    </include>
+
+    <include>
+      <name>wall4</name>
+      <uri>model://wall</uri>
+      <pose>0 -6 -0.1 0 0 1.57079632679</pose>
+    </include>
+
+    <include>
+      <name>cbox1</name>
+      <uri>model://cardboard_box</uri>
+      <pose>-2.5 -1 0.2 0 0 0</pose>
+    </include>
+
+    <include>
+      <name>cbox2</name>
+      <uri>model://cardboard_box</uri>
+      <pose>-2.5 1 0.2 0 0 0</pose>
+    </include>
+
+    <!--include>
+      <name>ownrobot</name>
+      <uri>model://ownrobot</uri>
+      <pose>0 0 0.2 0 0 0</pose>
+    </include-->
+
+  </world>
+</sdf>

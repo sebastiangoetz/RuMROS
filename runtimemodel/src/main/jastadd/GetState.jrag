@@ -1,0 +1,17 @@
+aspect Position {
+    inh State Robot.getStateWithName(String name);
+
+    eq Model.getTurtlebot(int i).getStateWithName(String name) {
+        return java.util.stream.StreamSupport.stream(this.getStateList().spliterator(), false).filter(s -> s.getname().equals(name)).findFirst().get();
+    }
+
+    eq Model.getRover(int i).getStateWithName(String name) {
+        return java.util.stream.StreamSupport.stream(this.getStateList().spliterator(), false).filter(s -> s.getname().equals(name)).findFirst().get();
+    }
+
+    inh State Drone.getStateWithName(String name);
+
+    eq Model.getDrone(int i).getStateWithName(String name) {
+        return java.util.stream.StreamSupport.stream(this.getStateList().spliterator(), false).filter(s -> s.getname().equals(name)).findFirst().get();
+    }
+}

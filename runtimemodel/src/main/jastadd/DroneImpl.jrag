@@ -1,0 +1,118 @@
+aspect DroneImpl {
+    syn boolean Drone.getTargetReached() = this.getHorizontalDistanceToTarget() <= 0.2 && Math.abs(this.getVerticalError()) <= 0.1;
+
+    syn Velocity3D Drone.getVelocity3D() {
+
+        State waiting = getStateWithName("waiting");
+        State shutDown = getStateWithName("shut down");
+
+        if (this.getTargetPosition() == null || this.getTargetReached() || getCurrentState() == shutDown) {
+            if(this.getTargetPosition() != null && this.getTargetReached() && getCurrentState() != shutDown) {
+                setCurrentState(waiting);
+            }
+            return new Velocity3D(0.0, 0.0, 0.0);
+        }
+
+        double horizontalSpeed = 0.0;
+        double verticalSpeed = 0.0;
+        double rotationSpeed = 0.0;
+
+        final double MIN_SPEED = 0.3;
+        final double MAX_SPEED = 1.0;
+        final double HORIZONTAL_GAIN = 2;
+        final double HORIZONTAL_PROXIMITY_SLOWDOWN = 2;
+        final double VERTICAL_GAIN = 2;
+        final double VERTICAL_PROXIMITY_SLOWDOWN = 2;
+        final double ANGLE_GAIN = 4;
+        final double ANGLE_PROXIMITY_SLOWDOWN = 2;
+        final double TOP_CLEARANCE = 0.8;
+        final double headingError = this.getHeadingError();
+        final double horizontalDistanceToTarget = this.getHorizontalDistanceToTarget();
+        final double verticalError = this.getVerticalError();
+
+        if(this.getHorizontalDistanceToTarget() <= 0.2) {
+            verticalSpeed = (verticalError > 0 ? 1 : -1) * (VERTICAL_GAIN * Math.abs(verticalError) / (Math.abs(verticalError) + VERTICAL_PROXIMITY_SLOWDOWN)) * this.getCurrentState().getspeedFactor();
+            if (Math.abs(verticalSpeed) < MIN_SPEED && this.getCurrentState().getspeedFactor() > 0) {
+                if(verticalSpeed < 0) {
+                    verticalSpeed = MIN_SPEED * -1.0;
+                } else {
+                    verticalSpeed = MIN_SPEED;
+                }
+            }
+            if (Math.abs(verticalSpeed) > MAX_SPEED) {
+                if(verticalSpeed < 0) {
+                    verticalSpeed = MAX_SPEED * -1.0;
+                } else {
+                    verticalSpeed = MAX_SPEED;
+                }
+            }
+            return new Velocity3D(0.0, verticalSpeed, 0.0);
+        }
+
+        if(this.getOdomPositionReference().getPosition().getz() < this.getTargetPosition().getPosition().getz() + TOP_CLEARANCE && this.getCurrentState().getspeedFactor() > 0) {
+            return new Velocity3D(0.0, 1.0, 0.0);
+        }
+
+        State driving = getStateWithName("driving");
+        State targeting = getStateWithName("targeting");
+
+        //state switch
+        if(getCurrentState() == targeting && Math.abs(headingError) < targeting.getangleTolerance()/2) {
+            System.out.println("Changing to Driving");
+            setCurrentState(driving);
+        } else if(getCurrentState() == driving && Math.abs(headingError) > driving.getangleTolerance()/2) {
+            System.out.println("Changing to Targeting");
+            setCurrentState(targeting);
+        }
+
+        if (Math.abs(headingError) > getCurrentState().getangleTolerance()/2) {
+            rotationSpeed = (headingError > 0 ? 1 : -1) * (ANGLE_GAIN * Math.abs(headingError) / (Math.abs(headingError) + ANGLE_PROXIMITY_SLOWDOWN)) * this.getCurrentState().getspeedFactor();
+
+            if (Math.abs(rotationSpeed) < MIN_SPEED && this.getCurrentState().getspeedFactor() > 0) {
+                if(rotationSpeed < 0) {
+                    rotationSpeed = MIN_SPEED * -1.0;
+                } else {
+                    rotationSpeed = MIN_SPEED;
+                }
+            }
+
+            if (Math.abs(rotationSpeed) > MAX_SPEED) {
+                if(rotationSpeed < 0) {
+                    rotationSpeed = MAX_SPEED * -1.0;
+                } else {
+                    rotationSpeed = MAX_SPEED;
+                }
+            }
+        } else {
+            horizontalSpeed = (HORIZONTAL_GAIN * horizontalDistanceToTarget / (horizontalDistanceToTarget + HORIZONTAL_PROXIMITY_SLOWDOWN)) * this.getCurrentState().getspeedFactor();
+            if(this.getCurrentState().getspeedFactor() > 0) horizontalSpeed = horizontalSpeed > MIN_SPEED ? horizontalSpeed : MIN_SPEED;
+            horizontalSpeed = horizontalSpeed < MAX_SPEED ? horizontalSpeed : MAX_SPEED;
+        }
+
+        return new Velocity3D(horizontalSpeed, verticalSpeed, rotationSpeed);
+    }
+
+    syn double Drone.getHorizontalDistanceToTarget() = Math.abs(
+        Math.sqrt(
+            Math.pow(this.getTargetPosition().getPosition().getx() - this.getOdomPositionReference().getPosition().getx(), 2) +
+            Math.pow(this.getTargetPosition().getPosition().gety() - this.getOdomPositionReference().getPosition().gety(), 2)
+        )
+    );
+
+    syn double Drone.getVerticalError() = this.getTargetPosition().getPosition().getz() - this.getOdomPositionReference().getPosition().getz();
+
+    syn double Drone.getHeadingError() {
+        double deltaX = this.getTargetPosition().getPosition().getx() - this.getOdomPositionReference().getPosition().getx();
+        double deltaY = this.getTargetPosition().getPosition().gety() - this.getOdomPositionReference().getPosition().gety();
+        double targetHeading = Math.atan2(deltaY, deltaX);
+        double headingError = targetHeading - this.getOdomPositionReference().getPosition().gettheta();
+
+        headingError = (headingError + Math.PI) % (2 * Math.PI);
+        if (headingError < 0) {
+            headingError += 2 * Math.PI;
+        }
+        headingError -= Math.PI;
+        return headingError;
+    }
+
+}

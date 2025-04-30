@@ -1,0 +1,44 @@
+/**/*:
+  ros__parameters:
+    broker:
+      host: localhost
+      port: 1883
+    bridge:
+      ros2mqtt:
+        ros_topics:
+          - /turtlebot_1/pose
+          - /turtlebot_2/pose
+          - /rover_1/odom
+          - /drone_1/odom
+        /turtlebot_1/pose:
+          mqtt_topic: turtlebot_1/pose
+        /turtlebot_2/pose:
+          mqtt_topic: turtlebot_2/pose
+        /rover_1/odom:
+          mqtt_topic: rover_1/odom
+        /drone_1/odom:
+          mqtt_topic: drone_1/odom
+
+      mqtt2ros:
+        mqtt_topics:
+          - turtlebot_1/cmd_vel
+          - turtlebot_2/cmd_vel
+          - rover_1/cmd_vel
+          - drone_1/cmd_vel
+          - drone_1/enable
+        turtlebot_1/cmd_vel:
+          ros_topic: /turtlebot_1/cmd_vel
+          ros_type: geometry_msgs/msg/Twist
+        turtlebot_2/cmd_vel:
+          ros_topic: /turtlebot_2/cmd_vel
+          ros_type: geometry_msgs/msg/Twist
+        rover_1/cmd_vel:
+          ros_topic: /rover_1/cmd_vel
+          ros_type: geometry_msgs/msg/Twist
+        drone_1/cmd_vel:
+          ros_topic: /drone_1/cmd_vel
+          ros_type: geometry_msgs/msg/Twist
+        drone_1/enable:
+          ros_topic: /drone_1/enable
+          ros_type: std_msgs/msg/Bool
+          primitive: true

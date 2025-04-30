@@ -1,0 +1,25 @@
+aspect ToString {
+    public String Position.toString() {
+        return "Position {" +
+                   "x=" + this.getx() +
+                   ", y=" + this.gety() +
+                   ", z=" + this.getz() +
+                   ", theta=" + this.gettheta() +
+                   '}';
+    }
+
+    public String Velocity2D.toString() {
+        return "Velocity2D {" +
+                   "speed=" + this.getspeed() +
+                   ", rotationSpeed=" + this.getrotationSpeed() +
+                   '}';
+    }
+
+    public String Velocity3D.toString() {
+            return "Velocity3D {" +
+                       "horizontalSpeed=" + this.gethorizontalSpeed() +
+                       ", verticalSpeed=" + this.getverticalSpeed() +
+                       ", rotationSpeed=" + this.getrotationSpeed() +
+                       '}';
+        }
+}

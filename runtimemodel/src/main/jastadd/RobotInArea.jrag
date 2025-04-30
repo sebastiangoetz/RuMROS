@@ -1,0 +1,23 @@
+aspect RobotInArea {
+    inh Area Robot.getArea();
+
+    eq Model.getTurtlebot(int i).getArea() {
+        Robot robot = this.getTurtlebot(i);
+        for (Area area : getAreaList()) {
+            if (robot.getPositionReference().getPosition().getx() >= area.getxPos1() && robot.getPositionReference().getPosition().getx() < area.getxPos2() && robot.getPositionReference().getPosition().gety() >= area.getyPos1() && robot.getPositionReference().getPosition().gety() < area.getyPos2()) {
+                return area;
+            }
+        }
+        return null;
+    }
+
+    eq Model.getRover(int i).getArea() {
+        Robot robot = this.getRover(i);
+        for (Area area : getAreaList()) {
+            if (robot.getPositionReference().getPosition().getx() >= area.getxPos1() && robot.getPositionReference().getPosition().getx() < area.getxPos2() && robot.getPositionReference().getPosition().gety() >= area.getyPos1() && robot.getPositionReference().getPosition().gety() < area.getyPos2()) {
+                return area;
+            }
+        }
+        return null;
+    }
+}

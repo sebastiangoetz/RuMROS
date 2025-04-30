@@ -1,0 +1,81 @@
+aspect Actions {
+
+    Result Action.driveToArea(Model model, Robot robot, Area area) {
+        robot.setCurrentState(robot.getStateWithName("targeting"));
+        robot.setTargetPosition(model.getCenterPositionReference(area));
+
+        Result result = new Result(ActionResultType.SUCCESS, "Driving to area '" + area.getname() + "'", 2000);
+        return result;
+    }
+
+    Result Action.stop(Model model, Robot robot) {
+        robot.setCurrentState(robot.getStateWithName("waiting"));
+
+        Result result = new Result(ActionResultType.SUCCESS, "Stopped", 2000);
+        return result;
+    }
+
+    Result Action.resume(Model model, Robot robot) {
+        if(robot.getTargetPosition() == null) {
+            Result result = new Result(ActionResultType.ERROR, "Can't resume, no target is set!", 3000);
+            return result;
+        } else {
+            robot.setCurrentState(robot.getStateWithName("targeting"));
+            Result result = new Result(ActionResultType.SUCCESS, "Resumed", 2000);
+            return result;
+        }
+    }
+
+    Result Action.cancel(Model model, Robot robot) {
+        robot.setCurrentState(robot.getStateWithName("waiting"));
+        robot.setTargetPosition(null);
+
+        Result result = new Result(ActionResultType.SUCCESS, "Canceled", 2000);
+        return result;
+    }
+
+    Result Action.flyToArea(Model model, Drone drone, Area area) {
+        drone.setCurrentState(drone.getStateWithName("targeting"));
+        drone.setTargetPosition(model.getCenterPositionReference(area));
+
+        Result result = new Result(ActionResultType.SUCCESS, "Flying to area '" + area.getname() + "'", 2000);
+        return result;
+    }
+
+    Result Action.landOnRobot(Model model, Drone drone, Robot robot) {
+        drone.setCurrentState(drone.getStateWithName("targeting"));
+        drone.setTargetPosition(robot.getPositionReference());
+
+        Result result = new Result(ActionResultType.SUCCESS, "Landing on robot '" + robot.getname() + "'", 2000);
+        return result;
+    }
+
+    Result Action.hover(Model model, Drone drone) {
+        drone.setCurrentState(drone.getStateWithName("waiting"));
+
+        Result result = new Result(ActionResultType.SUCCESS, "Hovering", 2000);
+        return result;
+    }
+
+    Result Action.shutDown(Model model, Drone drone) {
+        drone.setCurrentState(drone.getStateWithName("shut down"));
+
+        Result result = new Result(ActionResultType.SUCCESS, "Shutting down", 2000);
+        return result;
+    }
+
+    Result Action.flyToHeight(Model model, Drone drone, Double height) {
+        Position targetPosition = null;
+        try {
+            targetPosition = drone.getOdomPositionReference().getPosition().clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+        targetPosition.setz(height);
+        drone.setTargetPosition(model.getOrAddPositionReference(targetPosition));
+        drone.setCurrentState(drone.getStateWithName("targeting"));
+
+        Result result = new Result(ActionResultType.SUCCESS, "Flying drone to height: " + height + " m", 2000);
+        return result;
+    }
+}

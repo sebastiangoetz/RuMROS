@@ -1,0 +1,5 @@
+aspect AreaImpl {
+    syn boolean Area.posInArea(double x, double y) = x >= this.getxPos1() && x < this.getxPos2() && y >= this.getyPos1() && y < this.getyPos2();
+    syn double Area.getXCenter() = (this.getxPos2() + this.getxPos1()) / 2;
+    syn double Area.getYCenter() = (this.getyPos1() + this.getyPos2()) / 2;
+}

@@ -1,0 +1,85 @@
+Model ::=
+    Turtlebot*
+    Rover*
+    Drone*
+    Area*
+    State*
+    Action*
+    PositionReference*;
+
+abstract Robot ::=
+    <id:int>
+    <name:String>
+    /Velocity2D/;
+
+rel Robot.CurrentState -> State;
+rel Robot.TargetPosition? -> PositionReference;
+
+Turtlebot : Robot ::= PosePositionReference;
+Rover : Robot ::= OdomPositionReference;
+
+Drone ::=
+    <id:int>
+    <name:String>
+    OdomPositionReference
+    /Velocity3D/;
+
+rel Drone.CurrentState -> State;
+rel Drone.TargetPosition? -> PositionReference;
+
+abstract PositionReference ::=
+    /Position/;
+
+PosePositionReference : PositionReference::=
+    Position;
+
+OdomPositionReference : PositionReference ::=
+    Position;
+
+DefaultPositionReference : PositionReference::=
+    Position;
+
+Position ::=
+    <x:Double>
+    <y:Double>
+    <z:Double>
+    <theta:Double>;
+
+Velocity2D ::=
+     <speed:Double>
+     <rotationSpeed:Double>;
+
+Velocity3D ::=
+     <horizontalSpeed:Double>
+     <verticalSpeed:Double>
+     <rotationSpeed:Double>;
+	
+Area ::=
+    <id:int>
+    <name:String>
+    <xPos1:Double>
+    <yPos1:Double>
+    <xPos2:Double>
+    <yPos2:Double>;
+	
+State ::=
+    <id:int>
+    <name:String>
+    <speedFactor:Double>
+    <angleTolerance:Double>;
+
+Action ::=
+    <id:String>
+    <label:String>
+    Input*
+    Result;
+
+Input ::=
+    <id:String>
+    <label:String>
+    <type:String>;
+
+Result ::=
+    <type:ActionResultType>
+    <message:String>
+    <displayMillis:int>;

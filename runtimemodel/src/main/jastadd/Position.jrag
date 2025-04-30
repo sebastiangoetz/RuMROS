@@ -1,0 +1,28 @@
+aspect Position {
+    syn PositionReference Model.getCenterPositionReference(Area area) {
+        return getOrAddPositionReference(new Position(area.getXCenter(), area.getYCenter(), 0.0, 0.0));
+    }
+
+    syn PositionReference Model.getOrAddPositionReference(Position position) {
+        PositionReference result = java.util.stream.StreamSupport.stream(this.getPositionReferenceList().spliterator(), false).filter(
+            pos -> pos.getPosition().getx() == position.getx() && pos.getPosition().gety() == position.gety() && pos.getPosition().getz() == position.getz() && pos.getPosition().gettheta() == position.gettheta()
+        ).findFirst().orElse(null);
+
+        if (result == null) {
+            result = new DefaultPositionReference(position);
+            this.addPositionReference(result);
+        }
+
+        return result;
+    }
+
+    syn Position PositionReference.getPosition() {
+        if(this instanceof PosePositionReference) {
+            return ((PosePositionReference) this).getPosition();
+        } else if(this instanceof OdomPositionReference) {
+              return ((OdomPositionReference) this).getPosition();
+        } else {
+            throw new UnsupportedOperationException("Not supported here");
+        }
+    }
+}

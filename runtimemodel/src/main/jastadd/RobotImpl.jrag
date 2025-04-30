@@ -1,0 +1,91 @@
+aspect RobotImpl {
+    syn boolean Robot.getTargetReached() = this.getDistanceToTarget() <= 0.3;
+
+    syn Velocity2D Robot.getVelocity2D() {
+        State waiting = getStateWithName("waiting");
+
+        if (this.getTargetPosition() == null || this.getTargetReached()) {
+            if(this.getTargetPosition() != null && this.getTargetReached()) {
+                setCurrentState(waiting);
+            }
+            return new Velocity2D(0.0, 0.0);
+        }
+
+        double speed = 0.0;
+        double rotationSpeed = 0.0;
+
+        final double MIN_SPEED = 0.3;
+        final double MAX_SPEED = 1.0;
+        final double GAIN = 2;
+        final double PROXIMITY_SLOWDOWN = 2;
+        final double ANGLE_GAIN = 4;
+        final double ANGLE_PROXIMITY_SLOWDOWN = 2;
+        final double distanceToTarget = this.getDistanceToTarget();
+        final double headingError = this.getHeadingError();
+
+        State driving = getStateWithName("driving");
+        State targeting = getStateWithName("targeting");
+
+        //state switch
+        if(getCurrentState() == targeting && Math.abs(headingError) < targeting.getangleTolerance()) {
+            System.out.println("Changing to Driving");
+            setCurrentState(driving);
+        } else if(getCurrentState() == driving && Math.abs(headingError) > driving.getangleTolerance()) {
+            System.out.println("Changing to Targeting");
+            setCurrentState(targeting);
+        }
+
+        if (Math.abs(headingError) > getCurrentState().getangleTolerance()) {
+            rotationSpeed = (headingError > 0 ? 1 : -1) * (ANGLE_GAIN * Math.abs(headingError) / (Math.abs(headingError) + ANGLE_PROXIMITY_SLOWDOWN)) * this.getCurrentState().getspeedFactor();
+
+            if (Math.abs(rotationSpeed) < MIN_SPEED && this.getCurrentState().getspeedFactor() > 0) {
+                if(rotationSpeed < 0) {
+                    rotationSpeed = MIN_SPEED * -1.0;
+                } else {
+                    rotationSpeed = MIN_SPEED;
+                }
+            }
+
+            if (Math.abs(rotationSpeed) > MAX_SPEED) {
+                if(rotationSpeed < 0) {
+                    rotationSpeed = MAX_SPEED * -1.0;
+                } else {
+                    rotationSpeed = MAX_SPEED;
+                }
+            }
+        } else {
+            speed = (GAIN * distanceToTarget / (distanceToTarget + PROXIMITY_SLOWDOWN)) * this.getCurrentState().getspeedFactor();
+            if(this.getCurrentState().getspeedFactor() > 0) speed = speed > MIN_SPEED ? speed : MIN_SPEED;
+            speed = speed < MAX_SPEED ? speed : MAX_SPEED;
+        }
+
+        return new Velocity2D(speed, rotationSpeed);
+    }
+
+    syn double Robot.getDistanceToTarget() = Math.abs(Math.sqrt(
+                Math.pow(this.getTargetPosition().getPosition().getx() - this.getPositionReference().getPosition().getx(), 2) +
+                Math.pow(this.getTargetPosition().getPosition().gety() - this.getPositionReference().getPosition().gety(), 2)));
+
+    syn double Robot.getHeadingError() {
+        double deltaX = this.getTargetPosition().getPosition().getx() - this.getPositionReference().getPosition().getx();
+        double deltaY = this.getTargetPosition().getPosition().gety() - this.getPositionReference().getPosition().gety();
+        double targetHeading = Math.atan2(deltaY, deltaX);
+        double headingError = targetHeading - this.getPositionReference().getPosition().gettheta();
+
+        headingError = (headingError + Math.PI) % (2 * Math.PI);
+        if (headingError < 0) {
+            headingError += 2 * Math.PI;
+        }
+        headingError -= Math.PI;
+        return headingError;
+    }
+
+    syn PositionReference Robot.getPositionReference() {
+        if(this instanceof Turtlebot) {
+            return ((Turtlebot) this).getPosePositionReference();
+        } else {
+            return ((Rover) this).getOdomPositionReference();
+        }
+    }
+
+}

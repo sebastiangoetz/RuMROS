@@ -1,0 +1,118 @@
+aspect Init {
+    syn Model Model.init() {
+        // Initialisation
+        Area a = new Area(1, "Start", -1.0, -1.0, 1.0, 1.0);
+        Area b = new Area(2, "Arrivals", -6.0, 4.0, -5.0, 6.0);
+        Area c = new Area(3, "ShortTermStorage", -3.0, -4.0, -1.0, -3.0);
+        Area d = new Area(4, "LongTermStorage", 1.0, -4.0, 3.0, -3.0);
+        Area e = new Area(5, "Departure", 5.0, 4.0, 6.0, 6.0);
+        this.addArea(a);
+        this.addArea(b);
+        this.addArea(c);
+        this.addArea(d);
+        this.addArea(e);
+
+        State stateShutDown = new State(0, "shut down", 0.0, 0.0);
+        State stateWaiting = new State(1, "waiting", 0.0, 0.0);
+        State stateDriving = new State(2, "driving", 1.0, 0.35);
+        State stateTargeting = new State(3, "targeting", 0.8, 0.25);
+        this.addState(stateShutDown);
+        this.addState(stateWaiting);
+        this.addState(stateDriving);
+        this.addState(stateTargeting);
+
+        //Turtlebots
+        Position startPositionTurtlebot1 = new Position(0.0, 1.0, 0.0, 0.0);
+
+        Turtlebot turtlebot1 = new Turtlebot(1, "waffle", new PosePositionReference(startPositionTurtlebot1));
+        turtlebot1.setCurrentState(stateWaiting);
+        this.addTurtlebot(turtlebot1);
+
+        Position startPositionTurtlebot2 = new Position(0.0, -1.0, 0.0, 0.0);
+
+        Turtlebot turtlebot2 = new Turtlebot(2, "waffle2", new PosePositionReference(startPositionTurtlebot2));
+        turtlebot2.setCurrentState(stateWaiting);
+        this.addTurtlebot(turtlebot2);
+
+        //Rovers
+        Position startPositionRover1 = new Position(-2.0, 0.0, 0.0, 0.0);
+
+        Rover rover1 = new Rover(1, "rasp", new OdomPositionReference(startPositionRover1));
+        rover1.setCurrentState(stateWaiting);
+        this.addRover(rover1);
+
+        //Drone
+        Position startPositionDrone1 = new Position(0.0, 0.0, 0.0, 0.0);
+
+        Drone drone1 = new Drone(1, "drone1", new OdomPositionReference(startPositionDrone1));
+        drone1.setCurrentState(stateShutDown);
+        this.addDrone(drone1);
+
+        //Actions
+
+        //Inputs
+        Input robotInput = new Input("robot", "Robot", "de.tudresden.inf.st.rumros.runtimemodel.Robot");
+        Input droneInput = new Input("drone", "Drone", "de.tudresden.inf.st.rumros.runtimemodel.Drone");
+        Input areaInput = new Input("area", "Area", "de.tudresden.inf.st.rumros.runtimemodel.Area");
+
+        JastAddList<Input> robotAreaInputs = new JastAddList<>();
+        robotAreaInputs.add(robotInput);
+        robotAreaInputs.add(areaInput);
+
+        JastAddList<Input> robotOnlyInputs = new JastAddList<>();
+        robotOnlyInputs.add(robotInput);
+
+        JastAddList<Input> droneAreaInputs = new JastAddList<>();
+        droneAreaInputs.add(droneInput);
+        droneAreaInputs.add(areaInput);
+
+        JastAddList<Input> droneRobotInputs = new JastAddList<>();
+        droneRobotInputs.add(droneInput);
+        droneRobotInputs.add(robotInput);
+
+        JastAddList<Input> droneOnlyInputs = new JastAddList<>();
+        droneOnlyInputs.add(droneInput);
+
+        //Drive to area
+        Action driveToArea = new Action("driveToArea", "Drive to Area", robotAreaInputs, null);
+        this.addAction(driveToArea);
+
+        //Stop
+        Action stop = new Action("stop", "Stop", robotOnlyInputs, null);
+        this.addAction(stop);
+
+        //Resume
+        Action resume = new Action("resume", "Resume", robotOnlyInputs, null);
+        this.addAction(resume);
+
+        //Cancel
+        Action cancel = new Action("cancel", "Cancel", robotOnlyInputs, null);
+        this.addAction(cancel);
+
+        //Fly to area
+        Action flyToArea = new Action("flyToArea", "Fly to Area", droneAreaInputs, null);
+        this.addAction(flyToArea);
+
+        //Land on robot
+        Action landOnRobot = new Action("landOnRobot", "Land on Robot", droneRobotInputs, null);
+        this.addAction(landOnRobot);
+
+        //Hover
+        Action hover = new Action("hover", "Hover", droneOnlyInputs, null);
+        this.addAction(hover);
+
+        //Shut down
+        Action shutDown = new Action("shutDown", "Shut down", droneOnlyInputs, null);
+        this.addAction(shutDown);
+
+        JastAddList<Input> droneStringInputs = new JastAddList<>();
+        droneStringInputs.add(droneInput);
+        droneStringInputs.add(new Input("height", "Height (m)", "java.lang.Double"));
+
+        //Fly to height
+        Action flyToHeight = new Action("flyToHeight", "Fly to height", droneStringInputs, null);
+        this.addAction(flyToHeight);
+
+        return this;
+    }
+}

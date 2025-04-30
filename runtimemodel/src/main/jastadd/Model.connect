@@ -1,0 +1,110 @@
+receive PosePositionReference.Position using PoseToPosition;
+send Robot.Velocity2D using Velocity2DToTwist;
+
+receive OdomPositionReference.Position using OdomToPosition;
+send Drone.Velocity3D using Velocity3DToTwist;
+
+send Drone.CurrentState using StateToBoolean;
+
+StateToBoolean maps State s to String {:
+    return s.getname().equals("shut down") ? "false" : "true";
+:}
+
+PoseToPosition maps byte[] b to Position {:
+    com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+    String json = ROS2SerializeUtils.toPoseJson(b);
+
+    com.fasterxml.jackson.databind.JsonNode jsonNode = objectMapper.readTree(json);
+
+    double xPos = jsonNode.get("position").get("x").asDouble();
+    double yPos = jsonNode.get("position").get("y").asDouble();
+    double zPos = jsonNode.get("position").get("z").asDouble();
+
+    double qx = jsonNode.get("orientation").get("x").asDouble();
+    double qy = jsonNode.get("orientation").get("y").asDouble();
+    double qz = jsonNode.get("orientation").get("z").asDouble();
+    double qw = jsonNode.get("orientation").get("w").asDouble();
+
+    double yaw = Math.atan2(2.0 * (qy * qz + qw * qx), qw * qw - qx * qx - qy * qy + qz * qz);
+    double pitch = Math.asin(-2.0 * (qx * qz - qw * qy));
+    double roll = Math.atan2(2.0 * (qx * qy + qw * qz), qw * qw + qx * qx - qy * qy - qz * qz);
+
+    double theta = roll;
+
+    return new Position(xPos, yPos, zPos, theta);
+:}
+
+OdomToPosition maps byte[] b to Position {:
+    com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+    String json = ROS2SerializeUtils.toOdometryJson(b);
+
+    com.fasterxml.jackson.databind.JsonNode jsonNode = objectMapper.readTree(json);
+
+    double xPos = jsonNode.get("position").get("x").asDouble();
+    double yPos = jsonNode.get("position").get("y").asDouble();
+    double zPos = jsonNode.get("position").get("z").asDouble();
+
+    double qx = jsonNode.get("orientation").get("x").asDouble();
+    double qy = jsonNode.get("orientation").get("y").asDouble();
+    double qz = jsonNode.get("orientation").get("z").asDouble();
+    double qw = jsonNode.get("orientation").get("w").asDouble();
+
+    double yaw = Math.atan2(2.0 * (qy * qz + qw * qx), qw * qw - qx * qx - qy * qy + qz * qz);
+    double pitch = Math.asin(-2.0 * (qx * qz - qw * qy));
+    double roll = Math.atan2(2.0 * (qx * qy + qw * qz), qw * qw + qx * qx - qy * qy - qz * qz);
+
+    double theta = roll;
+
+    return new Position(xPos, yPos, zPos, theta);
+:}
+
+Velocity2DToTwist maps Velocity2D v to byte[] {:
+    com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+    double speed = v.getspeed();
+    double rotationSpeed = v.getrotationSpeed();
+
+    com.fasterxml.jackson.databind.node.ObjectNode linearJson = objectMapper.createObjectNode();
+    linearJson.put("x", speed);
+    linearJson.put("y", 0.0);
+    linearJson.put("z", 0.0);
+
+    com.fasterxml.jackson.databind.node.ObjectNode angularJson = objectMapper.createObjectNode();
+    angularJson.put("x", 0.0);
+    angularJson.put("y", 0.0);
+    angularJson.put("z", rotationSpeed);
+
+    com.fasterxml.jackson.databind.node.ObjectNode twistJson = objectMapper.createObjectNode();
+    twistJson.set("linear", linearJson);
+    twistJson.set("angular", angularJson);
+
+    String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(twistJson);
+    return ROS2SerializeUtils.fromTwistJson(json);
+:}
+
+Velocity3DToTwist maps Velocity3D v to byte[] {:
+    com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+    double horizontalSpeed = v.gethorizontalSpeed();
+    double verticalSpeed = v.getverticalSpeed();
+    double rotationSpeed = v.getrotationSpeed();
+
+    com.fasterxml.jackson.databind.node.ObjectNode linearJson = objectMapper.createObjectNode();
+    linearJson.put("x", horizontalSpeed);
+    linearJson.put("y", 0.0);
+    linearJson.put("z", verticalSpeed);
+
+    com.fasterxml.jackson.databind.node.ObjectNode angularJson = objectMapper.createObjectNode();
+    angularJson.put("x", 0.0);
+    angularJson.put("y", 0.0);
+    angularJson.put("z", rotationSpeed);
+
+    com.fasterxml.jackson.databind.node.ObjectNode twistJson = objectMapper.createObjectNode();
+    twistJson.set("linear", linearJson);
+    twistJson.set("angular", angularJson);
+
+    String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(twistJson);
+    return ROS2SerializeUtils.fromTwistJson(json);
+:}

@@ -1,0 +1,165 @@
+// --- Plugin definitions ---
+plugins {
+    id 'com.github.ben-manes.versions' version '0.42.0'
+    id 'java'
+    id 'idea'
+    id 'org.jastadd' version "${jastadd_gradle_version}"
+    id 'application'
+}
+
+// --- Dependencies ---
+repositories {
+    mavenCentral()
+    maven {
+        name "gitlab-maven"
+        url "https://git-st.inf.tu-dresden.de/api/v4/groups/jastadd/-/packages/maven"
+    }
+}
+
+configurations {
+    ragconnect
+    grammar2uml
+    relast
+}
+
+dependencies {
+    grammar2uml group: 'de.tudresden.inf.st', name: 'grammar2uml', version: "${grammar2uml_version}"
+
+    relast group: 'org.jastadd', name: 'relast', version: "${relast_version}"
+    ragconnect group: 'de.tudresden.inf.st', name: 'ragconnect', version: "${ragconnect_version}"
+
+    implementation group: 'de.tudresden.inf.st', name: 'dumpAst', version: "${dumpAst_version}"
+    jastadd2 group: 'org.jastadd', name: 'jastadd2', version: "${jastadd_version}"
+
+    implementation group: 'org.fusesource.mqtt-client', name: 'mqtt-client', version: '1.16'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: "${log4j_version}"
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: "${log4j_version}"
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: "${jackson_version}"
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: "${jackson_version}"
+    implementation 'org.apache.commons:commons-jexl3:3.4.0'
+}
+
+// --- Preprocessors ---
+File genSrc = file("src/gen/java")
+sourceSets.main.java.srcDir genSrc
+idea.module.generatedSourceDirs += genSrc
+
+// Input files for relast
+def relastFiles = ["src/gen/jastadd/Model.relast", "src/gen/jastadd/RagConnect.relast"]
+
+//task grammar2uml(type: JavaExec) {
+//    group = 'documentation'
+//    main = 'de.tudresden.inf.st.jastadd.grammar2uml.compiler.Compiler'
+//    classpath = configurations.grammar2uml
+//
+//    args([
+//            '--inputGrammar2Uml=minimal.folder',
+//            '--output=uml.png',
+//            'src/main/jastadd/Model.relast'
+//         ])
+//}
+
+// phases: RagConnect -> RelAst -> JastAdd
+
+// phase: RagConnect
+task ragConnect(type: JavaExec) {
+    group = 'build'
+    classpath = configurations.ragconnect
+    main = 'org.jastadd.ragconnect.compiler.Compiler'
+
+    args([
+            '--o=src/gen/jastadd',
+            'src/main/jastadd/Model.relast',
+            'src/main/jastadd/Model.connect',
+            '--List=JastAddList',
+            '--logReads',
+            '--logWrites',
+            '--rootNode=Model',
+            '--incremental=param,debug',
+            "--tracing=cache,flush",
+            "--experimental-jastadd-329=true"
+    ])
+}
+
+// phase: RelAst
+task relastToJastAdd(type: JavaExec) {
+    group = 'build'
+    classpath = configurations.relast
+    main = 'org.jastadd.relast.compiler.Compiler'
+
+    args([
+            "--grammarName=./src/gen/jastadd/model",
+            "--useJastAddNames",
+            "--listClass=java.util.ArrayList",
+            "--jastAddList=JastAddList",
+            "--serializer=jackson",
+            "--resolverHelper",
+            "--file"
+    ]
+    +
+            relastFiles)
+
+    inputs.files relastFiles
+    outputs.files file("./src/gen/jastadd/model.ast"), file("./src/gen/jastadd/model.jadd")
+}
+
+// --- JastAdd ---
+// phase: JastAdd
+jastadd {
+    configureModuleBuild()
+    modules {
+        //noinspection GroovyAssignabilityCheck
+        module("runtime_model") {
+            jastadd {
+                basedir "src/"
+                include "main/jastadd/**/*.ast"
+                include "main/jastadd/**/*.jadd"
+                include "main/jastadd/**/*.jrag"
+                include "gen/jastadd/**/*.ast"
+                include "gen/jastadd/**/*.jadd"
+                include "gen/jastadd/**/*.jrag"
+            }
+        }
+    }
+
+    cleanGen.doFirst {
+        delete "src/gen/java/de"
+        delete "src/gen-res/BuildInfo.properties"
+    }
+
+    preprocessParser.doFirst {
+        args += ["--no-beaver-symbol"]
+    }
+
+    module = "runtime_model"
+    astPackage = 'de.tudresden.inf.st.rumros.runtimemodel'
+    genDir = 'src/gen/java'
+    buildInfoDir = 'src/gen-res'
+
+    // jastaddOptions = ["--lineColumnNumbers", "--visitCheck=true", "--rewrite=cnta", "--cache=all"]
+    // default options are: '--rewrite=cnta', '--safeLazy', '--visitCheck=false', '--cacheCycle=false'
+    extraJastAddOptions = [
+            '--lineColumnNumbers',
+            '--List=JastAddList',
+            '--cache=all',
+            "--flush=full",
+            "--incremental=param,debug",
+            "--tracing=cache,flush",
+    ]
+}
+
+cleanGen.doFirst {
+    delete "src/gen/jastadd"
+}
+
+// --- Versioning and Publishing ---
+mainClassName = 'de.tudresden.inf.st.rumros.runtimemodel.ModelMain'
+
+// --- Task order ---
+generateAst.dependsOn relastToJastAdd
+relastToJastAdd.dependsOn ragConnect
+
+// --- Misc ---
+run {
+    standardInput = System.in
+}

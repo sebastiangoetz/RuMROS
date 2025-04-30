@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>Flexible Model Display</title>
+    <style>
+        html {
+            font: 16px sans-serif;
+        }
+
+        .styled-table {
+            border-collapse: collapse;
+            margin: 25px 25px;
+            font-size: 0.9em;
+            font-family: sans-serif;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .styled-table thead tr {
+            background-color: #009879;
+            color: #ffffff;
+            text-align: left;
+        }
+
+        .styled-table th {
+            text-align: center;
+        }
+
+        .styled-table th,
+        .styled-table td {
+            padding: 12px 15px;
+        }
+
+        .styled-table tbody tr {
+            border-bottom: 1px solid #dddddd;
+        }
+
+        .styled-table tbody tr:nth-of-type(even) {
+            background-color: #f3f3f3;
+        }
+
+        .styled-table tbody tr:last-of-type {
+            border-bottom: 2px solid #009879;
+        }
+
+        .styled-table tbody tr.active-row {
+            font-weight: bold;
+            color: #009879;
+        }
+
+        .styled-table caption {
+            caption-side: top;
+            text-align: left;
+            padding: 10px 0;
+            font-weight: bold;
+            font-size: 1.2em;
+            color: #333;
+        }
+
+
+        #main-container {
+          display: flex;
+          flex-direction: row;
+          width: 100%;
+          height: 100vh;
+          overflow: hidden;
+        }
+
+        #table-container {
+            flex-grow: 1;
+            flex-shrink: 1;
+            overflow: auto;
+            padding: 10px;
+            background-color: #f0f0f0;
+        }
+
+        #action-container {
+            flex-grow: 0;
+            flex-shrink: 0;
+            width: auto;
+            min-width: 200px;
+            overflow: auto;
+            padding: 10px;
+            background-color: #d0d0d0;
+            white-space: nowrap;
+        }
+
+        #divider {
+            width: 5px;
+            background-color: #ccc;
+            cursor: ew-resize;
+            position: relative;
+        }
+
+        #divider:hover {
+            background-color: #999;
+        }
+
+        .action-table {
+            width: 100%;
+        }
+
+        .goal-button {
+            height: 88%;
+            width: 100%;
+            display: table;
+            padding: 10px 16px;
+            margin: 8px 0;
+            font-size: 1rem;
+            font-weight: 600;
+            background-color: #009879;
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-align: center;
+            box-shadow: inset 0 0 0 0 #ffffff;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .action-divider {
+            border: 0;
+            border-top: 1px solid #999;  
+            height: 0;
+            margin: 20px 5px;
+        }
+
+        .action-input {
+            width: 100%;
+        }
+
+    </style>
+    <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"
+            integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
+            crossorigin="anonymous"
+    ></script>
+    <script
+            src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js"
+            integrity="sha512-aMGMvNYu8Ue4G+fHa359jcPb1u+ytAF+P2SCb+PxrjCdO3n3ZTxJ30zuH39rimUggmTwmh2u7wvQsDTHESnmfQ=="
+            crossorigin="anonymous"
+    ></script>
+</head>
+<body>
+<script>
+    const config_round_decimals = {{ round_decimals }};
+
+    var socket = io.connect();
+
+    function unifyProperties(objects) {
+
+        function collectProperties(object, unifiedObject) {
+            for (let key in object.children) {
+                if (object.children.hasOwnProperty(key)) {
+
+                    if (typeof object.children[key] === "object" && object.children[key].children === undefined) {
+                        //empty object -> ignore
+                        continue;
+                    }
+
+                    let existingChild = unifiedObject.children.find(child => child.name === key);
+
+                    if (!existingChild) {
+                        existingChild = {name: key, children: []};
+                        unifiedObject.children.push(existingChild);
+                    }
+
+                    if (typeof object.children[key] === "object" && object.children[key] !== null) {
+                        collectProperties(object.children[key], existingChild);
+                    }
+                }
+            }
+        }
+
+        const unified = {name: "root", children: []};
+
+        objects.forEach(object => {
+            collectProperties(object, unified);
+        });
+
+        return unified.children;
+    }
+
+    function collectObjects(object, objectsMap) {
+        objectsMap[object.id] = object;
+        for (let childKey in object.children) {
+            if (object.children.hasOwnProperty(childKey)) {
+
+                if (typeof object.children[childKey] === "object" && object.children[childKey] !== null) {
+                    collectObjects(object.children[childKey], objectsMap);
+                }
+            }
+        }
+    }
+
+    function generateMultiRowHeader(properties) {
+        const headerRows = [];
+
+        function processObject(property, currentPath, currentPosition) {
+            if (!headerRows[currentPath.length]) {
+                headerRows[currentPath.length] = [];
+            }
+
+            //add this property to currentPath
+            currentPath.push(property.name);
+
+            headerRows[currentPath.length - 1].push({
+                path: [...currentPath],
+                colspan: getColspan(property),
+                position: currentPosition.pos,
+                primitive: property.children.length === 0
+            });
+
+            for (const i in property.children) {
+                processObject(property.children[i], currentPath, currentPosition);
+            }
+
+            //remove this property from currentPath
+            currentPath.pop();
+
+            if (property.children.length === 0) {
+                currentPosition.pos++;
+            }
+        }
+
+        function getColspan(property) {
+            let colspan = 0;
+            for (const i in property.children) {
+                colspan += getColspan(property.children[i]);
+            }
+            if (colspan === 0) {
+                colspan = 1;
+            }
+            return colspan;
+        }
+
+        let currentPosition = {pos: 0};
+        for (const i in properties) {
+            processObject(properties[i], [], currentPosition);
+        }
+
+        return headerRows;
+    }
+
+    function getPropertyValue(object, path) {
+        if (path.length === 0) {
+            if(typeof object === "number" && !Number.isInteger(object)) {
+                if(config_round_decimals >= 0) {
+                    return Number(object.toFixed(config_round_decimals));
+                }           
+            }
+            return object;
+        }
+
+        let newPath = [...path];
+        let nextStep = newPath.shift();
+        if (object.children.hasOwnProperty(nextStep)) {
+            return getPropertyValue(object.children[nextStep], newPath);
+        } else {
+            return "";
+        }
+    }
+
+    function calculateWidthOfHeader(headerRows) {
+       return headerRows.reduce((maxSum, columns) => {
+            const sum = columns.reduce((acc, obj) => {
+                return acc + (Number(obj.colspan) || 0);
+            }, 0);
+
+            return Math.max(maxSum, sum);
+        }, 0);
+    }
+
+    function generateTable(componentsName, components) {
+
+        if (components.length === 0) {
+            return
+        }
+
+        let table = document.createElement("table");
+        table.className = "styled-table"
+
+        let caption = table.createCaption();
+        caption.textContent = componentsName;
+        caption.className = "table-caption";
+
+        let thead = document.createElement("thead");
+
+
+        let rootProperties = unifyProperties(components);
+        let headerRows = generateMultiRowHeader(rootProperties)
+        let width = calculateWidthOfHeader(headerRows)
+
+        let columns = [];
+        for (let level in headerRows) {
+            let row = document.createElement("tr");
+            let currentPos = 0;
+            for (let element in headerRows[level]) {
+                let property = headerRows[level][element];
+                let targetPos = property.position;
+                if (targetPos > currentPos) {
+                    let filler = document.createElement("th");
+                    filler.colSpan = targetPos - currentPos;
+                    row.appendChild(filler)
+                    currentPos = targetPos;
+                }
+                let th = document.createElement("th");
+                th.textContent = property.path[property.path.length - 1];
+
+                th.colSpan = property.colspan;
+                row.appendChild(th);
+                
+                if (property.primitive) {
+                    if(columns.length < currentPos) {
+                        while(columns.length < currentPos) {
+                            columns.push(undefined);
+                        }
+                        columns.push(property.path);
+                    } else {
+                        columns[currentPos] = property.path;
+                    }
+                }
+
+                currentPos += property.colspan;
+            }
+
+            if(width > currentPos) {
+                let filler = document.createElement("th");
+                filler.colSpan = width - currentPos;
+                row.appendChild(filler);
+            }
+
+            thead.appendChild(row);
+        }
+
+        let tbody = document.createElement("tbody");
+
+        components.forEach(component => {
+            let row = document.createElement("tr");
+            columns.forEach(column => {
+                let value = getPropertyValue(component, column);
+                let td = document.createElement("td");
+                td.textContent = value;
+                row.appendChild(td);
+            });
+            tbody.appendChild(row);
+        });
+
+        table.appendChild(thead);
+        table.appendChild(tbody);
+
+        document.getElementById("table-container").appendChild(table);
+    }
+
+    function expandObject(object, map, alreadyVisited) {
+        if (object.hasOwnProperty("relations")) {
+            Object.entries(object.relations).forEach(([key, objectId]) => {
+                if (!alreadyVisited.has(objectId)) {
+                    if (!map.hasOwnProperty(objectId)) {
+                        console.error("Missing relative object of class " + key + " with id " + objectId)
+                        return;
+                    }
+                    object.children[key] = map[objectId];
+                    alreadyVisited.add(objectId);
+                } else {
+                    //skip
+                }
+            });
+            delete object.relations;
+        }
+        for (let key in object.children) {
+            if (typeof object.children[key] === "object") {
+                expandObject(object.children[key], map, alreadyVisited);
+            }
+        }
+    }
+
+    function processData(objects) {
+        document.getElementById("table-container").innerHTML = "";
+
+        //extract actions
+        let actions = objects["Action"];
+        delete objects.Action;
+
+        //convert single components into lists that contain only the single component for easier handling
+        let objectEntries = Object.entries(objects).map(([key, value]) => {
+            return [key, Array.isArray(value) ? value : [value]];
+        });
+
+        //find all existing objects
+        let objectsMap = {};
+        objectEntries.forEach(([, components]) => {
+            components.forEach(component => {
+                collectObjects(component, objectsMap);
+            })
+        });
+
+        //expand objects
+        objectEntries.forEach(([, components]) => {
+            components.forEach(component => {
+                let alreadyVisited = new Set([component.id]);
+                expandObject(component, objectsMap, alreadyVisited)
+            })
+        });
+
+        //remove additional, because they are no longer needed
+        delete objects.Additional;
+
+        objectEntries.forEach(([componentsName, components]) => {
+            generateTable(componentsName, components);
+        });
+
+        //create typeMap
+        let typeMap = {};
+        Object.values(objectsMap).forEach(object => {
+            if (object.children === undefined || object.children.name === undefined) {
+                //skip empty objects or objects that don't have a name
+                return;
+            }
+
+            const types = object.type.split('|');
+            for (const type of types) {
+                if (!(type in typeMap)) {
+                    typeMap[type] = {};
+                }
+                typeMap[type][object.id] = object.children.name;
+            }
+        })
+
+
+        for (let i in actions) {
+            createOrUpdateForm(actions[i], i, typeMap,);
+        }
+    }
+
+    function createOrUpdateForm(action, index, typeMap) {
+        const actionId = action.children.id;
+        const actionContainer = document.getElementById("action-container");
+
+        //create form with header if it doesn't exist
+        const form = actionContainer.querySelector("#" + actionId) || (() => {
+            let newForm = document.createElement("form");
+            newForm.id = actionId;
+
+            if(index > 0) {
+                let divider = document.createElement("hr");
+                divider.className = "action-divider"
+                newForm.appendChild(divider)
+            }
+            let heading = document.createElement("h3");
+            heading.innerText = action.children.label;
+            newForm.appendChild(heading);
+            actionContainer.appendChild(newForm);
+            return newForm;
+        })();
+
+        //create table if it doesn't exist
+        const table = form.querySelector("table") || (() => {
+            let newTable = document.createElement("table");
+            newTable.className = "action-table";
+            form.appendChild(newTable);
+            return newTable;
+        })();
+
+        action.children.Input.forEach(inputObject => {
+            const inputType = inputObject.children.type.split('.').pop();
+            //create row if it doesn't exist
+            const row = table.querySelector("#" + inputObject.children.id) || (() => {
+                let newRow = document.createElement("tr");
+                newRow.className = "form-group";
+                newRow.id = inputObject.children.id;
+                table.appendChild(newRow);
+                return newRow;
+            })();
+
+            //create td and label if it doesn't exist
+            const label = row.querySelector(".action-label") || (() => {
+                let labelTd = document.createElement("td");
+                const newLabel = document.createElement("label");
+                newLabel.innerText = inputObject.children.label;
+                newLabel.className = "action-label";
+                labelTd.appendChild(newLabel);
+                row.appendChild(labelTd);
+                return newLabel;
+            })();
+
+            //create td for input if it doesn't exist
+            const inputTd = row.querySelector(".input-td") || (() => {
+                let newInputTd = document.createElement("td");
+                newInputTd.className = "input-td";
+                row.appendChild(newInputTd);
+                return newInputTd;
+            })();
+
+            if (inputTd.querySelector("input, select") == null) {
+                if (inputType === "String") {
+                    const input = document.createElement("input");
+                    input.name = inputObject.children.id;
+                    input.type = "text";
+                    input.className = "action-input";
+                    input.style.width = "100px";
+                    inputTd.appendChild(input);
+                } else if (inputType === "Integer") {
+                    const input = document.createElement("input");
+                    input.name = inputObject.children.id;
+                    input.type = "number";
+                    input.step = "1";
+                    input.className = "action-input";
+                    input.style.width = "100px";
+                    input.addEventListener("input", function () {
+                        this.value = this.value.replace(/[^0-9]/g, "");
+                    });
+                    inputTd.appendChild(input);
+                } else if (inputType === "Double") {
+                    const input = document.createElement("input");
+                    input.name = inputObject.children.id;
+                    input.type = "text";
+                    input.className = "action-input";
+                    input.style.width = "100px";
+                    input.addEventListener("input", function () {
+                        this.value = this.value.replace(/[^0-9.]/g, "");
+                    });
+                    inputTd.appendChild(input);
+                } else if (typeMap[inputType] !== undefined) {
+                    const select = document.createElement("select");
+                    select.name = inputObject.children.id;
+                    select.className = "action-input";
+
+                    Object.entries(typeMap[inputType]).forEach(([id, name]) => {
+                        const option = document.createElement("option");
+                        option.id = id;
+                        option.value = id;
+                        option.innerText = name;
+                        select.appendChild(option);
+                    });
+
+                    inputTd.appendChild(select);
+                }
+            } else {
+                if (typeMap[inputType] !== undefined) {
+                    const select = inputTd.querySelector("select");
+
+                    //create a Set of the current option IDs in the select
+                    let existingIds = new Set();
+                    for (let option of select.options) {
+                        existingIds.add(option.value);
+                    }
+
+                    //loop through the new map and update existing options or add new ones
+                    Object.entries(typeMap[inputType]).forEach(([id, name]) => {
+                        let option = select.querySelector("option[value=\"" + id + "\"]");
+
+                        if (option) {
+                            //if the option exists but the name has changed, update it
+                            if (option.innerText !== name) {
+                                option.innerText = name;
+                            }
+                        } else {
+                            //if the option doesn't exist, create a new one
+                            let newOption = document.createElement("option");
+                            newOption.value = id;
+                            newOption.textContent = name;
+                            select.appendChild(newOption);
+                        }
+
+                        // Remove this id from the existingIds set since it's accounted for
+                        existingIds.delete(id);
+                    });
+
+                    //remove options that are not in the new map
+                    for (let id of existingIds) {
+                        let optionToRemove = select.getElementById(id);
+                        if (optionToRemove) {
+                            select.removeChild(optionToRemove);
+                        }
+                    }
+                }
+            }
+        });
+
+        const startButton = table.querySelector("button") || (() => {
+            const row = document.createElement("tr");
+            const td = document.createElement("td");
+            td.colSpan = 2;
+
+            // Create the start button
+            const newStartButton = document.createElement("button");
+            newStartButton.type = "button";
+            newStartButton.innerText = "Start";
+            newStartButton.className = "goal-button"
+            newStartButton.addEventListener("click", () => {
+                const inputs = getFormValues(form);
+                const actionData = {};
+                actionData.id = actionId;
+                actionData.inputs = inputs;
+                socket.emit("runAction", actionData);
+            });
+
+            td.appendChild(newStartButton);
+            row.appendChild(td);
+            table.appendChild(row);
+        })();
+
+
+        const result = action.children.Result;
+
+        if (result.children.type !== "EMPTY") {
+            const beforeText = startButton.innerText;
+            const beforeStyle = startButton.style;
+
+            //show action result
+            startButton.innerText = result.children.message;
+            let color;
+            switch (result.children.type) {
+                case "SUCCESS":
+                    color = "green";
+                    break;
+                case "ERROR":
+                    color = "red";
+                    break;
+                case "TECHNICAL_ERROR":
+                    color = "black";
+                    break;
+            }
+            startButton.style.color = color;
+            startButton.style.backgroundColor = "transparent";
+            startButton.style.border = "none";
+            startButton.style.cursor = "default";
+            startButton.disabled = true;
+
+            //reset after some time
+            setTimeout(() => {
+                startButton.innerText = beforeText;
+                startButton.style = beforeStyle;
+                startButton.disabled = false;
+            }, result.children.displayMillis);
+        }      
+    }
+
+    function getFormValues(form) {
+        let formData = {};
+
+        let inputs = form.querySelectorAll("input, select");
+
+        inputs.forEach(input => {
+            formData[input.name] = input.value;
+        });
+
+        return formData;
+    }
+
+    socket.on("updateSensorData", function (msg) {
+        let data = JSON.parse(msg);
+        processData(data);
+    });
+</script>
+
+<div id="main-container">
+    <div id="table-container"></div>
+    <div id="divider"></div>
+    <div id="action-container"></div>
+</div>
+
+<script>
+    const divider = document.getElementById("divider");
+    const leftPanel = document.getElementById("table-container");
+    const rightPanel = document.getElementById("action-container");
+    const container = document.getElementById("main-container");
+
+    let isDragging = false;
+
+    divider.addEventListener("mousedown", (e) => {
+      isDragging = true;
+
+      document.body.style.userSelect = "none";
+      document.body.style.pointerEvents = "none";
+
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", () => {
+        isDragging = false;
+
+        document.body.style.userSelect = "";
+        document.body.style.pointerEvents = "";
+
+        document.removeEventListener("mousemove", handleMouseMove);
+      });
+
+      e.preventDefault();
+    });
+
+    function handleMouseMove(e) {
+        if (!isDragging) return;
+
+        let offsetLeft = container.offsetLeft;
+        let containerWidth = container.clientWidth;
+
+        let newLeftWidth = e.clientX - offsetLeft;
+
+        let minLeftWidth = 0;
+        let minRightWidth = 200;
+        let maxLeftWidth = containerWidth - minRightWidth;
+
+        if (newLeftWidth < minLeftWidth) newLeftWidth = minLeftWidth;
+        if (newLeftWidth > maxLeftWidth) newLeftWidth = maxLeftWidth;
+
+        leftPanel.style.flexBasis = `${newLeftWidth}px`;
+        rightPanel.style.flexBasis = `${containerWidth - newLeftWidth}px`;
+    }
+</script>
+</body>
+</html>
