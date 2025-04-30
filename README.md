@@ -18,7 +18,7 @@ The behavior is specified using attributes of a reference attribute grammar (RAG
 ## Requirements:
 - linux 22.04
 - python 3.10
-- ros2 (sudo apt install ros-iron-desktop, sudo apt install ros-dev-tools)
+- ros2 (sudo apt install ros-jazzy-desktop, sudo apt install ros-dev-tools)
 - gazebo harmonic (sudo apt install gz)
 - gazebo ros (sudo apt install ros-iron-ros-gzharmonic)
 - colcon (sudo apt install python3-colcon-common-extensions)
