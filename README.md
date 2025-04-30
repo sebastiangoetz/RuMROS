@@ -9,7 +9,7 @@ The following figure describes the workflow for developers of robotic applicatio
 
 Basic features of robotic applications like driving or gripping still have to be written in ROS. RuMROS allows to orchestrate these features into complex applications on a non-technical level. For this, developers metamodel their application and specify the application logic using terms from their metamodel instead of technical ROS2 concepts. RuMROS generates a webapp from the application specification that allows to control the application. The following figure shows an example of a generated application dashboard.
 
-<img src="/docs/figures/screenshot-webapp.png" width="500">
+<img src="/docs/figures/screenshot_webapp.png" width="500">
 
 The behavior is specified using attributes of a reference attribute grammar (RAG). The RAG is connected with ROS via RAGConnect and MQTT. This concept is depicted in the following figure.
 
