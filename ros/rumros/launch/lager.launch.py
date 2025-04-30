@@ -28,13 +28,13 @@ from launch_ros.actions import Node
 
 
 def generate_launch_description():
-    launch_file_dir = os.path.join(get_package_share_directory('turtlebot3_gazebo'), 'launch')
+    launch_file_dir = os.path.join(get_package_share_directory('rumros'), 'launch')
     pkg_gazebo_ros = get_package_share_directory('ros_gz_sim')
 
     use_sim_time = LaunchConfiguration('use_sim_time', default='true')
 
     world = os.path.join(
-        get_package_share_directory('turtlebot3_gazebo'),
+        get_package_share_directory('rumros'),
         'worlds',
         'depot.world'
     )
@@ -48,7 +48,7 @@ def generate_launch_description():
 
     set_env_vars_resources = AppendEnvironmentVariable(
         'GZ_SIM_RESOURCE_PATH',
-        os.path.join(get_package_share_directory('turtlebot3_gazebo'),
+        os.path.join(get_package_share_directory('rumros'),
                      'models'))
 
     gzclient_cmd = IncludeLaunchDescription(
@@ -59,7 +59,7 @@ def generate_launch_description():
     )
 
     bridge_params = os.path.join(
-        get_package_share_directory('turtlebot3_gazebo'),
+        get_package_share_directory('rumros'),
         'params',
         'general_bridge.yaml'
     )

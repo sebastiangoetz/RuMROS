@@ -58,7 +58,7 @@ def generate_launch_description():
         description='Use simulation (Gazebo) clock if true')
 
     xacro_file_path = os.path.join(
-        get_package_share_directory('turtlebot3_gazebo'),
+        get_package_share_directory('rumros'),
         'models',
         model_folder,
         'model.sdf.xacro'

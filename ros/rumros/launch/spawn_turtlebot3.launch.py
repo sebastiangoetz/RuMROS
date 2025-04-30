@@ -68,7 +68,7 @@ def generate_launch_description():
         description='Use simulation (Gazebo) clock if true')
 
     xacro_file_path = os.path.join(
-        get_package_share_directory('turtlebot3_gazebo'),
+        get_package_share_directory('rumros'),
         'models',
         model_folder,
         'model.sdf.xacro'
@@ -111,7 +111,7 @@ def generate_launch_description():
     )
 
     bridge_params_template = os.path.join(
-        get_package_share_directory('turtlebot3_gazebo'),
+        get_package_share_directory('rumros'),
         'params',
         'turtlebot3_waffle_bridge_template.yaml'
     )
@@ -139,7 +139,7 @@ def generate_launch_description():
     )
 
     slam_config_file_path = os.path.join(
-        get_package_share_directory('turtlebot3_gazebo'),
+        get_package_share_directory('rumros'),
         'params',
         'mapper_params_lifelong.yaml'
     )
@@ -172,7 +172,7 @@ def generate_launch_description():
     )
 
     start_pose_offsetter_cmd = Node(
-        package='turtlebot3_gazebo',
+        package='rumros',
         executable='pose_offsetter',
         name='pose_offsetter',
         namespace=namespace,

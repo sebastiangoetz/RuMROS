@@ -15,7 +15,7 @@ gnome-terminal -- bash -c "
     colcon build --base-paths ros
     source install/setup.bash
     export TURTLEBOT3_MODEL=waffle
-    ros2 launch turtlebot3_gazebo lager.launch.py
+    ros2 launch rumros lager.launch.py
     exec bash"
 
 # Ensure MQTT broker is running

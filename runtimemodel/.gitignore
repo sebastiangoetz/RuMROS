@@ -11,6 +11,7 @@
 /*.png
 uml.md
 /public/
+/bin/
 
 /ros2_serialization_utils/build
 /ros2_serialization_utils/install
