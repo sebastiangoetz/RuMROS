@@ -4,6 +4,15 @@ RuMROS is a model-driven software development approach for robotic applications 
 Developers model their application as a reference attribute grammar (i.e., a metamodel) and specify the behavior as attributes of the grammar.
 We are working on an overview paper to describe the principles of RuMROS in detail.
 
+The following figure describes the workflow for developers of robotic applications and the general architecture of RuMROS.
+![](/docs/figures/generation.png)
+
+Basic features of robotic applications like driving or gripping still have to be written in ROS. RuMROS allows to orchestrate these features into complex applications on a non-technical level. For this, developers metamodel their application and specify the application logic using terms from their metamodel instead of technical ROS2 concepts. RuMROS generates a webapp from the application specification that allows to control the application. The following figure shows an example of a generated application dashboard.
+![](/docs/figures/screenshot-webapp.png)
+
+The behavior is specified using attributes of a reference attribute grammar (RAG). The RAG is connected with ROS via RAGConnect and MQTT. This concept is depicted in the following figure.
+![](/docs/figures/mape_k_loop.png)
+
 ## Requirements:
 - linux 22.04
 - python 3.10
