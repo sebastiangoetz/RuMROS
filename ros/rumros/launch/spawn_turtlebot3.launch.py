@@ -153,7 +153,7 @@ def generate_launch_description():
         ('pose', 'pose_internal'),
     ])
     
-    start_gazebo_ros_slam_toolbox_cmd = Node(
+    start_slam_toolbox_cmd = Node(
         package='slam_toolbox',
         executable='async_slam_toolbox_node',
         name='slam_toolbox',
@@ -170,6 +170,20 @@ def generate_launch_description():
         }],
         remappings=slam_remappings
     )
+
+    start_slam_toolbox_lifecyclemanager_cmd = Node(
+        package='nav2_lifecycle_manager',
+        executable='lifecycle_manager',
+        name='lifecycle_manager_slam',
+        namespace=namespace,
+        output='screen',
+        parameters=[{
+            'use_sim_time': True,
+            'autostart': True,
+            'node_names': [["/", namespace, "/slam_toolbox"]],
+        }]
+    )
+
 
     start_pose_offsetter_cmd = Node(
         package='rumros',
@@ -211,7 +225,8 @@ def generate_launch_description():
 
     ld.add_action(start_gazebo_ros_bridge_cmd)
     ld.add_action(start_gazebo_ros_image_bridge_cmd)
-    ld.add_action(start_gazebo_ros_slam_toolbox_cmd)
+    ld.add_action(start_slam_toolbox_cmd)
+    ld.add_action(start_slam_toolbox_lifecyclemanager_cmd)
     ld.add_action(start_pose_offsetter_cmd)
     # ld.add_action(start_map_saver_cmd)
 
