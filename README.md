@@ -1,12 +1,8 @@
 # Runtime Model driven ROS (RuMROS)
 
-RuMROS is a runtimemodel driven robotic application with an adaptive GUI. The application can be partially generated from a runtimemetamodel. The webapp frontend is completely generated. The backend is general and does not need to be generated. The Webapp is written in Flask and uses Socket.IO for the constant connection beteween backend and frontend. In the runtimemodel application only the runtimemodel is generated. The metamodel was created with EMF. The Pyecorgen (https://github.com/pyecore/pyecoregen) generator was used as the basis for the generator. It generates the runtimemodel from the .pyecore file and was extended in this work to generate the webapp frontend aswell. 
-
-As an example, the Turtlebot robot can be controlled in the Gazebo robot simulation environment. The Communication between ROS and runtimemodel application is realized with ROS Topics. The Communication between the runtimemodel application and the webapp is realized with Python UDP Sockets.
-
-![](/docs/images/demo.png)
-
-The above screenshot show The simulation environment Gazebo Harmonic with the generated Dashboard as Webapp over it and the consoles of the runtime model at the right top and the webapp at the right bottom.
+RuMROS is a model-driven software development approach for robotic applications in the context of ROS2.
+Developers model their application as a reference attribute grammar (i.e., a metamodel) and specify the behavior as attributes of the grammar.
+We are working on an overview paper to describe the principles of RuMROS in detail.
 
 ## Requirements:
 - linux 22.04
