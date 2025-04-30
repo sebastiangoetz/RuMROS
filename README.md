@@ -70,17 +70,5 @@ The behavior is specified using attributes of a reference attribute grammar (RAG
 
 
 
-## How to use the Application:
-- choose a Goal Area and a Goal State for a Robot
-- press "Start Goal Adaption" 
-- Robot moves to the Goal coordinates
-- To stop the robot (also during Goal adaption) choose State "waiting" and press "Start Goal Adaption" Button
-
-## Current Issues
-- Robot's odometry is bad, the target's are barely reached, because the robot does not know exactly where it is
-
-## How to use the Generator
-- run cli.py in pyecoregen
-- type in source file (like robotModelStandard.ecore or robotModelExtension.ecore) and output path
-- press enter to start
-- Replace the files in runtimemodel/model and webapp/templates with the output files from the Generator
+## Credits
+This project is lead by Sebastian Götz. The first version of RuMROS was developed by Adrian Scholze. The current version has been developed by Edgar Solf.
