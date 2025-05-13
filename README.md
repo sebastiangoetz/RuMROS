@@ -62,6 +62,9 @@ The behavior is specified using attributes of a reference attribute grammar (RAG
 - create a python venv: ``python3 -m venv ~/venv`` (or any other folder you prefer)
 - ``~/venv/bin/pip install -r webapp/requirements.txt``
 - use ``~/venv/bin/python`` to run webapp/mobileRTM.py
+- ``sudo apt install ros-jazzy-slam-toolbox``
+- ``sudo apt install ros-jazzy-mqtt-client``
+- ``sudo apt install ros-jazzy-nav2-lifecycle-manager``
 
 ### Install Mosquitto as MQTT broker
 - ``sudo apt install -y mosquitto mosquitto-clients``
