@@ -28,6 +28,18 @@
     </include>
 
     <include>
+      <name>maze_wall</name>
+      <uri>model://maze_wall</uri>
+      <pose>0 0 0 0 0 0</pose>
+    </include>
+
+    <include>
+      <name>maze_wall2</name>
+      <uri>model://maze_wall</uri>
+      <pose>1 0 0 0 0 0</pose>
+    </include>
+
+    <include>
       <name>wall1</name>
       <uri>model://wall</uri>
       <pose>10 4 0 0 0 0</pose>
