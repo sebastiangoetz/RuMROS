@@ -1,0 +1,87 @@
+<?xml version="1.0"?>
+<sdf version="1.8">
+  <world name="new_world">
+    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+    <plugin name='ignition::gazebo::systems::Physics'
+      filename='libignition-gazebo-physics-system.so' />
+    <plugin name='ignition::gazebo::systems::UserCommands'
+      filename='libignition-gazebo-user-commands-system.so' />
+    <plugin name='ignition::gazebo::systems::SceneBroadcaster'
+      filename='libignition-gazebo-scene-broadcaster-system.so' />
+    <plugin name='ignition::gazebo::systems::Imu' filename='ignition-gazebo-imu-system' />
+    <plugin name='ignition::gazebo::systems::Sensors' filename='ignition-gazebo-sensors-system'>
+      <render_engine>ogre2</render_engine>
+    </plugin>
+
+    <include>
+      <uri>
+        https://fuel.gazebosim.org/1.0/OpenRobotics/models/Sun
+      </uri>
+    </include>
+
+    <include>
+      <name>floor</name>
+      <uri>model://floor2</uri>
+      <pose>0 0 0 0 0 0</pose>
+      <static>true</static>
+    </include>
+
+    <include>
+      <name>wall1</name>
+      <uri>model://wall</uri>
+      <pose>10 4 0 0 0 0</pose>
+    </include>
+
+    <include>
+      <name>wall2</name>
+      <uri>model://wall</uri>
+      <pose>10 -4 0 0 0 0</pose>
+    </include>
+
+    <include>
+      <name>wall3</name>
+      <uri>model://wall</uri>
+      <pose>-10 4 0 0 0 0</pose>
+    </include>
+
+    <include>
+      <name>wall4</name>
+      <uri>model://wall</uri>
+      <pose>-10 -4 0 0 0 0</pose>
+    </include>
+
+    <include>
+      <name>wall5</name>
+      <uri>model://wall</uri>
+      <pose>4 10 0 0 0 1.5708</pose>
+    </include>
+
+    <include>
+      <name>wall6</name>
+      <uri>model://wall</uri>
+      <pose>-4 10 0 0 0 1.5708</pose>
+    </include>
+
+    <include>
+      <name>wall7</name>
+      <uri>model://wall</uri>
+      <pose>4 -10 0 0 0 1.5708</pose>
+    </include>
+
+    <include>
+      <name>wall8</name>
+      <uri>model://wall</uri>
+      <pose>-4 -10 0 0 0 1.5708</pose>
+    </include>
+
+    <include>
+      <name>wall9</name>
+      <uri>model://wall</uri>
+      <pose>5 4 0 0 0 0</pose>
+    </include>
+
+  </world>
+</sdf>
