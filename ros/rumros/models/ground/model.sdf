@@ -1,0 +1,29 @@
+<?xml version="1.0" ?>
+<sdf version="1.8">
+  <model name="ground">
+    <static>true</static>
+
+    <link name="link">
+      <inertial>
+        <mass>1</mass>        
+      </inertial>
+
+      <visual name="visual">
+        <geometry>
+          <mesh>
+            <uri>model://ground/meshes/rocky_ground.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <collision name="collision">
+        <geometry>
+          <mesh>
+            <uri>model://ground/meshes/rocky_ground.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+
+    </link>
+  </model>
+</sdf>
