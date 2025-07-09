@@ -1,93 +1,116 @@
 import random
 
-# Maze-Größe in Zellen
-SIZE = 20
-CELL_SIZE = 1.0
-WALL_MODEL = "wall_1m"
+# Maze parameters
+maze_width = 20
+maze_height = 20
+cell_size = 1.0
 
-# Pfad zur Ausgabedatei
-OUTPUT_FILE = "generated_maze.txt"
+# Bitmasks for directions
+N, E, S, W = 1, 2, 4, 8
+DX = {E: 1, W: -1, N: 0, S: 0}
+DY = {E: 0, W: 0, N: -1, S: 1}
+OPPOSITE = {E: W, W: E, N: S, S: N}
 
-# Jede Zelle bekommt 4 Wände (rechts, unten) falls nicht verbunden
-maze = [[0 for _ in range(SIZE)] for _ in range(SIZE)]
-visited = [[False for _ in range(SIZE)] for _ in range(SIZE)]
+# Larger segments improve performance
+SEGMENT_SIZES = [8, 4, 2, 1]
 
-# Richtungen: (dx, dy, bitmask)
-DIRS = [
-    (0, -1, 1),  # oben
-    (1, 0, 2),   # rechts
-    (0, 1, 4),   # unten
-    (-1, 0, 8),  # links
-]
+origin_x = -maze_width * cell_size / 2.0
+origin_y = -maze_height * cell_size / 2.0
 
-# Rückwärts-Masken für Nachbarn
-OPPOSITE = {1: 4, 2: 8, 4: 1, 8: 2}
-
-
-def in_bounds(x, y):
-    return 0 <= x < SIZE and 0 <= y < SIZE
-
+maze = [[0 for _ in range(maze_width)] for _ in range(maze_height)]
 
 def carve(x, y):
-    visited[y][x] = True
-    dirs = DIRS[:]
+    dirs = [N, S, E, W]
     random.shuffle(dirs)
-
-    for dx, dy, mask in dirs:
-        nx, ny = x + dx, y + dy
-        if in_bounds(nx, ny) and not visited[ny][nx]:
-            maze[y][x] |= mask
-            maze[ny][nx] |= OPPOSITE[mask]
+    for d in dirs:
+        nx, ny = x + DX[d], y + DY[d]
+        if 0 <= nx < maze_width and 0 <= ny < maze_height and maze[ny][nx] == 0:
+            maze[y][x] |= d
+            maze[ny][nx] |= OPPOSITE[d]
             carve(nx, ny)
 
+def choose_segments(length):
+    segments = []
+    for s in SEGMENT_SIZES:
+        while length >= s:
+            segments.append(s)
+            length -= s
+    return segments
 
-def wall_block(x, y, rotation, name_id):
-    pose = f"{x:.1f} {y:.1f} 0 0 0 {rotation:.4f}"
+def generate_wall_block(x, y, orientation, segment, index):
+    model = f"wall_{segment}m"
+    name = f"{model}_{index}"
+    if orientation == "H":
+        cx = origin_x + x + (segment / 2.0) * cell_size
+        cy = origin_y + y
+        yaw = 0
+    else:
+        cx = origin_x + x
+        cy = origin_y + y + (segment / 2.0) * cell_size
+        yaw = 1.5708
+    pose = f"{cx:.2f} {cy:.2f} 0 0 0 {yaw}"
     return f"""  <include>
-    <name>maze_wall_{name_id}</name>
-    <uri>model://{WALL_MODEL}</uri>
+    <name>{name}</name>
+    <uri>model://{model}</uri>
     <pose>{pose}</pose>
   </include>"""
 
+carve(0, 0)
 
-def generate_maze():
-    carve(0, 0)
-    wall_id = 0
-    sdf_blocks = []
+output = []
+used = set()
+index = 0
 
-    for y in range(SIZE):
-        for x in range(SIZE):
-            cx = -SIZE / 2 + x + 0.5
-            cy = -SIZE / 2 + y + 0.5
-            cell = maze[y][x]
+# Horizontal walls (south edge)
+for y in range(maze_height + 1):
+    x = 0
+    while x < maze_width:
+        if y < maze_height and not (maze[y][x] & S):
+            if (x, y, "H") in used:
+                x += 1
+                continue
+            length = 0
+            while x + length < maze_width and y < maze_height and not (maze[y][x + length] & S):
+                used.add((x + length, y, "H"))
+                length += 1
+            segments = choose_segments(length)
+            offset = 0
+            for s in segments:
+                block = generate_wall_block(x + offset, y + 1, "H", s, index)
+                output.append(block)
+                index += 1
+                offset += s
+            x += length
+        else:
+            x += 1
 
-            # Rechte Wand, wenn nicht nach rechts offen
-            if not (cell & 2):
-                sdf_blocks.append(wall_block(cx + 0.5, cy, 1.5708, wall_id))
-                wall_id += 1
+# Vertical walls (east edge)
+for x in range(maze_width + 1):
+    y = 0
+    while y < maze_height:
+        if x < maze_width and not (maze[y][x] & E):
+            if (x, y, "V") in used:
+                y += 1
+                continue
+            length = 0
+            while y + length < maze_height and x < maze_width and not (maze[y + length][x] & E):
+                used.add((x, y + length, "V"))
+                length += 1
+            segments = choose_segments(length)
+            offset = 0
+            for s in segments:
+                block = generate_wall_block(x + 1, y + offset, "V", s, index)
+                output.append(block)
+                index += 1
+                offset += s
+            y += length
+        else:
+            y += 1
 
-            # Untere Wand, wenn nicht nach unten offen
-            if not (cell & 4):
-                sdf_blocks.append(wall_block(cx, cy + 0.5, 0, wall_id))
-                wall_id += 1
+with open("maze_wall_includes.txt", "w") as f:
+    f.write("<!-- Generated maze wall segments -->\n")
+    for line in output:
+        f.write(line + "\n")
 
-    # Rand rechts und unten
-    for i in range(SIZE):
-        cx = -SIZE / 2 + i + 0.5
-        sdf_blocks.append(wall_block(cx, -SIZE / 2, 0, wall_id))  # unterer Rand
-        wall_id += 1
-        cy = -SIZE / 2 + i + 0.5
-        sdf_blocks.append(wall_block(SIZE / 2, cy, 1.5708, wall_id))  # rechter Rand
-        wall_id += 1
-
-    return sdf_blocks
-
-
-if __name__ == "__main__":
-    print(f"Generiere {SIZE}x{SIZE} Maze ...")
-    maze_blocks = generate_maze()
-    with open(OUTPUT_FILE, "w") as f:
-        f.write("<!-- AUTOMATISCH GENERIERTES MAZE -->\n")
-        for block in maze_blocks:
-            f.write(block + "\n")
-    print(f"✔️ Maze geschrieben nach {OUTPUT_FILE}")
+print(f"[✔] Maze generated with {index} wall segments.")
+print("[→] Output written to 'maze_wall_includes.txt'")

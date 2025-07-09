@@ -1,12 +1,12 @@
 <?xml version="1.0"?>
 <sdf version="1.10">
-  <model name="wall_1m">
+  <model name="wall_8m">
     <static>true</static>
     <link name="wall_link">
       <visual name="wall_visual">
         <geometry>
           <mesh>
-            <uri>model://wall_1m/meshes/wall_1m.dae</uri>
+            <uri>model://wall_8m/meshes/wall_8m.dae</uri>
           </mesh>
         </geometry>
       </visual>
@@ -14,7 +14,7 @@
       <collision name="wall_collision">
         <geometry>
           <mesh>
-            <uri>model://wall_1m/meshes/wall_1m.dae</uri>
+            <uri>model://wall_8m/meshes/wall_8m.dae</uri>
           </mesh>
         </geometry>
       </collision>
