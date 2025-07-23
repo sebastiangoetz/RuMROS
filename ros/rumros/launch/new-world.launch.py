@@ -40,7 +40,7 @@ def generate_launch_description():
     world = os.path.join(
         get_package_share_directory('rumros'),
         'worlds',
-        'new_world.world'
+        'maze_world.world'
     )
 
     gzserver_cmd = IncludeLaunchDescription(

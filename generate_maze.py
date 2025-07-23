@@ -49,19 +49,20 @@ def generate_wall_block(x, y, orientation, segment, index):
         cy = origin_y + y + (segment / 2.0) * cell_size
         yaw = 1.5708
     pose = f"{cx:.2f} {cy:.2f} 0 0 0 {yaw}"
-    return f"""  <include>
-    <name>{name}</name>
-    <uri>model://{model}</uri>
-    <pose>{pose}</pose>
-  </include>"""
+    return f"""    <include>
+      <name>{name}</name>
+      <uri>model://{model}</uri>
+      <pose>{pose}</pose>
+    </include>"""
 
+# Maze generation using recursive backtracking (depth-first search)
 carve(0, 0)
 
-output = []
+wall_blocks = []
 used = set()
 index = 0
 
-# Horizontal walls (south edge)
+# Horizontal walls
 for y in range(maze_height + 1):
     x = 0
     while x < maze_width:
@@ -77,14 +78,14 @@ for y in range(maze_height + 1):
             offset = 0
             for s in segments:
                 block = generate_wall_block(x + offset, y + 1, "H", s, index)
-                output.append(block)
+                wall_blocks.append(block)
                 index += 1
                 offset += s
             x += length
         else:
             x += 1
 
-# Vertical walls (east edge)
+# Vertical walls
 for x in range(maze_width + 1):
     y = 0
     while y < maze_height:
@@ -100,17 +101,52 @@ for x in range(maze_width + 1):
             offset = 0
             for s in segments:
                 block = generate_wall_block(x + 1, y + offset, "V", s, index)
-                output.append(block)
+                wall_blocks.append(block)
                 index += 1
                 offset += s
             y += length
         else:
             y += 1
 
-with open("maze_wall_includes.txt", "w") as f:
-    f.write("<!-- Generated maze wall segments -->\n")
-    for line in output:
-        f.write(line + "\n")
+# Write full .world file
+with open("maze_world.world", "w") as f:
+    f.write('<?xml version="1.0"?>\n')
+    f.write('<sdf version="1.8">\n')
+    f.write('  <world name="maze_world">\n')
 
-print(f"[✔] Maze generated with {index} wall segments.")
-print("[→] Output written to 'maze_wall_includes.txt'")
+    # Plugins and physics
+    f.write("""    <physics name="1ms" type="ignored">
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1.0</real_time_factor>
+    </physics>
+    <plugin name='ignition::gazebo::systems::Physics'
+      filename='libignition-gazebo-physics-system.so' />
+    <plugin name='ignition::gazebo::systems::UserCommands'
+      filename='libignition-gazebo-user-commands-system.so' />
+    <plugin name='ignition::gazebo::systems::SceneBroadcaster'
+      filename='libignition-gazebo-scene-broadcaster-system.so' />
+    <plugin name='ignition::gazebo::systems::Imu' filename='ignition-gazebo-imu-system' />
+    <plugin name='ignition::gazebo::systems::Sensors' filename='ignition-gazebo-sensors-system'>
+      <render_engine>ogre2</render_engine>
+    </plugin>\n""")
+
+    # Sunlight and ground
+    f.write("""    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Sun</uri>
+    </include>
+    <include>
+      <name>ground</name>
+      <uri>model://ground</uri>
+    </include>\n""")
+
+    # Maze wall includes
+    f.write("    <!-- Generated maze wall segments -->\n")
+    for block in wall_blocks:
+        f.write(block + "\n")
+
+    # Close world and sdf
+    f.write("  </world>\n")
+    f.write("</sdf>\n")
+
+print(f"[✔] Maze world generated with {index} wall segments.")
+print("[→] Output written to 'maze_world.world'")
