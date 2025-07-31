@@ -88,7 +88,7 @@ def generate_launch_description():
     ld.add_action(start_gazebo_ros_bridge_cmd)
 
     drone_configs = [
-       {'namespace': 'drone_1', 'x_pose': '2.0', 'y_pose': '0.0', 'z_pose': '0.2'},
+       {'namespace': 'drone_1', 'x_pose': '-9.0', 'y_pose': '-9.0', 'z_pose': '0.3'},
     ]
 
     # Add each drone

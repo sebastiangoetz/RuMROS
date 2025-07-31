@@ -4,6 +4,7 @@ import random
 maze_width = 20
 maze_height = 20
 cell_size = 1.0
+ROOM_SIZE = 3  # 3x3 cells for start and goal rooms
 
 # Bitmasks for directions
 N, E, S, W = 1, 2, 4, 8
@@ -19,15 +20,23 @@ origin_y = -maze_height * cell_size / 2.0
 
 maze = [[0 for _ in range(maze_width)] for _ in range(maze_height)]
 
-def carve(x, y):
-    dirs = [N, S, E, W]
-    random.shuffle(dirs)
-    for d in dirs:
-        nx, ny = x + DX[d], y + DY[d]
-        if 0 <= nx < maze_width and 0 <= ny < maze_height and maze[ny][nx] == 0:
-            maze[y][x] |= d
-            maze[ny][nx] |= OPPOSITE[d]
-            carve(nx, ny)
+def iterative_carve(start_points):
+    stack = start_points[:]
+    while stack:
+        x, y = stack[-1]
+        dirs = [N, E, S, W]
+        random.shuffle(dirs)
+        found = False
+        for d in dirs:
+            nx, ny = x + DX[d], y + DY[d]
+            if 0 <= nx < maze_width and 0 <= ny < maze_height and maze[ny][nx] == 0:
+                maze[y][x] |= d
+                maze[ny][nx] |= OPPOSITE[d]
+                stack.append((nx, ny))
+                found = True
+                break
+        if not found:
+            stack.pop()
 
 def choose_segments(length):
     segments = []
@@ -41,12 +50,12 @@ def generate_wall_block(x, y, orientation, segment, index):
     model = f"wall_{segment}m"
     name = f"{model}_{index}"
     if orientation == "H":
-        cx = origin_x + x + (segment / 2.0) * cell_size
-        cy = origin_y + y
+        cx = origin_x + (x + segment / 2.0) * cell_size
+        cy = origin_y + y * cell_size
         yaw = 0
     else:
-        cx = origin_x + x
-        cy = origin_y + y + (segment / 2.0) * cell_size
+        cx = origin_x + x * cell_size
+        cy = origin_y + (y + segment / 2.0) * cell_size
         yaw = 1.5708
     pose = f"{cx:.2f} {cy:.2f} 0 0 0 {yaw}"
     return f"""    <include>
@@ -55,29 +64,94 @@ def generate_wall_block(x, y, orientation, segment, index):
       <pose>{pose}</pose>
     </include>"""
 
-# Maze generation using recursive backtracking (depth-first search)
-carve(0, 0)
+# Mark start room (bottom-left corner)
+start_room = []
+for y in range(ROOM_SIZE):
+    for x in range(ROOM_SIZE):
+        maze[y][x] = 15  # All walls open
+        start_room.append((x, y))
+
+# Mark goal room (top-right corner)
+goal_room = []
+for y in range(maze_height - ROOM_SIZE, maze_height):
+    for x in range(maze_width - ROOM_SIZE, maze_width):
+        maze[y][x] = 15  # All walls open
+        goal_room.append((x, y))
+
+# Find starting points for maze generation
+start_points = []
+for room in [start_room, goal_room]:
+    for (x, y) in room:
+        for d in [N, E, S, W]:
+            nx, ny = x + DX[d], y + DY[d]
+            if 0 <= nx < maze_width and 0 <= ny < maze_height and maze[ny][nx] == 0:
+                start_points.append((x, y))
+                break
+
+# Generate maze using iterative DFS
+iterative_carve(start_points)
 
 wall_blocks = []
 used = set()
 index = 0
 
-# Horizontal walls
-for y in range(maze_height + 1):
+# Generate outer boundary walls (always present)
+# Bottom wall (y=0)
+segments = choose_segments(maze_width)
+offset = 0
+for s in segments:
+    block = generate_wall_block(offset, 0, "H", s, index)
+    wall_blocks.append(block)
+    index += 1
+    offset += s
+
+# Top wall (y = maze_height)
+segments = choose_segments(maze_width)
+offset = 0
+for s in segments:
+    block = generate_wall_block(offset, maze_height, "H", s, index)
+    wall_blocks.append(block)
+    index += 1
+    offset += s
+
+# Left wall (x=0)
+segments = choose_segments(maze_height)
+offset = 0
+for s in segments:
+    block = generate_wall_block(0, offset, "V", s, index)
+    wall_blocks.append(block)
+    index += 1
+    offset += s
+
+# Right wall (x = maze_width)
+segments = choose_segments(maze_height)
+offset = 0
+for s in segments:
+    block = generate_wall_block(maze_width, offset, "V", s, index)
+    wall_blocks.append(block)
+    index += 1
+    offset += s
+
+# Generate inner walls
+# Horizontal walls (between rows, y from 1 to maze_height-1)
+for y in range(1, maze_height):
     x = 0
     while x < maze_width:
-        if y < maze_height and not (maze[y][x] & S):
+        # Check if wall should be placed between (x, y-1) and (x, y)
+        if not (maze[y-1][x] & S):
             if (x, y, "H") in used:
                 x += 1
                 continue
             length = 0
-            while x + length < maze_width and y < maze_height and not (maze[y][x + length] & S):
+            while (x + length < maze_width and 
+                   not (maze[y-1][x + length] & S) and 
+                   (x + length, y, "H") not in used):
                 used.add((x + length, y, "H"))
                 length += 1
             segments = choose_segments(length)
             offset = 0
             for s in segments:
-                block = generate_wall_block(x + offset, y + 1, "H", s, index)
+                block = generate_wall_block(x + offset, y, "H", s, index)
                 wall_blocks.append(block)
                 index += 1
                 offset += s
@@ -85,22 +159,25 @@ for y in range(maze_height + 1):
         else:
             x += 1
 
-# Vertical walls
-for x in range(maze_width + 1):
+# Vertical walls (between columns, x from 1 to maze_width-1)
+for x in range(1, maze_width):
     y = 0
     while y < maze_height:
-        if x < maze_width and not (maze[y][x] & E):
+        # Check if wall should be placed between (x-1, y) and (x, y)
+        if not (maze[y][x-1] & E):
             if (x, y, "V") in used:
                 y += 1
                 continue
             length = 0
-            while y + length < maze_height and x < maze_width and not (maze[y + length][x] & E):
+            while (y + length < maze_height and 
+                   not (maze[y + length][x-1] & E) and 
+                   (x, y + length, "V") not in used):
                 used.add((x, y + length, "V"))
                 length += 1
             segments = choose_segments(length)
             offset = 0
             for s in segments:
-                block = generate_wall_block(x + 1, y + offset, "V", s, index)
+                block = generate_wall_block(x, y + offset, "V", s, index)
                 wall_blocks.append(block)
                 index += 1
                 offset += s
@@ -149,4 +226,6 @@ with open("maze_world.world", "w") as f:
     f.write("</sdf>\n")
 
 print(f"[✔] Maze world generated with {index} wall segments.")
+print(f"[→] Start room: bottom-left {ROOM_SIZE}x{ROOM_SIZE} cells")
+print(f"[→] Goal room: top-right {ROOM_SIZE}x{ROOM_SIZE} cells")
 print("[→] Output written to 'maze_world.world'")
