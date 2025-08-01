@@ -1,14 +1,11 @@
 import random
-from collections import defaultdict
 
 # Maze parameters
 maze_width = 20
 maze_height = 20
 cell_size = 1.0
 ROOM_SIZE = 3  # 3x3 cells for rooms
-NUM_ADDITIONAL_ROOMS = 3  # Number of random rooms to add
-DEAD_END_REMOVAL_CHANCE = 1  # Chance to keep interesting dead ends
-EXTRA_CONNECTION_CHANCE = 0  # Chance to add extra connections for loops
+NUM_ADDITIONAL_ROOMS = 2  # Number of random rooms to add
 
 # Bitmasks for directions
 N, E, S, W = 1, 2, 4, 8
@@ -43,15 +40,12 @@ def can_place_room(room_x, room_y, rooms):
 
 def create_room(room_x, room_y, region_id, maze, region_map):
     """Create a room at specified top-left coordinates and mark its region"""
-    room_cells = []
     # Mark all cells in the room as open
     for y in range(room_y, room_y + ROOM_SIZE):
         for x in range(room_x, room_x + ROOM_SIZE):
             if 0 <= x < maze_width and 0 <= y < maze_height:
-                # Open all walls inside the room
-                maze[y][x] = 15
+                maze[y][x] = 15  # All walls open
                 region_map[y][x] = region_id
-                room_cells.append((x, y))
     
     # Create entrances to connect room to maze
     entrance_points = []
@@ -62,7 +56,7 @@ def create_room(room_x, room_y, region_id, maze, region_map):
     if room_x > 0: possible_sides.append("W")
     
     if not possible_sides:
-        return room_cells, entrance_points
+        return entrance_points
     
     # Create entrances (1-4)
     num_entrances = random.randint(1, min(4, len(possible_sides)))
@@ -72,44 +66,36 @@ def create_room(room_x, room_y, region_id, maze, region_map):
         if side == "N":  # North side
             entrance_x = room_x + random.randint(0, ROOM_SIZE-1)
             entrance_y = room_y
-            # Open north wall of room cell
-            maze[entrance_y][entrance_x] &= ~N
-            # Open south wall of outside cell
+            maze[entrance_y][entrance_x] &= ~N  # Remove north wall
             if entrance_y > 0:
-                maze[entrance_y-1][entrance_x] &= ~S
+                maze[entrance_y-1][entrance_x] &= ~S  # Remove south wall of outside cell
             entrance_points.append((entrance_x, entrance_y))
             
         elif side == "E":  # East side
             entrance_x = room_x + ROOM_SIZE - 1
             entrance_y = room_y + random.randint(0, ROOM_SIZE-1)
-            # Open east wall of room cell
-            maze[entrance_y][entrance_x] &= ~E
-            # Open west wall of outside cell
+            maze[entrance_y][entrance_x] &= ~E  # Remove east wall
             if entrance_x < maze_width-1:
-                maze[entrance_y][entrance_x+1] &= ~W
+                maze[entrance_y][entrance_x+1] &= ~W  # Remove west wall of outside cell
             entrance_points.append((entrance_x, entrance_y))
             
         elif side == "S":  # South side
             entrance_x = room_x + random.randint(0, ROOM_SIZE-1)
             entrance_y = room_y + ROOM_SIZE - 1
-            # Open south wall of room cell
-            maze[entrance_y][entrance_x] &= ~S
-            # Open north wall of outside cell
+            maze[entrance_y][entrance_x] &= ~S  # Remove south wall
             if entrance_y < maze_height-1:
-                maze[entrance_y+1][entrance_x] &= ~N
+                maze[entrance_y+1][entrance_x] &= ~N  # Remove north wall of outside cell
             entrance_points.append((entrance_x, entrance_y))
             
         elif side == "W":  # West side
             entrance_x = room_x
             entrance_y = room_y + random.randint(0, ROOM_SIZE-1)
-            # Open west wall of room cell
-            maze[entrance_y][entrance_x] &= ~W
-            # Open east wall of outside cell
+            maze[entrance_y][entrance_x] &= ~W  # Remove west wall
             if entrance_x > 0:
-                maze[entrance_y][entrance_x-1] &= ~E
+                maze[entrance_y][entrance_x-1] &= ~E  # Remove east wall of outside cell
             entrance_points.append((entrance_x, entrance_y))
     
-    return room_cells, entrance_points
+    return entrance_points
 
 def iterative_carve(start_x, start_y, region_id, maze, region_map):
     """Carve a maze starting from a point using DFS and assign region ID"""
@@ -185,12 +171,20 @@ def connect_regions(connectors, maze, region_map):
         regions.add(b)
     
     if not regions:
-        print("Critical error: No regions found!")
-        return
+        # Collect regions directly from region map
+        regions = set()
+        for y in range(maze_height):
+            for x in range(maze_width):
+                rid = region_map[y][x]
+                if rid != 0:
+                    regions.add(rid)
+        
+        if not regions:
+            print("Critical error: No regions found!")
+            return
     
     # Start with a random region
     connected = set([random.choice(list(regions))])
-    used_connectors = []
     
     while len(connected) < len(regions):
         # Find connectors that bridge connected and unconnected regions
@@ -221,54 +215,10 @@ def connect_regions(connectors, maze, region_map):
         # Update regions
         connected.add(a)
         connected.add(b)
-        used_connectors.append(chosen)
         
         # Remove used connector
         if chosen in connectors:
             connectors.remove(chosen)
-        
-        # Chance to add extra connection for loops
-        if random.random() < EXTRA_CONNECTION_CHANCE and connectors:
-            extra = random.choice(connectors)
-            x, y, d, a, b = extra
-            if a in connected and b in connected:
-                maze[y][x] |= d
-                region_map[y][x] = a
-                nx, ny = x + DX[d], y + DY[d]
-                if 0 <= nx < maze_width and 0 <= ny < maze_height:
-                    maze[ny][nx] |= OPPOSITE[d]
-                if extra in connectors:
-                    connectors.remove(extra)
-
-def remove_dead_ends(maze):
-    """Remove dead ends while preserving interesting paths"""
-    changed = True
-    while changed:
-        changed = False
-        for y in range(maze_height):
-            for x in range(maze_width):
-                # Skip solid cells and rooms
-                if maze[y][x] == 0:
-                    continue
-                
-                # Count open directions
-                count = 0
-                for d in [N, E, S, W]:
-                    if maze[y][x] & d:
-                        count += 1
-                
-                # Remove dead ends (except with random chance to keep some)
-                if count == 1 and random.random() > DEAD_END_REMOVAL_CHANCE:
-                    # Find the open direction
-                    for d in [N, E, S, W]:
-                        if maze[y][x] & d:
-                            # Close this cell and neighbor connection
-                            nx, ny = x + DX[d], y + DY[d]
-                            if 0 <= nx < maze_width and 0 <= ny < maze_height:
-                                maze[ny][nx] &= ~OPPOSITE[d]
-                            maze[y][x] = 0
-                            changed = True
-                            break
 
 def choose_segments(length):
     segments = []
@@ -296,6 +246,70 @@ def generate_wall_block(x, y, orientation, segment, index):
       <pose>{pose}</pose>
     </include>"""
 
+def generate_ascii_maze(maze, room_info, filename="maze_layout.txt"):
+    """Generate an accurate ASCII representation of the maze"""
+    # Create a set of room cells for faster lookup
+    room_cells = {}
+    for info in room_info:
+        name, room_x, room_y, region, entrances = info
+        for y in range(room_y, room_y + ROOM_SIZE):
+            for x in range(room_x, room_x + ROOM_SIZE):
+                if 0 <= x < maze_width and 0 <= y < maze_height:
+                    if name == "Start":
+                        room_cells[(x, y)] = 'S'
+                    elif name == "Goal":
+                        room_cells[(x, y)] = 'G'
+                    else:
+                        room_cells[(x, y)] = '.'
+
+    # Build the ASCII grid
+    grid = [[' ' for _ in range(maze_width * 2 + 1)] 
+            for _ in range(maze_height * 2 + 1)]
+    
+    # Draw outer walls
+    for x in range(maze_width * 2 + 1):
+        grid[0][x] = '#'
+        grid[maze_height * 2][x] = '#'
+    for y in range(maze_height * 2 + 1):
+        grid[y][0] = '#'
+        grid[y][maze_width * 2] = '#'
+    
+    # Draw walls and paths
+    for y in range(maze_height):
+        for x in range(maze_width):
+            # Calculate grid positions
+            gx = x * 2 + 1
+            gy = y * 2 + 1
+            
+            # Draw room/path center
+            if (x, y) in room_cells:
+                grid[gy][gx] = room_cells[(x, y)]
+            elif maze[y][x] != 0:  # Path
+                grid[gy][gx] = ' '
+            else:  # Wall
+                grid[gy][gx] = '#'
+            
+            # Draw north wall
+            if maze[y][x] & N:
+                grid[gy-1][gx] = '#'
+            
+            # Draw south wall
+            if maze[y][x] & S:
+                grid[gy+1][gx] = '#'
+            
+            # Draw west wall
+            if maze[y][x] & W:
+                grid[gy][gx-1] = '#'
+            
+            # Draw east wall
+            if maze[y][x] & E:
+                grid[gy][gx+1] = '#'
+    
+    # Save to file
+    with open(filename, "w") as f:
+        for row in grid:
+            f.write(''.join(row) + '\n')
+
 # Main generation logic ========================================================
 maze = initialize_maze()
 region_map = initialize_region_map()
@@ -308,7 +322,7 @@ region_id = 1
 # Fixed start room
 start_room = (0, 0)
 if can_place_room(*start_room, rooms):
-    _, entrances = create_room(*start_room, region_id, maze, region_map)
+    entrances = create_room(*start_room, region_id, maze, region_map)
     rooms.append((*start_room, region_id))
     room_info.append(("Start", start_room[0], start_room[1], region_id, entrances))
     region_id += 1
@@ -316,7 +330,7 @@ if can_place_room(*start_room, rooms):
 # Fixed goal room
 goal_room = (maze_width - ROOM_SIZE, maze_height - ROOM_SIZE)
 if can_place_room(*goal_room, rooms):
-    _, entrances = create_room(*goal_room, region_id, maze, region_map)
+    entrances = create_room(*goal_room, region_id, maze, region_map)
     rooms.append((*goal_room, region_id))
     room_info.append(("Goal", goal_room[0], goal_room[1], region_id, entrances))
     region_id += 1
@@ -329,7 +343,7 @@ for i in range(NUM_ADDITIONAL_ROOMS):
         room_y = random.randint(0, maze_height - ROOM_SIZE - 1)
         
         if can_place_room(room_x, room_y, rooms):
-            _, entrances = create_room(room_x, room_y, region_id, maze, region_map)
+            entrances = create_room(room_x, room_y, region_id, maze, region_map)
             rooms.append((room_x, room_y, region_id))
             room_info.append((f"Room {i+1}", room_x, room_y, region_id, entrances))
             region_id += 1
@@ -350,8 +364,8 @@ for y in range(maze_height):
 connectors = find_connectors(region_map)
 connect_regions(connectors, maze, region_map)
 
-# Remove boring dead ends
-remove_dead_ends(maze)
+# Generate ASCII maze visualization
+generate_ascii_maze(maze, room_info)
 
 # Generate wall segments ======================================================
 wall_blocks = []
@@ -491,4 +505,5 @@ print(f"[✔] Maze world generated with {index} wall segments.")
 for info in room_info:
     name, x, y, region, entrances = info
     print(f"[→] {name}: top-left ({x},{y}) with entrances at {entrances}")
-print("[→] Output written to 'maze_world.world'")
+print("[→] Gazebo world written to 'maze_world.world'")
+print("[→] ASCII visualization written to 'maze_layout.txt'")
