@@ -1,4 +1,5 @@
 import random
+from collections import defaultdict
 
 # Maze parameters
 maze_width = 20
@@ -6,6 +7,7 @@ maze_height = 20
 cell_size = 1.0
 ROOM_SIZE = 3  # 3x3 cells for rooms
 NUM_ADDITIONAL_ROOMS = 2  # Number of random rooms to add
+DEAD_END_REMOVAL_CHANCE = 0.5  # Chance to keep interesting dead ends
 
 # Bitmasks for directions
 N, E, S, W = 1, 2, 4, 8
@@ -20,24 +22,147 @@ origin_x = -maze_width * cell_size / 2.0
 origin_y = -maze_height * cell_size / 2.0
 
 maze = [[0 for _ in range(maze_width)] for _ in range(maze_height)]
+region_map = [[0 for _ in range(maze_width)] for _ in range(maze_height)]
 
-def iterative_carve(start_points):
-    stack = start_points[:]
+def can_place_room(room_x, room_y, rooms):
+    """Check if a room can be placed without overlapping existing rooms"""
+    # Check bounds
+    if room_x < 0 or room_y < 0 or room_x + ROOM_SIZE > maze_width or room_y + ROOM_SIZE > maze_height:
+        return False
+    
+    # Check overlap with existing rooms
+    for rx, ry, _ in rooms:
+        if not (room_x + ROOM_SIZE <= rx or rx + ROOM_SIZE <= room_x or
+                room_y + ROOM_SIZE <= ry or ry + ROOM_SIZE <= room_y):
+            return False
+    return True
+
+def create_room(room_x, room_y, region_id):
+    """Create a room at specified top-left coordinates and mark its region"""
+    room_cells = []
+    # Mark all cells in the room as open
+    for y in range(room_y, room_y + ROOM_SIZE):
+        for x in range(room_x, room_x + ROOM_SIZE):
+            if 0 <= x < maze_width and 0 <= y < maze_height:
+                maze[y][x] = 15  # All walls open
+                region_map[y][x] = region_id
+                room_cells.append((x, y))
+    return room_cells
+
+def iterative_carve(start_x, start_y, region_id):
+    """Carve a maze starting from a point using DFS and assign region ID"""
+    stack = [(start_x, start_y)]
+    maze[start_y][start_x] = 0
+    region_map[start_y][start_x] = region_id
+    
     while stack:
         x, y = stack[-1]
         dirs = [N, E, S, W]
         random.shuffle(dirs)
         found = False
+        
         for d in dirs:
             nx, ny = x + DX[d], y + DY[d]
-            if 0 <= nx < maze_width and 0 <= ny < maze_height and maze[ny][nx] == 0:
+            if (0 <= nx < maze_width and 0 <= ny < maze_height and 
+                maze[ny][nx] == 0 and region_map[ny][nx] == 0):
+                
+                # Carve path
                 maze[y][x] |= d
                 maze[ny][nx] |= OPPOSITE[d]
+                region_map[ny][nx] = region_id
                 stack.append((nx, ny))
                 found = True
                 break
+        
         if not found:
             stack.pop()
+
+def find_connectors():
+    """Find all potential connectors between regions (improved version)"""
+    connectors = []
+    
+    for y in range(maze_height):
+        for x in range(maze_width):
+            # Nur feste Wände können Verbindungspunkte sein
+            if maze[y][x] != 0:
+                continue
+                
+            # Prüfe alle 4 Richtungen nach Regionen
+            neighbor_regions = set()
+            valid_directions = []
+            
+            for d in [N, E, S, W]:
+                nx, ny = x + DX[d], y + DY[d]
+                if 0 <= nx < maze_width and 0 <= ny < maze_height:
+                    region_id = region_map[ny][nx]
+                    if region_id != 0:
+                        neighbor_regions.add(region_id)
+                        valid_directions.append(d)
+            
+            # Wenn mindestens 1 Region gefunden wurde
+            if len(neighbor_regions) >= 1:
+                # Wähle eine zufällige Richtung
+                d = random.choice(valid_directions) if valid_directions else N
+                connectors.append((x, y, d, 0, list(neighbor_regions)[0]))
+    
+    return connectors
+
+def connect_regions(connectors):
+    """Connect regions with improved error handling"""
+    if not connectors:
+        print("Warnung: Keine Verbindungspunkte gefunden. Erzwinge direkte Verbindungen.")
+        return
+    
+    regions = set()
+    for _, _, _, a, b in connectors:
+        if a != 0: regions.add(a)
+        if b != 0: regions.add(b)
+    
+    if not regions:
+        # Sammle Regionen direkt aus der Region-Map
+        regions = set()
+        for y in range(maze_height):
+            for x in range(maze_width):
+                rid = region_map[y][x]
+                if rid != 0:
+                    regions.add(rid)
+        
+        if not regions:
+            print("Kritischer Fehler: Keine Regionen gefunden!")
+            return
+    
+    # Starte mit einer zufälligen Region
+    connected = set([random.choice(list(regions))])
+
+def remove_dead_ends():
+    """Remove dead ends while preserving interesting paths"""
+    changed = True
+    while changed:
+        changed = False
+        for y in range(maze_height):
+            for x in range(maze_width):
+                # Skip solid cells and rooms
+                if maze[y][x] == 0:
+                    continue
+                
+                # Count open directions
+                count = 0
+                for d in [N, E, S, W]:
+                    if maze[y][x] & d:
+                        count += 1
+                
+                # Remove dead ends (except with random chance to keep some)
+                if count == 1 and random.random() > DEAD_END_REMOVAL_CHANCE:
+                    # Find the open direction
+                    for d in [N, E, S, W]:
+                        if maze[y][x] & d:
+                            # Close this cell and neighbor connection
+                            nx, ny = x + DX[d], y + DY[d]
+                            if 0 <= nx < maze_width and 0 <= ny < maze_height:
+                                maze[ny][nx] &= ~OPPOSITE[d]
+                            maze[y][x] = 0
+                            changed = True
+                            break
 
 def choose_segments(length):
     segments = []
@@ -65,105 +190,67 @@ def generate_wall_block(x, y, orientation, segment, index):
       <pose>{pose}</pose>
     </include>"""
 
-def create_room(room_x, room_y):
-    """Create a room at specified top-left coordinates with entrances"""
-    room_cells = []
-    # Mark all cells in the room as open
-    for y in range(room_y, room_y + ROOM_SIZE):
-        for x in range(room_x, room_x + ROOM_SIZE):
-            if 0 <= x < maze_width and 0 <= y < maze_height:
-                maze[y][x] = 15  # All walls open
-                room_cells.append((x, y))
-    
-    # Determine possible entrance sides
-    possible_sides = []
-    if room_y > 0: possible_sides.append("N")
-    if room_x + ROOM_SIZE < maze_width: possible_sides.append("E")
-    if room_y + ROOM_SIZE < maze_height: possible_sides.append("S")
-    if room_x > 0: possible_sides.append("W")
-    
-    # Ensure at least one entrance
-    if not possible_sides:
-        # If room is completely isolated, force one entrance (shouldn't happen normally)
-        possible_sides = ["N", "E", "S", "W"]
-    
-    # Create entrances (1-4)
-    num_entrances = random.randint(1, min(4, len(possible_sides)))
-    entrance_sides = random.sample(possible_sides, num_entrances)
-    
-    entrance_points = []
-    
-    for side in entrance_sides:
-        if side == "N":  # North side
-            entrance_x = random.randint(room_x, room_x + ROOM_SIZE - 1)
-            entrance_y = room_y
-            maze[entrance_y][entrance_x] &= ~S  # Remove south wall of outside cell
-            entrance_points.append((entrance_x, entrance_y))
-            
-        elif side == "E":  # East side
-            entrance_x = room_x + ROOM_SIZE - 1
-            entrance_y = random.randint(room_y, room_y + ROOM_SIZE - 1)
-            maze[entrance_y][entrance_x] &= ~W  # Remove west wall of outside cell
-            entrance_points.append((entrance_x, entrance_y))
-            
-        elif side == "S":  # South side
-            entrance_x = random.randint(room_x, room_x + ROOM_SIZE - 1)
-            entrance_y = room_y + ROOM_SIZE - 1
-            maze[entrance_y][entrance_x] &= ~N  # Remove north wall of outside cell
-            entrance_points.append((entrance_x, entrance_y))
-            
-        elif side == "W":  # West side
-            entrance_x = room_x
-            entrance_y = random.randint(room_y, room_y + ROOM_SIZE - 1)
-            maze[entrance_y][entrance_x] &= ~E  # Remove east wall of outside cell
-            entrance_points.append((entrance_x, entrance_y))
-    
-    return room_cells, entrance_points
+# Main generation logic ========================================================
 
-# Create fixed start and goal rooms
-start_room, start_entrances = create_room(0, 0)
-goal_room, goal_entrances = create_room(maze_width - ROOM_SIZE, maze_height - ROOM_SIZE)
+# Place rooms
+rooms = []
+room_info = []
 
-# Create random rooms
-all_rooms = [start_room, goal_room]
-all_entrances = start_entrances + goal_entrances
-additional_rooms_info = []
+# Fixed start room
+start_room = (0, 0)
+if can_place_room(*start_room, rooms):
+    region_id = 1
+    create_room(*start_room, region_id)
+    rooms.append((*start_room, region_id))
+    room_info.append(("Start", start_room[0], start_room[1], region_id))
+    region_id += 1
 
-for _ in range(NUM_ADDITIONAL_ROOMS):
-    while True:
-        # Ensure rooms don't overlap and have space for entrances
-        room_x = random.randint(1, maze_width - ROOM_SIZE - 1)
-        room_y = random.randint(1, maze_height - ROOM_SIZE - 1)
+# Fixed goal room
+goal_room = (maze_width - ROOM_SIZE, maze_height - ROOM_SIZE)
+if can_place_room(*goal_room, rooms):
+    create_room(*goal_room, region_id)
+    rooms.append((*goal_room, region_id))
+    room_info.append(("Goal", goal_room[0], goal_room[1], region_id))
+    region_id += 1
+
+# Additional rooms
+for i in range(NUM_ADDITIONAL_ROOMS):
+    placed = False
+    for _ in range(100):  # Try up to 100 times to place room
+        room_x = random.randint(0, maze_width - ROOM_SIZE - 1)
+        room_y = random.randint(0, maze_height - ROOM_SIZE - 1)
         
-        # Check for overlap with existing rooms
-        overlap = False
-        for room in all_rooms:
-            for (x, y) in room:
-                if (room_x <= x < room_x + ROOM_SIZE and 
-                    room_y <= y < room_y + ROOM_SIZE):
-                    overlap = True
-                    break
-            if overlap:
-                break
-        
-        if not overlap:
-            room_cells, entrances = create_room(room_x, room_y)
-            all_rooms.append(room_cells)
-            all_entrances.extend(entrances)
-            additional_rooms_info.append((room_x, room_y, entrances))
+        if can_place_room(room_x, room_y, rooms):
+            create_room(room_x, room_y, region_id)
+            rooms.append((room_x, room_y, region_id))
+            room_info.append((f"Room {i+1}", room_x, room_y, region_id))
+            region_id += 1
+            placed = True
             break
+    
+    if not placed:
+        print(f"Could not place additional room {i+1}")
 
-# Find starting points for maze generation from all entrances
-start_points = all_entrances
+# Fill remaining areas with mazes
+for y in range(maze_height):
+    for x in range(maze_width):
+        if maze[y][x] == 0 and region_map[y][x] == 0:
+            iterative_carve(x, y, region_id)
+            region_id += 1
 
-# Generate maze using iterative DFS
-iterative_carve(start_points)
+# Connect all regions
+connectors = find_connectors()
+connect_regions(connectors)
 
+# Remove boring dead ends
+remove_dead_ends()
+
+# Generate wall segments ======================================================
 wall_blocks = []
 used = set()
 index = 0
 
-# Generate outer boundary walls (always present)
+# Generate outer boundary walls
 # Bottom wall (y=0)
 segments = choose_segments(maze_width)
 offset = 0
@@ -205,7 +292,6 @@ for s in segments:
 for y in range(1, maze_height):
     x = 0
     while x < maze_width:
-        # Check if wall should be placed between (x, y-1) and (x, y)
         if not (maze[y-1][x] & S):
             if (x, y, "H") in used:
                 x += 1
@@ -231,7 +317,6 @@ for y in range(1, maze_height):
 for x in range(1, maze_width):
     y = 0
     while y < maze_height:
-        # Check if wall should be placed between (x-1, y) and (x, y)
         if not (maze[y][x-1] & E):
             if (x, y, "V") in used:
                 y += 1
@@ -295,8 +380,6 @@ with open("maze_world.world", "w") as f:
 
 # Print room information
 print(f"[✔] Maze world generated with {index} wall segments.")
-print(f"[→] Start room: bottom-left (0,0) with entrances at {start_entrances}")
-print(f"[→] Goal room: top-right ({maze_width-ROOM_SIZE},{maze_height-ROOM_SIZE}) with entrances at {goal_entrances}")
-for i, (x, y, entrances) in enumerate(additional_rooms_info, 1):
-    print(f"[→] Additional room {i}: top-left ({x},{y}) with entrances at {entrances}")
+for name, x, y, region in room_info:
+    print(f"[→] {name}: top-left ({x},{y})")
 print("[→] Output written to 'maze_world.world'")
