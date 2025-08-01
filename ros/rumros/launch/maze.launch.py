@@ -17,7 +17,7 @@
 # Authors: Joep Tool
 
 # copy of lager.launch.py
-# with a different world
+# with a maze world
 # and just one drone
 
 import os
