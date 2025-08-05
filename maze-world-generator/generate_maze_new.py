@@ -1,35 +1,70 @@
 import random
 import matplotlib.pyplot as plt
 
+class Cell:
+    def __init__(self, x, y):
+        self.x, self.y = x, y
+        self.walls = {'top': True, 'right': True, 'bottom': True, 'left': True}
+        self.visited = False
+
 def generate_maze(width, height):
+    # Gitter aus Cell-Objekten
+    grid = [[Cell(x, y) for x in range(width)] for y in range(height)]
 
-    # Anfang: alles Wände (1 = Wand, 0 = Weg)
-    maze = [[1 for _ in range(width)] for _ in range(height)]
+    # Bewegungsrichtungen mit Wandreferenzen
+    directions = [
+        (0, -1, 'top', 'bottom'),   # nach oben
+        (0,  1, 'bottom', 'top'),   # nach unten
+        (-1, 0, 'left', 'right'),   # nach links
+        (1,  0, 'right', 'left')    # nach rechts
+    ]
 
-    # Bewegungsrichtungen: (dy, dx)
-    directions = [(-1, 0), (1, 0), (0, -1), (0, 1)]
+    def in_bounds(x, y):
+        return 0 <= x < width and 0 <= y < height
 
     def carve(x, y):
-        maze[y][x] = 0
-        dirs = directions[:]
-        random.shuffle(dirs)
-        for dy, dx in dirs:
-            nx, ny = x + dx * 2, y + dy * 2
-            if 0 < ny < height and 0 < nx < width and maze[ny][nx] == 1:
-                maze[y + dy][x + dx] = 0
-                carve(nx, ny)
+        current = grid[y][x]
+        current.visited = True
+        random.shuffle(directions)
+        for dx, dy, wall_curr, wall_next in directions:
+            nx, ny = x + dx, y + dy
+            if in_bounds(nx, ny):
+                neighbor = grid[ny][nx]
+                if not neighbor.visited:
+                    current.walls[wall_curr] = False
+                    neighbor.walls[wall_next] = False
+                    carve(nx, ny)
 
-    # Startpunkt
-    carve(1, 1)
+    carve(0, 0)
+    return grid
 
-    return maze
+def draw_maze(grid):
+    height = len(grid)
+    width = len(grid[0])
+    fig, ax = plt.subplots(figsize=(6, 6))
 
+    for y in range(height):
+        for x in range(width):
+            cell = grid[y][x]
+            if cell.walls['top']:
+                ax.plot([x, x+1], [y, y], color='black')
+            if cell.walls['right']:
+                ax.plot([x+1, x+1], [y, y+1], color='black')
+            if cell.walls['bottom']:
+                ax.plot([x, x+1], [y+1, y+1], color='black')
+            if cell.walls['left']:
+                ax.plot([x, x], [y, y+1], color='black')
+
+    # Start und Ende markieren
+    ax.scatter(0.5, 0.5, color='red', label='Start', s=100)
+    ax.scatter(width - 0.5, height - 0.5, color='green', label='End', s=100)
+
+    ax.set_aspect('equal')
+    ax.invert_yaxis()
+    plt.xticks([]), plt.yticks([])
+    plt.show()
+
+# Verwendung
 print("Generating maze...")
-maze = generate_maze(19,19)
-
-plt.figure(figsize=(6,6))
-plt.imshow(maze, cmap="binary")
-plt.scatter(1, 1, color='red', label='Start', s=100)
-plt.scatter(len(maze)-2, len(maze)-2, color='green', label='End', s=100)
-plt.xticks([]), plt.yticks([])
-plt.show()
+maze = generate_maze(20, 20)
+draw_maze(maze)
