@@ -62,7 +62,7 @@ def draw_maze(grid):
     ax.set_aspect('equal')
     ax.invert_yaxis()
     plt.xticks([]), plt.yticks([])
-    plt.show()
+    plt.savefig("maze.png")
 
 # Verwendung
 print("Generating maze...")
