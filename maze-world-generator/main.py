@@ -1,5 +1,13 @@
-import generate_maze_new  # dein Cell-basiertes Maze
-import export_maze
+from generate_maze_new import generate_maze
+from find_path import find_path
+from draw_maze import draw_maze
+from export_maze import cell_maze_to_gazebo_world
 
-maze = generate_maze_new.generate_maze(20, 20)  # Cell[][]-Struktur
-export_maze.cell_maze_to_gazebo_world(maze)
+width = 20
+height = 20
+n_rooms = 3
+
+maze, start, end = generate_maze(width, height, n_rooms)
+path = find_path(maze, start, end)
+draw_maze(maze, path, start, end)
+cell_maze_to_gazebo_world(maze)

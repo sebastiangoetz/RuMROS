@@ -1,5 +1,5 @@
 import random
-import matplotlib.pyplot as plt
+
 
 class Cell:
     def __init__(self, x, y):
@@ -127,11 +127,3 @@ def generate_maze(width, height, n_rooms=3):
     start = (1, 1)
     end = (width - 2, height - 2)
     return grid, start, end
-
-# Verwendung
-# Generieren + Pfad finden + Zeichnen
-from draw_maze import draw_maze, find_path
-maze, start, end = generate_maze(20, 20, n_rooms=4)
-path = find_path(maze, start, end)
-draw_maze(maze, path=path, start=start, end=end)
-
