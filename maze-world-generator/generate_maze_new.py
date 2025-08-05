@@ -124,35 +124,14 @@ def generate_maze(width, height, n_rooms=3):
     # Maze schnitzen ab Punkt außerhalb der Räume
     carve(3, 3)
 
-    return grid
-
-def draw_maze(grid):
-    height = len(grid)
-    width = len(grid[0])
-    fig, ax = plt.subplots(figsize=(6, 6))
-
-    for y in range(height):
-        for x in range(width):
-            cell = grid[y][x]
-            if cell.walls['top']:
-                ax.plot([x, x+1], [y, y], color='black')
-            if cell.walls['right']:
-                ax.plot([x+1, x+1], [y, y+1], color='black')
-            if cell.walls['bottom']:
-                ax.plot([x, x+1], [y+1, y+1], color='black')
-            if cell.walls['left']:
-                ax.plot([x, x], [y, y+1], color='black')
-
-    ax.scatter(1.5, 1.5, color='red', label='Start', s=100)
-    ax.scatter(width - 1.5, height - 1.5, color='green', label='End', s=100)
-
-    ax.set_aspect('equal')
-    ax.invert_yaxis()
-    plt.xticks([]), plt.yticks([])
-    plt.legend()
-    plt.savefig("maze.png")
+    start = (1, 1)
+    end = (width - 2, height - 2)
+    return grid, start, end
 
 # Verwendung
-print("Generating maze with random rooms...")
-maze = generate_maze(20, 20, n_rooms=3)
-draw_maze(maze)
+# Generieren + Pfad finden + Zeichnen
+from draw_maze import draw_maze, find_path
+maze, start, end = generate_maze(20, 20, n_rooms=4)
+path = find_path(maze, start, end)
+draw_maze(maze, path=path, start=start, end=end)
+
