@@ -2,65 +2,85 @@
 
 ## 📌 Project Goal
 
-This project generates a complete **maze in SDF format** (`.world`), compatible with **Gazebo Harmonic** and **ROS 2 Jazzy**. The world consists of modular wall segments, is entirely created via Python, and can be extended arbitrarily - e.g., with ramps, goals, rooms, or interactive objects.
+This project generates a complete **maze in SDF format** (`.world`), compatible with **Gazebo Harmonic** and **ROS 2 Jazzy**. The maze is fully created in Python, featuring modular wall segments, and can be easily extended with ramps, rooms, goals, or interactive objects.
 
-![Maze Preview](./images/maze_preview.png)
+---
 
 ## ✅ Currently Implemented
 
 ### ✔️ Maze Generation
-- Algorithm: **Iterative Depth-First Search** (previously Recursive Backtracking)
-- Fully connected maze with guaranteed paths between all cells
-- **Start and goal rooms** (3×3 cells) at opposite corners
 
-### ✔️ Wall Placement Optimization
-- Walls are placed as large segments (`8m`, `4m`, `2m`, `1m`)
-- Reduces number of `<include>` entries → better simulation performance
+* Algorithm: **Iterative Depth-First Search** (DFS) for maze carving
+* Guarantees a **fully connected maze** with guaranteed paths between all cells
+* Includes **start and goal rooms** (3×3 cells) at opposite corners
+* Supports **random interior rooms** with configurable quantity
 
-### ✔️ Proper World Placement
-- Maze origin is centered around `(0, 0)`
-- All wall `<pose>` entries correctly calculated relative to center
+### ✔️ Pathfinding & Visualization
 
-### ✔️ Complete `.world` File
-- Includes:
-  - Standard Gazebo plugins (Physics, IMU, Scene, UserCommands)
-  - Light source (Sun)
-  - Ground plane
-  - All walls
-- Automatically generated as `maze_world.world`
+* Finds the path from start to end using BFS
+* Draws the maze with solution path overlayed in `maze_step3_solution.png`
 
-### ✔️ Automatic Outer Boundary
-- All four edges are enclosed with continuous walls
-- Prevents robots from accidentally leaving the maze
+### ✔️ Maze Export to Gazebo World
+
+* Converts maze cells and walls into optimized Gazebo `<include>` models
+* Walls combined into large segments (`8m`, `4m`, `2m`, `1m`) for performance
+* Maze origin centered at `(0, 0)` with correct wall pose calculation
+* Outputs a fully functional `.world` file (`maze_world.world`) for simulation
+
+---
+
+| Step                            | Description                                              | Preview                                                 |
+| ------------------------------- | -------------------------------------------------------- | ------------------------------------------------------- |
+| **1. Rooms Only Maze**          | Maze after placing start, goal, and random rooms         | ![Rooms Only Maze](./images/maze_step1_rooms_only.png)  |
+| **2. After Maze Carving**       | Maze after carving paths between rooms                   | ![After Carving](./images/maze_step2_after_carving.png) |
+| **3. Final Maze with Solution** | Maze visualization with shortest path from start to goal | ![Maze with Solution](./images/maze_step3_solution.png) |
+| **4. Gazebo World Preview**     | Visualization of the exported maze in Gazebo             | ![Gazebo World](./images/maze_step4_world.png)          |
 
 ---
 
 ## 📌 Planned Extensions
 
-| Feature                      | Status     |
-|-----------------------------|------------|
-| Start/Goal Markings         | ✅ Done    |
-| Interior Rooms              | ✅ Done    |
-| Objects (e.g., boxes)       | ❌ Open    |
-| Ramps / Second Floor        | ❌ Open    |
+| Feature               | Status |
+| --------------------- | ------ |
+| Start/Goal Markings   | ✅ Done |
+| Interior Rooms        | ✅ Done |
+| Objects (e.g., boxes) | ❌ Open |
+| Ramps / Second Floor  | ❌ Open |
+
+---
 
 ## 🧠 Key Design Decisions
 
-### 🔁 Maze Algorithm
-- Uses **Iterative DFS** (converted from recursive backtracking)
-- Advantage: Guarantees connected maze without isolated sections
+### Maze Algorithm
 
-### 🧱 Wall Optimization
-* Long straight walls automatically detected and placed as large segments
-* Fewer models → faster loading → better FPS
-* Prioritized segment lengths: `[8, 4, 2, 1]`
+* Uses **iterative DFS** for carving paths, ensuring a fully connected maze
+* Rooms are explicitly marked as visited areas and carved separately
+* Multiple attempts ensure a valid maze with full connectivity
 
-### 📐 Positioning and Offset
-* Maze cells start at `(-maze_width/2, -maze_height/2)` for center origin
-* Wall models placed with correct offset along their orientation
-* Unique wall names (`wall_2m_42` etc.) to avoid conflicts
+### Wall Optimization
 
-## 🚀 Execution
+* Detects and merges consecutive wall cells into larger wall segments
+* Reduces number of Gazebo model `<include>` elements for better simulation performance
+* Supports wall segments of sizes `[8m, 4m, 2m, 1m]`
+
+### Maze Positioning and Export
+
+* Maze centered around `(0, 0)` by offsetting wall positions
+* Each wall segment correctly oriented with position and yaw angle
+* Generates a valid `.world` file including ground plane and sun light source
+
+---
+
+## 🚀 How to Run
 
 ```bash
-python3 maze_generator.py
+python3 main.py
+```
+
+This will:
+
+* Generate the maze with rooms
+* Carve the maze paths
+* Find and draw the shortest path solution
+* Export the maze as a Gazebo `.world` file named `maze_world.world`
+* Save visualization images (`maze_step1_rooms_only.png`, `maze_step2_after_carving.png`, `maze_step3_solution.png`)
