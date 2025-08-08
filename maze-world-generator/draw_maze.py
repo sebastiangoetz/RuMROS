@@ -1,7 +1,7 @@
 from matplotlib import pyplot as plt
 
 
-def draw_maze(grid, path=None, start=None, end=None):
+def draw_maze(grid, file_name="maze.png", path=None, start=None, end=None):
     height = len(grid)
     width = len(grid[0])
     fig, ax = plt.subplots(figsize=(6, 6))
@@ -32,4 +32,4 @@ def draw_maze(grid, path=None, start=None, end=None):
     ax.set_aspect('equal')
     ax.invert_yaxis()
     plt.xticks([]), plt.yticks([])
-    plt.savefig("maze.png")
+    plt.savefig(file_name)
