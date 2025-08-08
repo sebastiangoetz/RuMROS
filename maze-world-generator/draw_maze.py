@@ -30,6 +30,5 @@ def draw_maze(grid, file_name="maze.png", path=None, start=None, end=None):
         ax.scatter(end[0] + 0.5, end[1] + 0.5, color='green', label='Ziel', s=100)
 
     ax.set_aspect('equal')
-    ax.invert_yaxis()
     plt.xticks([]), plt.yticks([])
     plt.savefig(file_name)
