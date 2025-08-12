@@ -87,20 +87,20 @@ def generate_launch_description():
     ld.add_action(gzclient_cmd)
     ld.add_action(start_gazebo_ros_bridge_cmd)
 
-    drone_configs = [
-       {'namespace': 'drone_1', 'x_pose': '-9.0', 'y_pose': '-9.0', 'z_pose': '0.3'},
+    robot_configs = [
+        {'namespace': 'turtlebot_1', 'x_pose': '-8.5', 'y_pose': '-8.5', 'z_pose': '0.2'},
     ]
 
-    # Add each drone
-    for config in drone_configs:
+    # Add each robot
+    for config in robot_configs:
         namespace = config['namespace']
         x_pose = config['x_pose']
         y_pose = config['y_pose']
         z_pose = config['z_pose']
 
-        spawn_quadcopter_x3_cmd = IncludeLaunchDescription(
+        spawn_turtlebot_cmd = IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
-                os.path.join(launch_file_dir, 'spawn_x3_quadcopter_launch.py')
+                os.path.join(launch_file_dir, 'spawn_turtlebot3.launch.py')
             ),
             launch_arguments={
                 'namespace': namespace,
@@ -111,6 +111,6 @@ def generate_launch_description():
             }.items()
         )
 
-        ld.add_action(spawn_quadcopter_x3_cmd)
+        ld.add_action(spawn_turtlebot_cmd)
 
     return ld
