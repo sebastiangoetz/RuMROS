@@ -10,29 +10,30 @@ class Cell:
         self.visited = False
 
 
-def generate_maze(width, height, n_rooms=3, max_attempts=20):
+def generate_maze(width, height, n_rooms=3, max_attempts=20, chest_probability=0.4):
     for attempt in range(max_attempts):
-        grid, start, end = _generate_single_maze(width, height, n_rooms)
+        grid, start, end, chests = _generate_single_maze(width, height, n_rooms, chest_probability)
         if is_fully_connected(grid, start):
             print(f"Maze valid after {attempt + 1} attempt(s).")
-            return grid, start, end
+            return grid, start, end, chests
         else:
             print(f"Maze not fully connected (attempt {attempt + 1}), retrying...")
 
     print("Failed to generate a fully connected maze after max attempts.")
-    return grid, start, end  # return last attempt anyway
+    return grid, start, end, chests  # return last attempt anyway
 
 
-def _generate_single_maze(width, height, n_rooms=3):
+def _generate_single_maze(width, height, n_rooms=3, chest_probability=0.4):
     grid = [[Cell(x, y) for x in range(width)] for y in range(height)]
     room_positions = []
     room_entrances = []
+    chests = []  # Liste mit Kistenpositionen (Maze-Koordinaten)
 
     directions = [
         (0, -1, 'top', 'bottom'),
         (0,  1, 'bottom', 'top'),
         (-1, 0, 'left', 'right'),
-        (1,  0, 'right', 'left')
+        (1, 0, 'right', 'left')
     ]
 
     def in_bounds(x, y):
@@ -50,6 +51,11 @@ def _generate_single_maze(width, height, n_rooms=3):
                     current.walls[wall_curr] = False
                     neighbor.walls[wall_next] = False
                     carve(nx, ny)
+
+    def add_chest_if_needed(cx, cy):
+        """Add a chest at (cx, cy) with a probability."""
+        if random.random() < chest_probability:
+            chests.append((cx, cy))
 
     # -----------------------
     # Start room (top-left)
@@ -134,6 +140,7 @@ def _generate_single_maze(width, height, n_rooms=3):
                     grid[cy][rx + 3].walls['left'] = False
                     room_entrances.append((cy, rx + 3))
 
+            add_chest_if_needed(cx, cy)
             rooms_placed += 1
 
     place_random_rooms(n_rooms)
@@ -146,8 +153,8 @@ def _generate_single_maze(width, height, n_rooms=3):
     draw_maze(grid, "maze_step2_after_carving.png")
 
     start = (1, 1)
-    end = (height - 2, width - 2)
-    return grid, start, end
+    end = (width - 2, height - 2)
+    return grid, start, end, chests
 
 
 def is_fully_connected(grid, start):

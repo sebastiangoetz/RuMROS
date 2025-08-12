@@ -2,11 +2,12 @@ import math
 
 SEGMENT_SIZES = [8, 4, 2, 1]  # Use largest possible segments
 
-def cell_maze_to_gazebo_world(grid, filename="maze_world.world", cell_size=1.0):
+def cell_maze_to_gazebo_world(grid, chests=None, filename="maze_world.world", cell_size=1.0):
     width = len(grid[0])
     height = len(grid)
 
     wall_segments = []
+    chest_includes = []
     index = 0
 
     offset_x = width * cell_size / 2.0
@@ -17,7 +18,6 @@ def cell_maze_to_gazebo_world(grid, filename="maze_world.world", cell_size=1.0):
         model = f"wall_{length}m"
         name = f"{model}_{index}"
 
-        # Position: wall center in world coordinates, centered at origin
         if orientation == "H":
             cx = (x + length / 2.0) * cell_size - offset_x
             cy = y * cell_size - offset_y
@@ -34,10 +34,20 @@ def cell_maze_to_gazebo_world(grid, filename="maze_world.world", cell_size=1.0):
       <pose>{pose}</pose>
     </include>"""
 
+    def generate_chest(cx_cell, cy_cell, chest_id):
+        """Generate a Gazebo <include> block for a chest at maze cell center."""
+        world_x = (cx_cell + 0.5) * cell_size - offset_x
+        world_y = (cy_cell + 0.5) * cell_size - offset_y
+        world_z = 0.2
+        return f"""    <include>
+      <name>chest_{chest_id}</name>
+      <uri>model://treasure_chest</uri>
+      <pose>{world_x:.2f} {world_y:.2f} {world_z:.2f} 0 0 0</pose>
+    </include>"""
+
     # --- Combine horizontal walls (top and bottom)
     for y in range(height + 1):
         for x in range(width):
-            # Check top wall at (x, y)
             if y < height and grid[y][x].walls['top']:
                 for size in SEGMENT_SIZES:
                     if x + size <= width and all(
@@ -48,7 +58,6 @@ def cell_maze_to_gazebo_world(grid, filename="maze_world.world", cell_size=1.0):
                         wall_segments.append(generate_wall(x, y, size, "H", index))
                         index += 1
                         break
-            # Check bottom wall at (x, y-1)
             if y > 0 and y <= height and grid[y - 1][x].walls['bottom']:
                 for size in SEGMENT_SIZES:
                     if x + size <= width and all(
@@ -63,7 +72,6 @@ def cell_maze_to_gazebo_world(grid, filename="maze_world.world", cell_size=1.0):
     # --- Combine vertical walls (left and right)
     for x in range(width + 1):
         for y in range(height):
-            # Check left wall at (x, y)
             if x < width and grid[y][x].walls['left']:
                 for size in SEGMENT_SIZES:
                     if y + size <= height and all(
@@ -74,7 +82,6 @@ def cell_maze_to_gazebo_world(grid, filename="maze_world.world", cell_size=1.0):
                         wall_segments.append(generate_wall(x, y, size, "V", index))
                         index += 1
                         break
-            # Check right wall at (x-1, y)
             if x > 0 and x <= width and grid[y][x - 1].walls['right']:
                 for size in SEGMENT_SIZES:
                     if y + size <= height and all(
@@ -85,6 +92,10 @@ def cell_maze_to_gazebo_world(grid, filename="maze_world.world", cell_size=1.0):
                         wall_segments.append(generate_wall(x, y, size, "V", index))
                         index += 1
                         break
+
+    if chests:
+        for i, (cx_cell, cy_cell) in enumerate(chests):
+            chest_includes.append(generate_chest(cx_cell, cy_cell, i))
 
     # Write world file
     with open(filename, "w") as f:
@@ -108,6 +119,11 @@ def cell_maze_to_gazebo_world(grid, filename="maze_world.world", cell_size=1.0):
         for wall in wall_segments:
             f.write(wall + "\n")
 
+        if chest_includes:
+            f.write("    <!-- Chests -->\n")
+            for chest in chest_includes:
+                f.write(chest + "\n")
+
         f.write("  </world>\n</sdf>\n")
 
-    print(f"Exported maze with {index} wall segments to '{filename}'")
+    print(f"Exported maze with {index} wall segments and {len(chest_includes)} chests to '{filename}'")
