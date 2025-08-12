@@ -19,6 +19,7 @@ This project generates a complete **maze in SDF format** (`.world`), compatible 
 
 * Finds the path from start to end using BFS
 * Draws the maze with solution path overlayed in `maze_step3_solution.png`
+* Draws treasure chests as small yellow squares inside the maze
 
 ### ✔️ Maze Export to Gazebo World
 
@@ -29,23 +30,23 @@ This project generates a complete **maze in SDF format** (`.world`), compatible 
 
 ---
 
-| Step                            | Description                                              | Preview                                                 |
-| ------------------------------- | -------------------------------------------------------- | ------------------------------------------------------- |
-| **1. Rooms Only Maze**          | Maze after placing start, goal, and random rooms         | ![Rooms Only Maze](./images/maze_step1_rooms_only.png)  |
-| **2. After Maze Carving**       | Maze after carving paths between rooms                   | ![After Carving](./images/maze_step2_after_carving.png) |
-| **3. Final Maze with Solution** | Maze visualization with shortest path from start to goal | ![Maze with Solution](./images/maze_step3_solution.png) |
-| **4. Gazebo World Preview**     | Visualization of the exported maze in Gazebo             | ![Gazebo World](./images/maze_step4_world.png)          |
+| Step                            | Description                                                                         | Preview                                                 |
+| ------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| **1. Rooms Only Maze**          | Maze after placing start, goal, and random rooms with chests                        | ![Rooms Only Maze](./images/maze_step1_rooms_only.png)  |
+| **2. After Maze Carving**       | Maze after carving paths between rooms                                              | ![After Carving](./images/maze_step2_after_carving.png) |
+| **3. Final Maze with Solution** | Maze visualization with shortest path from start to goal and treasure chests marked | ![Maze with Solution](./images/maze_step3_solution.png) |
+| **4. Gazebo World Preview**     | Visualization of the exported maze in Gazebo                                        | ![Gazebo World](./images/maze_step4_world.png)          |
 
 ---
 
 ## 📌 Planned Extensions
 
-| Feature               | Status |
-| --------------------- | ------ |
-| Start/Goal Markings   | ✅ Done |
-| Interior Rooms        | ✅ Done |
-| Objects (e.g., boxes) | ❌ Open |
-| Ramps / Second Floor  | ❌ Open |
+| Feature               | Status                         |
+| --------------------- | ------------------------------ |
+| Start/Goal Markings   | ✅ Done                         |
+| Interior Rooms        | ✅ Done                         |
+| Treasure Chests       | ✅ Done                         |
+| Ramps / Second Floor  | ❌ Open                         |
 
 ---
 
@@ -81,6 +82,6 @@ This will:
 
 * Generate the maze with rooms
 * Carve the maze paths
-* Find and draw the shortest path solution
+* Find and draw the shortest path solution with treasure chests marked
 * Export the maze as a Gazebo `.world` file named `maze_world.world`
 * Save visualization images (`maze_step1_rooms_only.png`, `maze_step2_after_carving.png`, `maze_step3_solution.png`)
