@@ -144,13 +144,13 @@ def _generate_single_maze(width, height, n_rooms=3, chest_probability=0.4):
             rooms_placed += 1
 
     place_random_rooms(n_rooms)
-    draw_maze(grid, "maze_step1_rooms_only.png")
+    draw_maze(grid, "maze_step1_rooms_only.png", chests=chests)
 
     # -----------------------
     # Maze carving
     # -----------------------
     carve(3, 3)
-    draw_maze(grid, "maze_step2_after_carving.png")
+    draw_maze(grid, "maze_step2_after_carving.png", chests=chests)
 
     start = (1, 1)
     end = (width - 2, height - 2)
