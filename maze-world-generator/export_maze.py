@@ -97,6 +97,11 @@ def cell_maze_to_gazebo_world(grid, filename="maze_world.world", cell_size=1.0):
     </include>
     <include>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Sun</uri>
+    </include>
+    <include>
+      <name>target_marker</name>
+      <uri>model://marker_green</uri>
+      <pose>8.5 8.5 0.01 0 0 0</pose>
     </include>\n""")
 
         f.write("    <!-- Maze walls -->\n")
