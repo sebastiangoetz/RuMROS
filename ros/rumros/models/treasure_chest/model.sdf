@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<sdf version="1.10">
+  <model name="treasure_chest">
+    <static>false</static>
+    <link name="treasure_chest_link">
+      <visual name="treasure_chest_visual">
+        <geometry>
+          <mesh>
+            <uri>model://treasure_chest/meshes/treasure_chest.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+
+      <collision name="treasure_chest_collision">
+        <geometry>
+          <mesh>
+            <uri>model://treasure_chest/meshes/treasure_chest.dae</uri>
+          </mesh>
+        </geometry>
+      </collision>
+    </link>
+  </model>
+</sdf>

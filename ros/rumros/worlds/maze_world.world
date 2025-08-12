@@ -12,6 +12,11 @@
       <uri>model://marker_green</uri>
       <pose>8.5 8.5 0.01 0 0 0</pose>
     </include>
+    <include>
+      <name>chest</name>
+      <uri>model://treasure_chest</uri>
+      <pose>8.5 8.5 0.2 0 0 0</pose>
+    </include>
     <!-- Maze walls -->
     <include>
       <name>wall_8m_0</name>
