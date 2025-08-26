@@ -15,7 +15,12 @@
     <include>
       <name>ramp</name>
       <uri>model://ramp</uri>
-      <pose>-8.5 -8.5 0 0 0 0</pose>
+      <pose>-8.5 -8.5 0 0 0 3.14</pose>
+    </include>
+    <include>
+      <name>ground_hole</name>
+      <uri>model://ground_hole</uri>
+      <pose>0 0 2 0 0 0</pose>
     </include>
     <!-- Maze walls -->
     <include>
