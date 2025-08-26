@@ -45,53 +45,69 @@ def cell_maze_to_gazebo_world(grid, chests=None, filename="maze_world.world", ce
       <pose>{world_x:.2f} {world_y:.2f} {world_z:.2f} 0 0 0</pose>
     </include>"""
 
-    # --- Combine horizontal walls (top and bottom)
-    for y in range(height + 1):
-        for x in range(width):
-            if y < height and grid[y][x].walls['top']:
+    # Process horizontal walls (top walls only)
+    for y in range(height):
+        x = 0
+        while x < width:
+            if grid[y][x].walls['top']:
                 for size in SEGMENT_SIZES:
-                    if x + size <= width and all(
-                        grid[y][x + i].walls['top'] for i in range(size)
-                    ):
-                        for i in range(size):
-                            grid[y][x + i].walls['top'] = False
+                    if x + size <= width and all(grid[y][x + i].walls['top'] for i in range(size)):
                         wall_segments.append(generate_wall(x, y, size, "H", index))
                         index += 1
+                        x += size
                         break
-            if y > 0 and y <= height and grid[y - 1][x].walls['bottom']:
-                for size in SEGMENT_SIZES:
-                    if x + size <= width and all(
-                        grid[y - 1][x + i].walls['bottom'] for i in range(size)
-                    ):
-                        for i in range(size):
-                            grid[y - 1][x + i].walls['bottom'] = False
-                        wall_segments.append(generate_wall(x, y, size, "H", index))
-                        index += 1
-                        break
+                else:
+                    x += 1
+            else:
+                x += 1
 
-    # --- Combine vertical walls (left and right)
-    for x in range(width + 1):
-        for y in range(height):
-            if x < width and grid[y][x].walls['left']:
+    # Process vertical walls (left walls only)
+    for x in range(width):
+        y = 0
+        while y < height:
+            if grid[y][x].walls['left']:
                 for size in SEGMENT_SIZES:
-                    if y + size <= height and all(
-                        grid[y + i][x].walls['left'] for i in range(size)
-                    ):
-                        for i in range(size):
-                            grid[y + i][x].walls['left'] = False
+                    if y + size <= height and all(grid[y + i][x].walls['left'] for i in range(size)):
                         wall_segments.append(generate_wall(x, y, size, "V", index))
                         index += 1
+                        y += size
                         break
-            if x > 0 and x <= width and grid[y][x - 1].walls['right']:
-                for size in SEGMENT_SIZES:
-                    if y + size <= height and all(
-                        grid[y + i][x - 1].walls['right'] for i in range(size)
-                    ):
-                        for i in range(size):
-                            grid[y + i][x - 1].walls['right'] = False
-                        wall_segments.append(generate_wall(x, y, size, "V", index))
-                        index += 1
-                        break
+                else:
+                    y += 1
+            else:
+                y += 1
+
+    # Add bottom wall of last row
+    y = height
+    x = 0
+    while x < width:
+        if grid[height-1][x].walls['bottom']:
+            for size in SEGMENT_SIZES:
+                if x + size <= width and all(grid[height-1][x + i].walls['bottom'] for i in range(size)):
+                    wall_segments.append(generate_wall(x, y, size, "H", index))
+                    index += 1
+                    x += size
+                    break
+            else:
+                x += 1
+        else:
+            x += 1
+
+    # Add right wall of last column
+    x = width
+    y = 0
+    while y < height:
+        if grid[y][width-1].walls['right']:
+            for size in SEGMENT_SIZES:
+                if y + size <= height and all(grid[y + i][width-1].walls['right'] for i in range(size)):
+                    wall_segments.append(generate_wall(x, y, size, "V", index))
+                    index += 1
+                    y += size
+                    break
+            else:
+                y += 1
+        else:
+            y += 1
 
     if chests:
         for i, (cx_cell, cy_cell) in enumerate(chests):
