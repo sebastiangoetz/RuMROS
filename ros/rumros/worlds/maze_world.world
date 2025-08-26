@@ -1,1083 +1,3203 @@
 <?xml version="1.0"?>
 <sdf version="1.8">
-  <world name="cell_maze_world">
+  <world name="multi_floor_maze">
     <include>
       <uri>model://ground</uri>
     </include>
     <include>
       <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Sun</uri>
     </include>
+    <!-- Etage 0 -->
     <include>
-      <name>target_marker</name>
-      <uri>model://marker_green</uri>
-      <pose>8.5 8.5 0.01 0 0 0</pose>
+      <name>wall_8m_0_0</name>
+      <uri>model://wall_8m</uri>
+      <pose>-6.00 -10.00 0.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>ramp</name>
+      <name>wall_8m_0_1</name>
+      <uri>model://wall_8m</uri>
+      <pose>2.00 -10.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_0_2</name>
+      <uri>model://wall_4m</uri>
+      <pose>8.00 -10.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_3</name>
+      <uri>model://wall_2m</uri>
+      <pose>-6.00 -9.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_4</name>
+      <uri>model://wall_2m</uri>
+      <pose>-3.00 -9.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_5</name>
+      <uri>model://wall_1m</uri>
+      <pose>-1.50 -9.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_6</name>
+      <uri>model://wall_1m</uri>
+      <pose>0.50 -9.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_7</name>
+      <uri>model://wall_2m</uri>
+      <pose>3.00 -9.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_8</name>
+      <uri>model://wall_2m</uri>
+      <pose>7.00 -9.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_9</name>
+      <uri>model://wall_1m</uri>
+      <pose>8.50 -9.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_10</name>
+      <uri>model://wall_1m</uri>
+      <pose>-6.50 -8.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_11</name>
+      <uri>model://wall_1m</uri>
+      <pose>-4.50 -8.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_12</name>
+      <uri>model://wall_2m</uri>
+      <pose>-2.00 -8.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_13</name>
+      <uri>model://wall_1m</uri>
+      <pose>-0.50 -8.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_14</name>
+      <uri>model://wall_2m</uri>
+      <pose>4.00 -8.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_15</name>
+      <uri>model://wall_1m</uri>
+      <pose>5.50 -8.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_16</name>
+      <uri>model://wall_1m</uri>
+      <pose>-9.50 -7.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_17</name>
+      <uri>model://wall_1m</uri>
+      <pose>-7.50 -7.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_18</name>
+      <uri>model://wall_1m</uri>
+      <pose>-5.50 -7.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_0_19</name>
+      <uri>model://wall_4m</uri>
+      <pose>-2.00 -7.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_20</name>
+      <uri>model://wall_1m</uri>
+      <pose>0.50 -7.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_21</name>
+      <uri>model://wall_1m</uri>
+      <pose>4.50 -7.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_22</name>
+      <uri>model://wall_1m</uri>
+      <pose>-8.50 -6.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_23</name>
+      <uri>model://wall_2m</uri>
+      <pose>-6.00 -6.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_24</name>
+      <uri>model://wall_2m</uri>
+      <pose>-3.00 -6.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_25</name>
+      <uri>model://wall_1m</uri>
+      <pose>0.50 -6.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_26</name>
+      <uri>model://wall_2m</uri>
+      <pose>3.00 -6.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_27</name>
+      <uri>model://wall_1m</uri>
+      <pose>6.50 -6.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_28</name>
+      <uri>model://wall_2m</uri>
+      <pose>9.00 -6.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_29</name>
+      <uri>model://wall_2m</uri>
+      <pose>-1.00 -5.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_30</name>
+      <uri>model://wall_1m</uri>
+      <pose>1.50 -5.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_0_31</name>
+      <uri>model://wall_4m</uri>
+      <pose>5.00 -5.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_32</name>
+      <uri>model://wall_1m</uri>
+      <pose>0.50 -4.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_33</name>
+      <uri>model://wall_1m</uri>
+      <pose>2.50 -4.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_34</name>
+      <uri>model://wall_1m</uri>
+      <pose>-8.50 -3.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_0_35</name>
+      <uri>model://wall_4m</uri>
+      <pose>-5.00 -3.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_36</name>
+      <uri>model://wall_1m</uri>
+      <pose>-0.50 -3.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_37</name>
+      <uri>model://wall_1m</uri>
+      <pose>1.50 -3.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_38</name>
+      <uri>model://wall_2m</uri>
+      <pose>-4.00 -2.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_39</name>
+      <uri>model://wall_1m</uri>
+      <pose>0.50 -2.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_40</name>
+      <uri>model://wall_2m</uri>
+      <pose>3.00 -2.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_41</name>
+      <uri>model://wall_1m</uri>
+      <pose>5.50 -2.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_42</name>
+      <uri>model://wall_2m</uri>
+      <pose>-9.00 -1.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_43</name>
+      <uri>model://wall_1m</uri>
+      <pose>-7.50 -1.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_44</name>
+      <uri>model://wall_1m</uri>
+      <pose>-5.50 -1.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_45</name>
+      <uri>model://wall_2m</uri>
+      <pose>-3.00 -1.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_46</name>
+      <uri>model://wall_1m</uri>
+      <pose>3.50 -1.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_47</name>
+      <uri>model://wall_2m</uri>
+      <pose>8.00 -1.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_48</name>
+      <uri>model://wall_2m</uri>
+      <pose>-7.00 0.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_49</name>
+      <uri>model://wall_2m</uri>
+      <pose>-4.00 0.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_50</name>
+      <uri>model://wall_2m</uri>
+      <pose>-1.00 0.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_51</name>
+      <uri>model://wall_2m</uri>
+      <pose>2.00 0.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_52</name>
+      <uri>model://wall_1m</uri>
+      <pose>5.50 0.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_53</name>
+      <uri>model://wall_1m</uri>
+      <pose>8.50 0.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_54</name>
+      <uri>model://wall_1m</uri>
+      <pose>-8.50 1.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_55</name>
+      <uri>model://wall_1m</uri>
+      <pose>-5.50 1.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_56</name>
+      <uri>model://wall_2m</uri>
+      <pose>-3.00 1.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_57</name>
+      <uri>model://wall_1m</uri>
+      <pose>0.50 1.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_58</name>
+      <uri>model://wall_2m</uri>
+      <pose>5.00 1.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_59</name>
+      <uri>model://wall_1m</uri>
+      <pose>6.50 1.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_60</name>
+      <uri>model://wall_2m</uri>
+      <pose>9.00 1.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_61</name>
+      <uri>model://wall_2m</uri>
+      <pose>-7.00 2.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_62</name>
+      <uri>model://wall_1m</uri>
+      <pose>-5.50 2.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_63</name>
+      <uri>model://wall_2m</uri>
+      <pose>-1.00 2.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_64</name>
+      <uri>model://wall_2m</uri>
+      <pose>2.00 2.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_65</name>
+      <uri>model://wall_2m</uri>
+      <pose>-4.00 3.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_66</name>
+      <uri>model://wall_1m</uri>
+      <pose>-2.50 3.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_67</name>
+      <uri>model://wall_2m</uri>
+      <pose>0.00 3.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_68</name>
+      <uri>model://wall_2m</uri>
+      <pose>3.00 3.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_69</name>
+      <uri>model://wall_1m</uri>
+      <pose>4.50 3.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_0_70</name>
+      <uri>model://wall_4m</uri>
+      <pose>-7.00 4.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_71</name>
+      <uri>model://wall_1m</uri>
+      <pose>-4.50 4.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_72</name>
+      <uri>model://wall_1m</uri>
+      <pose>-1.50 4.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_73</name>
+      <uri>model://wall_1m</uri>
+      <pose>0.50 4.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_74</name>
+      <uri>model://wall_2m</uri>
+      <pose>5.00 4.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_75</name>
+      <uri>model://wall_1m</uri>
+      <pose>6.50 4.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_76</name>
+      <uri>model://wall_1m</uri>
+      <pose>8.50 4.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_77</name>
+      <uri>model://wall_2m</uri>
+      <pose>-9.00 5.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_0_78</name>
+      <uri>model://wall_4m</uri>
+      <pose>-4.00 5.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_79</name>
+      <uri>model://wall_1m</uri>
+      <pose>3.50 5.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_80</name>
+      <uri>model://wall_1m</uri>
+      <pose>6.50 5.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_81</name>
+      <uri>model://wall_1m</uri>
+      <pose>-8.50 6.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_82</name>
+      <uri>model://wall_1m</uri>
+      <pose>-6.50 6.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_83</name>
+      <uri>model://wall_1m</uri>
+      <pose>-4.50 6.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_84</name>
+      <uri>model://wall_2m</uri>
+      <pose>-2.00 6.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_85</name>
+      <uri>model://wall_2m</uri>
+      <pose>2.00 6.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_86</name>
+      <uri>model://wall_2m</uri>
+      <pose>8.00 6.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_87</name>
+      <uri>model://wall_2m</uri>
+      <pose>-7.00 7.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_88</name>
+      <uri>model://wall_1m</uri>
+      <pose>-5.50 7.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_0_89</name>
+      <uri>model://wall_4m</uri>
+      <pose>-2.00 7.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_90</name>
+      <uri>model://wall_1m</uri>
+      <pose>3.50 7.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_91</name>
+      <uri>model://wall_2m</uri>
+      <pose>7.00 7.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_92</name>
+      <uri>model://wall_1m</uri>
+      <pose>9.50 7.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_93</name>
+      <uri>model://wall_1m</uri>
+      <pose>-8.50 8.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_94</name>
+      <uri>model://wall_1m</uri>
+      <pose>-6.50 8.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_95</name>
+      <uri>model://wall_1m</uri>
+      <pose>-3.50 8.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_0_96</name>
+      <uri>model://wall_4m</uri>
+      <pose>1.00 8.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_97</name>
+      <uri>model://wall_1m</uri>
+      <pose>4.50 8.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_98</name>
+      <uri>model://wall_2m</uri>
+      <pose>-5.00 9.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_99</name>
+      <uri>model://wall_1m</uri>
+      <pose>-2.50 9.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_100</name>
+      <uri>model://wall_2m</uri>
+      <pose>0.00 9.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_101</name>
+      <uri>model://wall_1m</uri>
+      <pose>2.50 9.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_102</name>
+      <uri>model://wall_1m</uri>
+      <pose>5.50 9.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_8m_0_103</name>
+      <uri>model://wall_8m</uri>
+      <pose>-10.00 -6.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_8m_0_104</name>
+      <uri>model://wall_8m</uri>
+      <pose>-10.00 2.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_0_105</name>
+      <uri>model://wall_4m</uri>
+      <pose>-10.00 8.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_106</name>
+      <uri>model://wall_1m</uri>
+      <pose>-9.00 -5.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_107</name>
+      <uri>model://wall_2m</uri>
+      <pose>-9.00 -3.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_108</name>
+      <uri>model://wall_1m</uri>
+      <pose>-9.00 0.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_109</name>
+      <uri>model://wall_2m</uri>
+      <pose>-9.00 3.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_110</name>
+      <uri>model://wall_1m</uri>
+      <pose>-9.00 6.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_111</name>
+      <uri>model://wall_1m</uri>
+      <pose>-9.00 9.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_112</name>
+      <uri>model://wall_2m</uri>
+      <pose>-8.00 -1.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_113</name>
+      <uri>model://wall_2m</uri>
+      <pose>-8.00 2.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_114</name>
+      <uri>model://wall_1m</uri>
+      <pose>-8.00 5.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_115</name>
+      <uri>model://wall_2m</uri>
+      <pose>-8.00 8.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_116</name>
+      <uri>model://wall_2m</uri>
+      <pose>-7.00 -9.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_117</name>
+      <uri>model://wall_1m</uri>
+      <pose>-7.00 -7.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_118</name>
+      <uri>model://wall_1m</uri>
+      <pose>-7.00 -2.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_119</name>
+      <uri>model://wall_1m</uri>
+      <pose>-7.00 0.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_0_120</name>
+      <uri>model://wall_4m</uri>
+      <pose>-7.00 5.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_121</name>
+      <uri>model://wall_2m</uri>
+      <pose>-7.00 9.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_122</name>
+      <uri>model://wall_2m</uri>
+      <pose>-6.00 -7.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_123</name>
+      <uri>model://wall_1m</uri>
+      <pose>-6.00 -5.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_124</name>
+      <uri>model://wall_2m</uri>
+      <pose>-6.00 -3.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_125</name>
+      <uri>model://wall_2m</uri>
+      <pose>-6.00 2.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_126</name>
+      <uri>model://wall_1m</uri>
+      <pose>-5.00 -8.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_127</name>
+      <uri>model://wall_2m</uri>
+      <pose>-5.00 -1.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_128</name>
+      <uri>model://wall_1m</uri>
+      <pose>-5.00 0.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_129</name>
+      <uri>model://wall_2m</uri>
+      <pose>-5.00 7.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_130</name>
+      <uri>model://wall_1m</uri>
+      <pose>-5.00 8.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_131</name>
+      <uri>model://wall_1m</uri>
+      <pose>-4.00 -7.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_132</name>
+      <uri>model://wall_2m</uri>
+      <pose>-4.00 3.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_133</name>
+      <uri>model://wall_1m</uri>
+      <pose>-4.00 5.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_134</name>
+      <uri>model://wall_1m</uri>
+      <pose>-4.00 8.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_0_135</name>
+      <uri>model://wall_4m</uri>
+      <pose>-3.00 -4.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_136</name>
+      <uri>model://wall_2m</uri>
+      <pose>-3.00 1.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_137</name>
+      <uri>model://wall_1m</uri>
+      <pose>-3.00 4.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_138</name>
+      <uri>model://wall_1m</uri>
+      <pose>-3.00 6.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_139</name>
+      <uri>model://wall_1m</uri>
+      <pose>-3.00 9.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_0_140</name>
+      <uri>model://wall_4m</uri>
+      <pose>-2.00 -3.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_141</name>
+      <uri>model://wall_1m</uri>
+      <pose>-2.00 -0.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_142</name>
+      <uri>model://wall_1m</uri>
+      <pose>-2.00 2.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_143</name>
+      <uri>model://wall_2m</uri>
+      <pose>-2.00 8.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_144</name>
+      <uri>model://wall_1m</uri>
+      <pose>-1.00 -9.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_0_145</name>
+      <uri>model://wall_4m</uri>
+      <pose>-1.00 -5.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_146</name>
+      <uri>model://wall_2m</uri>
+      <pose>-1.00 -2.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_147</name>
+      <uri>model://wall_2m</uri>
+      <pose>-1.00 1.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_148</name>
+      <uri>model://wall_2m</uri>
+      <pose>-1.00 4.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_149</name>
+      <uri>model://wall_1m</uri>
+      <pose>-1.00 5.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_150</name>
+      <uri>model://wall_1m</uri>
+      <pose>0.00 -8.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_151</name>
+      <uri>model://wall_1m</uri>
+      <pose>0.00 -1.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_152</name>
+      <uri>model://wall_1m</uri>
+      <pose>0.00 1.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_153</name>
+      <uri>model://wall_2m</uri>
+      <pose>0.00 6.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_154</name>
+      <uri>model://wall_2m</uri>
+      <pose>1.00 -8.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_155</name>
+      <uri>model://wall_1m</uri>
+      <pose>1.00 -5.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_0_156</name>
+      <uri>model://wall_4m</uri>
+      <pose>1.00 -2.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_157</name>
+      <uri>model://wall_1m</uri>
+      <pose>1.00 0.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_0_158</name>
+      <uri>model://wall_4m</uri>
+      <pose>1.00 4.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_159</name>
+      <uri>model://wall_1m</uri>
+      <pose>1.00 7.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_160</name>
+      <uri>model://wall_1m</uri>
+      <pose>1.00 9.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_161</name>
+      <uri>model://wall_2m</uri>
+      <pose>2.00 -8.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_162</name>
+      <uri>model://wall_1m</uri>
+      <pose>2.00 -6.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_163</name>
+      <uri>model://wall_1m</uri>
+      <pose>2.00 -4.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_164</name>
+      <uri>model://wall_1m</uri>
+      <pose>2.00 -0.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_165</name>
+      <uri>model://wall_1m</uri>
+      <pose>2.00 1.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_166</name>
+      <uri>model://wall_2m</uri>
+      <pose>2.00 4.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_167</name>
+      <uri>model://wall_2m</uri>
+      <pose>2.00 7.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_168</name>
+      <uri>model://wall_1m</uri>
+      <pose>3.00 -7.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_169</name>
+      <uri>model://wall_2m</uri>
+      <pose>3.00 -5.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_170</name>
+      <uri>model://wall_2m</uri>
+      <pose>3.00 -2.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_171</name>
+      <uri>model://wall_1m</uri>
+      <pose>3.00 0.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_172</name>
+      <uri>model://wall_2m</uri>
+      <pose>3.00 4.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_173</name>
+      <uri>model://wall_1m</uri>
+      <pose>3.00 8.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_174</name>
+      <uri>model://wall_1m</uri>
+      <pose>4.00 -6.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_0_175</name>
+      <uri>model://wall_4m</uri>
+      <pose>4.00 1.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_176</name>
+      <uri>model://wall_2m</uri>
+      <pose>4.00 6.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_177</name>
+      <uri>model://wall_1m</uri>
+      <pose>4.00 7.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_178</name>
+      <uri>model://wall_1m</uri>
+      <pose>4.00 9.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_179</name>
+      <uri>model://wall_1m</uri>
+      <pose>5.00 -9.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_180</name>
+      <uri>model://wall_1m</uri>
+      <pose>5.00 -5.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_181</name>
+      <uri>model://wall_1m</uri>
+      <pose>5.00 -0.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_182</name>
+      <uri>model://wall_1m</uri>
+      <pose>5.00 2.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_0_183</name>
+      <uri>model://wall_4m</uri>
+      <pose>5.00 7.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_184</name>
+      <uri>model://wall_1m</uri>
+      <pose>6.00 -8.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_185</name>
+      <uri>model://wall_1m</uri>
+      <pose>6.00 -6.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_186</name>
+      <uri>model://wall_1m</uri>
+      <pose>6.00 -4.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_187</name>
+      <uri>model://wall_2m</uri>
+      <pose>6.00 -2.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_188</name>
+      <uri>model://wall_1m</uri>
+      <pose>6.00 -0.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_189</name>
+      <uri>model://wall_1m</uri>
+      <pose>6.00 1.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_190</name>
+      <uri>model://wall_1m</uri>
+      <pose>6.00 3.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_191</name>
+      <uri>model://wall_2m</uri>
+      <pose>6.00 6.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_192</name>
+      <uri>model://wall_1m</uri>
+      <pose>6.00 8.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_0_193</name>
+      <uri>model://wall_4m</uri>
+      <pose>7.00 -3.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_194</name>
+      <uri>model://wall_1m</uri>
+      <pose>7.00 0.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_195</name>
+      <uri>model://wall_2m</uri>
+      <pose>7.00 8.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_196</name>
+      <uri>model://wall_1m</uri>
+      <pose>7.00 9.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_0_197</name>
+      <uri>model://wall_4m</uri>
+      <pose>8.00 -4.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_0_198</name>
+      <uri>model://wall_2m</uri>
+      <pose>8.00 5.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_199</name>
+      <uri>model://wall_1m</uri>
+      <pose>9.00 -8.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_200</name>
+      <uri>model://wall_1m</uri>
+      <pose>9.00 -6.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_0_201</name>
+      <uri>model://wall_4m</uri>
+      <pose>9.00 -3.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_202</name>
+      <uri>model://wall_1m</uri>
+      <pose>9.00 -0.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_203</name>
+      <uri>model://wall_1m</uri>
+      <pose>9.00 1.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_204</name>
+      <uri>model://wall_1m</uri>
+      <pose>9.00 3.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_0_205</name>
+      <uri>model://wall_1m</uri>
+      <pose>9.00 5.50 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_8m_0_206</name>
+      <uri>model://wall_8m</uri>
+      <pose>-6.00 10.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_8m_0_207</name>
+      <uri>model://wall_8m</uri>
+      <pose>2.00 10.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_0_208</name>
+      <uri>model://wall_4m</uri>
+      <pose>8.00 10.00 0.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_8m_0_209</name>
+      <uri>model://wall_8m</uri>
+      <pose>10.00 -6.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_8m_0_210</name>
+      <uri>model://wall_8m</uri>
+      <pose>10.00 2.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_0_211</name>
+      <uri>model://wall_4m</uri>
+      <pose>10.00 8.00 0.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>chest_0_0</name>
+      <uri>model://treasure_chest</uri>
+      <pose>2.50 2.50 0.2 0 0 0</pose>
+    </include>
+    <!-- Rampe von Etage 0 zu 1 -->
+    <include>
+      <name>ramp_0</name>
       <uri>model://ramp</uri>
-      <pose>-8.5 -8.5 0 0 0 3.14</pose>
+      <pose>8.50 8.50 0.00 0 0 0</pose>
     </include>
+    <!-- Etage 1 -->
     <include>
-      <name>ground_hole</name>
-      <uri>model://ground_hole</uri>
-      <pose>0 0 2 0 0 0</pose>
-    </include>
-    <!-- Maze walls -->
-    <include>
-      <name>wall_8m_0</name>
+      <name>wall_8m_1_0</name>
       <uri>model://wall_8m</uri>
-      <pose>-6.00 -10.00 0 0 0 0.0000</pose>
+      <pose>-6.00 -10.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_8m_1</name>
+      <name>wall_8m_1_1</name>
       <uri>model://wall_8m</uri>
-      <pose>2.00 -10.00 0 0 0 0.0000</pose>
+      <pose>2.00 -10.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_4m_2</name>
+      <name>wall_4m_1_2</name>
       <uri>model://wall_4m</uri>
-      <pose>8.00 -10.00 0 0 0 0.0000</pose>
+      <pose>8.00 -10.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_2m_3</name>
-      <uri>model://wall_2m</uri>
-      <pose>-6.00 -9.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_1m_4</name>
+      <name>wall_1m_1_3</name>
       <uri>model://wall_1m</uri>
-      <pose>1.50 -9.00 0 0 0 0.0000</pose>
+      <pose>-6.50 -9.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_4m_5</name>
+      <name>wall_2m_1_4</name>
+      <uri>model://wall_2m</uri>
+      <pose>-4.00 -9.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_1_5</name>
       <uri>model://wall_4m</uri>
-      <pose>6.00 -9.00 0 0 0 0.0000</pose>
+      <pose>1.00 -9.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_6</name>
-      <uri>model://wall_1m</uri>
-      <pose>8.50 -9.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_1m_7</name>
-      <uri>model://wall_1m</uri>
-      <pose>-3.50 -8.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_1m_8</name>
-      <uri>model://wall_1m</uri>
-      <pose>0.50 -8.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_1m_9</name>
-      <uri>model://wall_1m</uri>
-      <pose>4.50 -8.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_2m_10</name>
+      <name>wall_2m_1_6</name>
       <uri>model://wall_2m</uri>
-      <pose>8.00 -8.00 0 0 0 0.0000</pose>
+      <pose>5.00 -9.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_11</name>
+      <name>wall_1m_1_7</name>
       <uri>model://wall_1m</uri>
-      <pose>-9.50 -7.00 0 0 0 0.0000</pose>
+      <pose>6.50 -9.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_12</name>
+      <name>wall_1m_1_8</name>
       <uri>model://wall_1m</uri>
-      <pose>-7.50 -7.00 0 0 0 0.0000</pose>
+      <pose>9.50 -9.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_2m_13</name>
+      <name>wall_2m_1_9</name>
       <uri>model://wall_2m</uri>
-      <pose>-5.00 -7.00 0 0 0 0.0000</pose>
+      <pose>-6.00 -8.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_2m_14</name>
-      <uri>model://wall_2m</uri>
-      <pose>-1.00 -7.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_2m_15</name>
-      <uri>model://wall_2m</uri>
-      <pose>2.00 -7.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_1m_16</name>
+      <name>wall_1m_1_10</name>
       <uri>model://wall_1m</uri>
-      <pose>6.50 -7.00 0 0 0 0.0000</pose>
+      <pose>-4.50 -8.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_2m_17</name>
-      <uri>model://wall_2m</uri>
-      <pose>9.00 -7.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_2m_18</name>
-      <uri>model://wall_2m</uri>
-      <pose>-4.00 -6.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_1m_19</name>
-      <uri>model://wall_1m</uri>
-      <pose>-2.50 -6.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_4m_20</name>
+      <name>wall_4m_1_11</name>
       <uri>model://wall_4m</uri>
-      <pose>2.00 -6.00 0 0 0 0.0000</pose>
+      <pose>0.00 -8.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_21</name>
-      <uri>model://wall_1m</uri>
-      <pose>4.50 -6.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_2m_22</name>
+      <name>wall_2m_1_12</name>
       <uri>model://wall_2m</uri>
-      <pose>8.00 -6.00 0 0 0 0.0000</pose>
+      <pose>4.00 -8.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_23</name>
+      <name>wall_1m_1_13</name>
       <uri>model://wall_1m</uri>
-      <pose>-8.50 -5.00 0 0 0 0.0000</pose>
+      <pose>5.50 -8.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_2m_24</name>
+      <name>wall_1m_1_14</name>
+      <uri>model://wall_1m</uri>
+      <pose>8.50 -8.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_15</name>
+      <uri>model://wall_1m</uri>
+      <pose>-9.50 -7.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_16</name>
+      <uri>model://wall_1m</uri>
+      <pose>-7.50 -7.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_17</name>
       <uri>model://wall_2m</uri>
-      <pose>-6.00 -5.00 0 0 0 0.0000</pose>
+      <pose>-2.00 -7.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_25</name>
-      <uri>model://wall_1m</uri>
-      <pose>-0.50 -5.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_1m_26</name>
-      <uri>model://wall_1m</uri>
-      <pose>9.50 -5.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_1m_27</name>
-      <uri>model://wall_1m</uri>
-      <pose>-4.50 -4.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_1m_28</name>
-      <uri>model://wall_1m</uri>
-      <pose>-1.50 -4.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_2m_29</name>
-      <uri>model://wall_2m</uri>
-      <pose>7.00 -4.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_1m_30</name>
-      <uri>model://wall_1m</uri>
-      <pose>-3.50 -3.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_1m_31</name>
-      <uri>model://wall_1m</uri>
-      <pose>-0.50 -3.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_1m_32</name>
-      <uri>model://wall_1m</uri>
-      <pose>1.50 -3.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_2m_33</name>
-      <uri>model://wall_2m</uri>
-      <pose>4.00 -3.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_1m_34</name>
-      <uri>model://wall_1m</uri>
-      <pose>5.50 -3.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_2m_35</name>
-      <uri>model://wall_2m</uri>
-      <pose>8.00 -3.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_1m_36</name>
-      <uri>model://wall_1m</uri>
-      <pose>-8.50 -2.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_2m_37</name>
-      <uri>model://wall_2m</uri>
-      <pose>-6.00 -2.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_4m_38</name>
+      <name>wall_4m_1_18</name>
       <uri>model://wall_4m</uri>
-      <pose>0.00 -2.00 0 0 0 0.0000</pose>
+      <pose>2.00 -7.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_39</name>
-      <uri>model://wall_1m</uri>
-      <pose>2.50 -2.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_2m_40</name>
+      <name>wall_2m_1_19</name>
       <uri>model://wall_2m</uri>
-      <pose>6.00 -2.00 0 0 0 0.0000</pose>
+      <pose>7.00 -7.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_2m_41</name>
-      <uri>model://wall_2m</uri>
-      <pose>9.00 -2.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_2m_42</name>
-      <uri>model://wall_2m</uri>
-      <pose>-8.00 -1.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_4m_43</name>
+      <name>wall_4m_1_20</name>
       <uri>model://wall_4m</uri>
-      <pose>-4.00 -1.00 0 0 0 0.0000</pose>
+      <pose>-5.00 -6.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_44</name>
+      <name>wall_1m_1_21</name>
       <uri>model://wall_1m</uri>
-      <pose>-1.50 -1.00 0 0 0 0.0000</pose>
+      <pose>-2.50 -6.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_45</name>
-      <uri>model://wall_1m</uri>
-      <pose>0.50 -1.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_1m_46</name>
-      <uri>model://wall_1m</uri>
-      <pose>7.50 -1.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_1m_47</name>
-      <uri>model://wall_1m</uri>
-      <pose>-8.50 0.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_1m_48</name>
-      <uri>model://wall_1m</uri>
-      <pose>-6.50 0.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_2m_49</name>
+      <name>wall_2m_1_22</name>
       <uri>model://wall_2m</uri>
-      <pose>-3.00 0.00 0 0 0 0.0000</pose>
+      <pose>0.00 -6.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_50</name>
-      <uri>model://wall_1m</uri>
-      <pose>1.50 0.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_2m_51</name>
+      <name>wall_2m_1_23</name>
       <uri>model://wall_2m</uri>
-      <pose>4.00 0.00 0 0 0 0.0000</pose>
+      <pose>3.00 -6.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_2m_52</name>
-      <uri>model://wall_2m</uri>
-      <pose>7.00 0.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_1m_53</name>
+      <name>wall_1m_1_24</name>
       <uri>model://wall_1m</uri>
-      <pose>8.50 0.00 0 0 0 0.0000</pose>
+      <pose>4.50 -6.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_4m_54</name>
+      <name>wall_1m_1_25</name>
+      <uri>model://wall_1m</uri>
+      <pose>7.50 -6.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_26</name>
+      <uri>model://wall_2m</uri>
+      <pose>-7.00 -5.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_27</name>
+      <uri>model://wall_1m</uri>
+      <pose>4.50 -5.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_28</name>
+      <uri>model://wall_1m</uri>
+      <pose>6.50 -5.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_29</name>
+      <uri>model://wall_1m</uri>
+      <pose>8.50 -5.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_30</name>
+      <uri>model://wall_1m</uri>
+      <pose>-8.50 -4.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_31</name>
+      <uri>model://wall_2m</uri>
+      <pose>-1.00 -4.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_32</name>
+      <uri>model://wall_1m</uri>
+      <pose>7.50 -4.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_33</name>
+      <uri>model://wall_1m</uri>
+      <pose>9.50 -4.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_34</name>
+      <uri>model://wall_2m</uri>
+      <pose>-8.00 -3.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_35</name>
+      <uri>model://wall_1m</uri>
+      <pose>-4.50 -3.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_36</name>
+      <uri>model://wall_1m</uri>
+      <pose>-2.50 -3.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_37</name>
+      <uri>model://wall_2m</uri>
+      <pose>0.00 -3.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_38</name>
+      <uri>model://wall_1m</uri>
+      <pose>2.50 -3.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_39</name>
+      <uri>model://wall_1m</uri>
+      <pose>5.50 -3.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_40</name>
+      <uri>model://wall_1m</uri>
+      <pose>8.50 -3.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_41</name>
+      <uri>model://wall_1m</uri>
+      <pose>-7.50 -2.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_1_42</name>
       <uri>model://wall_4m</uri>
-      <pose>-6.00 1.00 0 0 0 0.0000</pose>
+      <pose>1.00 -2.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_55</name>
-      <uri>model://wall_1m</uri>
-      <pose>-3.50 1.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_1m_56</name>
-      <uri>model://wall_1m</uri>
-      <pose>1.50 1.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_2m_57</name>
+      <name>wall_2m_1_43</name>
       <uri>model://wall_2m</uri>
-      <pose>5.00 1.00 0 0 0 0.0000</pose>
+      <pose>4.00 -2.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_58</name>
+      <name>wall_2m_1_44</name>
+      <uri>model://wall_2m</uri>
+      <pose>7.00 -2.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_45</name>
       <uri>model://wall_1m</uri>
-      <pose>6.50 1.00 0 0 0 0.0000</pose>
+      <pose>8.50 -2.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_59</name>
+      <name>wall_1m_1_46</name>
       <uri>model://wall_1m</uri>
-      <pose>8.50 1.00 0 0 0 0.0000</pose>
+      <pose>-9.50 -1.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_60</name>
+      <name>wall_2m_1_47</name>
+      <uri>model://wall_2m</uri>
+      <pose>-6.00 -1.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_48</name>
+      <uri>model://wall_2m</uri>
+      <pose>3.00 -1.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_49</name>
       <uri>model://wall_1m</uri>
-      <pose>-8.50 2.00 0 0 0 0.0000</pose>
+      <pose>5.50 -1.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_61</name>
+      <name>wall_1m_1_50</name>
       <uri>model://wall_1m</uri>
-      <pose>-2.50 2.00 0 0 0 0.0000</pose>
+      <pose>8.50 -1.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_62</name>
+      <name>wall_2m_1_51</name>
+      <uri>model://wall_2m</uri>
+      <pose>-4.00 0.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_52</name>
+      <uri>model://wall_2m</uri>
+      <pose>1.00 0.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_53</name>
+      <uri>model://wall_2m</uri>
+      <pose>5.00 0.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_54</name>
       <uri>model://wall_1m</uri>
-      <pose>-0.50 2.00 0 0 0 0.0000</pose>
+      <pose>7.50 0.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_63</name>
+      <name>wall_1m_1_55</name>
       <uri>model://wall_1m</uri>
-      <pose>2.50 2.00 0 0 0 0.0000</pose>
+      <pose>9.50 0.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_64</name>
+      <name>wall_1m_1_56</name>
       <uri>model://wall_1m</uri>
-      <pose>5.50 2.00 0 0 0 0.0000</pose>
+      <pose>-7.50 1.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_65</name>
+      <name>wall_2m_1_57</name>
+      <uri>model://wall_2m</uri>
+      <pose>-4.00 1.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_58</name>
       <uri>model://wall_1m</uri>
-      <pose>3.50 3.00 0 0 0 0.0000</pose>
+      <pose>-2.50 1.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_4m_66</name>
+      <name>wall_4m_1_59</name>
       <uri>model://wall_4m</uri>
-      <pose>-8.00 4.00 0 0 0 0.0000</pose>
+      <pose>2.00 1.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_67</name>
+      <name>wall_1m_1_60</name>
       <uri>model://wall_1m</uri>
-      <pose>-5.50 4.00 0 0 0 0.0000</pose>
+      <pose>6.50 1.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_68</name>
+      <name>wall_1m_1_61</name>
       <uri>model://wall_1m</uri>
-      <pose>-3.50 4.00 0 0 0 0.0000</pose>
+      <pose>8.50 1.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_4m_69</name>
+      <name>wall_1m_1_62</name>
+      <uri>model://wall_1m</uri>
+      <pose>-8.50 2.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_63</name>
+      <uri>model://wall_2m</uri>
+      <pose>-6.00 2.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_64</name>
+      <uri>model://wall_1m</uri>
+      <pose>-4.50 2.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_65</name>
+      <uri>model://wall_2m</uri>
+      <pose>-2.00 2.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_1_66</name>
       <uri>model://wall_4m</uri>
-      <pose>3.00 4.00 0 0 0 0.0000</pose>
+      <pose>6.00 2.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_70</name>
+      <name>wall_1m_1_67</name>
       <uri>model://wall_1m</uri>
-      <pose>6.50 4.00 0 0 0 0.0000</pose>
+      <pose>-6.50 3.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_71</name>
-      <uri>model://wall_1m</uri>
-      <pose>8.50 4.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_1m_72</name>
-      <uri>model://wall_1m</uri>
-      <pose>-7.50 5.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_2m_73</name>
+      <name>wall_2m_1_68</name>
       <uri>model://wall_2m</uri>
-      <pose>-5.00 5.00 0 0 0 0.0000</pose>
+      <pose>-1.00 3.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_74</name>
+      <name>wall_1m_1_69</name>
       <uri>model://wall_1m</uri>
-      <pose>-2.50 5.00 0 0 0 0.0000</pose>
+      <pose>8.50 3.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_4m_75</name>
+      <name>wall_2m_1_70</name>
+      <uri>model://wall_2m</uri>
+      <pose>1.00 4.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_71</name>
+      <uri>model://wall_1m</uri>
+      <pose>2.50 4.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_72</name>
+      <uri>model://wall_1m</uri>
+      <pose>8.50 4.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_73</name>
+      <uri>model://wall_1m</uri>
+      <pose>-4.50 5.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_74</name>
+      <uri>model://wall_1m</uri>
+      <pose>-2.50 5.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_75</name>
+      <uri>model://wall_2m</uri>
+      <pose>0.00 5.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_1_76</name>
       <uri>model://wall_4m</uri>
-      <pose>1.00 5.00 0 0 0 0.0000</pose>
+      <pose>5.00 5.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_76</name>
+      <name>wall_1m_1_77</name>
       <uri>model://wall_1m</uri>
-      <pose>5.50 5.00 0 0 0 0.0000</pose>
+      <pose>9.50 5.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_77</name>
+      <name>wall_1m_1_78</name>
       <uri>model://wall_1m</uri>
-      <pose>9.50 5.00 0 0 0 0.0000</pose>
+      <pose>-3.50 6.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_78</name>
+      <name>wall_1m_1_79</name>
       <uri>model://wall_1m</uri>
-      <pose>-8.50 6.00 0 0 0 0.0000</pose>
+      <pose>-1.50 6.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_2m_79</name>
+      <name>wall_1m_1_80</name>
+      <uri>model://wall_1m</uri>
+      <pose>1.50 6.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_81</name>
+      <uri>model://wall_1m</uri>
+      <pose>4.50 6.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_82</name>
       <uri>model://wall_2m</uri>
-      <pose>-6.00 6.00 0 0 0 0.0000</pose>
+      <pose>8.00 6.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_2m_80</name>
+      <name>wall_2m_1_83</name>
       <uri>model://wall_2m</uri>
-      <pose>-3.00 6.00 0 0 0 0.0000</pose>
+      <pose>-8.00 7.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_2m_81</name>
+      <name>wall_2m_1_84</name>
       <uri>model://wall_2m</uri>
-      <pose>0.00 6.00 0 0 0 0.0000</pose>
+      <pose>-5.00 7.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_4m_82</name>
+      <name>wall_4m_1_85</name>
       <uri>model://wall_4m</uri>
-      <pose>4.00 6.00 0 0 0 0.0000</pose>
+      <pose>-1.00 7.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_83</name>
+      <name>wall_1m_1_86</name>
       <uri>model://wall_1m</uri>
-      <pose>6.50 6.00 0 0 0 0.0000</pose>
+      <pose>3.50 7.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_84</name>
+      <name>wall_1m_1_87</name>
       <uri>model://wall_1m</uri>
-      <pose>8.50 6.00 0 0 0 0.0000</pose>
+      <pose>7.50 7.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_85</name>
+      <name>wall_1m_1_88</name>
       <uri>model://wall_1m</uri>
-      <pose>-9.50 7.00 0 0 0 0.0000</pose>
+      <pose>9.50 7.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_86</name>
+      <name>wall_1m_1_89</name>
       <uri>model://wall_1m</uri>
-      <pose>-7.50 7.00 0 0 0 0.0000</pose>
+      <pose>-9.50 8.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_87</name>
+      <name>wall_1m_1_90</name>
       <uri>model://wall_1m</uri>
-      <pose>-4.50 7.00 0 0 0 0.0000</pose>
+      <pose>-6.50 8.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_4m_88</name>
-      <uri>model://wall_4m</uri>
-      <pose>0.00 7.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_4m_89</name>
-      <uri>model://wall_4m</uri>
-      <pose>6.00 7.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_1m_90</name>
+      <name>wall_1m_1_91</name>
       <uri>model://wall_1m</uri>
-      <pose>9.50 7.00 0 0 0 0.0000</pose>
+      <pose>-4.50 8.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_2m_91</name>
+      <name>wall_1m_1_92</name>
+      <uri>model://wall_1m</uri>
+      <pose>-1.50 8.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_93</name>
       <uri>model://wall_2m</uri>
-      <pose>-6.00 8.00 0 0 0 0.0000</pose>
+      <pose>3.00 8.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_2m_92</name>
+      <name>wall_2m_1_94</name>
       <uri>model://wall_2m</uri>
-      <pose>-1.00 8.00 0 0 0 0.0000</pose>
+      <pose>-8.00 9.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_1m_93</name>
+      <name>wall_1m_1_95</name>
       <uri>model://wall_1m</uri>
-      <pose>0.50 8.00 0 0 0 0.0000</pose>
+      <pose>-5.50 9.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_4m_94</name>
-      <uri>model://wall_4m</uri>
-      <pose>4.00 8.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_2m_95</name>
-      <uri>model://wall_2m</uri>
-      <pose>-8.00 9.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_4m_96</name>
-      <uri>model://wall_4m</uri>
-      <pose>-3.00 9.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_2m_97</name>
-      <uri>model://wall_2m</uri>
-      <pose>0.00 9.00 0 0 0 0.0000</pose>
-    </include>
-    <include>
-      <name>wall_1m_98</name>
+      <name>wall_1m_1_96</name>
       <uri>model://wall_1m</uri>
-      <pose>1.50 9.00 0 0 0 0.0000</pose>
+      <pose>-3.50 9.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_2m_99</name>
+      <name>wall_1m_1_97</name>
+      <uri>model://wall_1m</uri>
+      <pose>-0.50 9.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_98</name>
       <uri>model://wall_2m</uri>
-      <pose>5.00 9.00 0 0 0 0.0000</pose>
+      <pose>3.00 9.00 2.0 0 0 0.0000</pose>
     </include>
     <include>
-      <name>wall_8m_100</name>
+      <name>wall_1m_1_99</name>
+      <uri>model://wall_1m</uri>
+      <pose>4.50 9.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_8m_1_100</name>
       <uri>model://wall_8m</uri>
-      <pose>-10.00 -6.00 0 0 0 1.5708</pose>
+      <pose>-10.00 -6.00 2.0 0 0 1.5708</pose>
     </include>
     <include>
-      <name>wall_8m_101</name>
+      <name>wall_8m_1_101</name>
       <uri>model://wall_8m</uri>
-      <pose>-10.00 2.00 0 0 0 1.5708</pose>
+      <pose>-10.00 2.00 2.0 0 0 1.5708</pose>
     </include>
     <include>
-      <name>wall_4m_102</name>
+      <name>wall_4m_1_102</name>
       <uri>model://wall_4m</uri>
-      <pose>-10.00 8.00 0 0 0 1.5708</pose>
+      <pose>-10.00 8.00 2.0 0 0 1.5708</pose>
     </include>
     <include>
-      <name>wall_2m_103</name>
+      <name>wall_2m_1_103</name>
       <uri>model://wall_2m</uri>
-      <pose>-9.00 -5.00 0 0 0 1.5708</pose>
+      <pose>-9.00 -6.00 2.0 0 0 1.5708</pose>
     </include>
     <include>
-      <name>wall_1m_104</name>
+      <name>wall_1m_1_104</name>
       <uri>model://wall_1m</uri>
-      <pose>-9.00 -2.50 0 0 0 1.5708</pose>
+      <pose>-9.00 -4.50 2.0 0 0 1.5708</pose>
     </include>
     <include>
-      <name>wall_1m_105</name>
+      <name>wall_1m_1_105</name>
       <uri>model://wall_1m</uri>
-      <pose>-9.00 0.50 0 0 0 1.5708</pose>
+      <pose>-9.00 -2.50 2.0 0 0 1.5708</pose>
     </include>
     <include>
-      <name>wall_1m_106</name>
-      <uri>model://wall_1m</uri>
-      <pose>-9.00 2.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_107</name>
-      <uri>model://wall_1m</uri>
-      <pose>-9.00 5.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_108</name>
+      <name>wall_2m_1_106</name>
       <uri>model://wall_2m</uri>
-      <pose>-9.00 8.00 0 0 0 1.5708</pose>
+      <pose>-9.00 0.00 2.0 0 0 1.5708</pose>
     </include>
     <include>
-      <name>wall_1m_109</name>
-      <uri>model://wall_1m</uri>
-      <pose>-8.00 -6.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_4m_110</name>
+      <name>wall_4m_1_107</name>
       <uri>model://wall_4m</uri>
-      <pose>-8.00 2.00 0 0 0 1.5708</pose>
+      <pose>-9.00 4.00 2.0 0 0 1.5708</pose>
     </include>
     <include>
-      <name>wall_2m_111</name>
-      <uri>model://wall_2m</uri>
-      <pose>-8.00 7.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_4m_112</name>
-      <uri>model://wall_4m</uri>
-      <pose>-7.00 -8.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_113</name>
+      <name>wall_1m_1_108</name>
       <uri>model://wall_1m</uri>
-      <pose>-7.00 -5.50 0 0 0 1.5708</pose>
+      <pose>-9.00 6.50 2.0 0 0 1.5708</pose>
     </include>
     <include>
-      <name>wall_1m_114</name>
+      <name>wall_1m_1_109</name>
       <uri>model://wall_1m</uri>
-      <pose>-7.00 -0.50 0 0 0 1.5708</pose>
+      <pose>-9.00 8.50 2.0 0 0 1.5708</pose>
     </include>
     <include>
-      <name>wall_2m_115</name>
-      <uri>model://wall_2m</uri>
-      <pose>-7.00 5.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_116</name>
+      <name>wall_1m_1_110</name>
       <uri>model://wall_1m</uri>
-      <pose>-7.00 7.50 0 0 0 1.5708</pose>
+      <pose>-8.00 -5.50 2.0 0 0 1.5708</pose>
     </include>
     <include>
-      <name>wall_2m_117</name>
-      <uri>model://wall_2m</uri>
-      <pose>-6.00 -8.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_118</name>
-      <uri>model://wall_1m</uri>
-      <pose>-6.00 -6.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_119</name>
-      <uri>model://wall_1m</uri>
-      <pose>-6.00 -4.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_120</name>
-      <uri>model://wall_1m</uri>
-      <pose>-6.00 -2.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_121</name>
-      <uri>model://wall_1m</uri>
-      <pose>-6.00 -0.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_122</name>
-      <uri>model://wall_1m</uri>
-      <pose>-6.00 6.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_123</name>
-      <uri>model://wall_2m</uri>
-      <pose>-6.00 9.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_124</name>
-      <uri>model://wall_1m</uri>
-      <pose>-5.00 -7.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_125</name>
-      <uri>model://wall_1m</uri>
-      <pose>-5.00 -5.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_126</name>
-      <uri>model://wall_1m</uri>
-      <pose>-5.00 -2.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_127</name>
-      <uri>model://wall_2m</uri>
-      <pose>-5.00 1.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_128</name>
-      <uri>model://wall_1m</uri>
-      <pose>-5.00 3.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_129</name>
-      <uri>model://wall_1m</uri>
-      <pose>-5.00 8.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_130</name>
-      <uri>model://wall_1m</uri>
-      <pose>-4.00 -8.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_131</name>
-      <uri>model://wall_2m</uri>
-      <pose>-4.00 -4.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_132</name>
-      <uri>model://wall_1m</uri>
-      <pose>-4.00 -1.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_133</name>
-      <uri>model://wall_2m</uri>
-      <pose>-4.00 3.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_134</name>
-      <uri>model://wall_2m</uri>
-      <pose>-4.00 6.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_135</name>
-      <uri>model://wall_1m</uri>
-      <pose>-4.00 7.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_136</name>
-      <uri>model://wall_2m</uri>
-      <pose>-3.00 -9.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_137</name>
-      <uri>model://wall_1m</uri>
-      <pose>-3.00 -7.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_138</name>
-      <uri>model://wall_2m</uri>
-      <pose>-3.00 -5.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_139</name>
-      <uri>model://wall_2m</uri>
-      <pose>-3.00 -2.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_140</name>
-      <uri>model://wall_1m</uri>
-      <pose>-3.00 0.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_141</name>
-      <uri>model://wall_2m</uri>
-      <pose>-3.00 3.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_142</name>
-      <uri>model://wall_1m</uri>
-      <pose>-3.00 4.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_143</name>
-      <uri>model://wall_2m</uri>
-      <pose>-3.00 8.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_4m_144</name>
-      <uri>model://wall_4m</uri>
-      <pose>-2.00 -7.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_145</name>
-      <uri>model://wall_2m</uri>
-      <pose>-2.00 -4.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_146</name>
-      <uri>model://wall_1m</uri>
-      <pose>-2.00 -2.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_147</name>
-      <uri>model://wall_1m</uri>
-      <pose>-2.00 1.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_148</name>
-      <uri>model://wall_2m</uri>
-      <pose>-2.00 7.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_149</name>
-      <uri>model://wall_2m</uri>
-      <pose>-1.00 -9.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_150</name>
-      <uri>model://wall_1m</uri>
-      <pose>-1.00 -6.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_4m_151</name>
-      <uri>model://wall_4m</uri>
-      <pose>-1.00 0.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_152</name>
-      <uri>model://wall_2m</uri>
-      <pose>0.00 -8.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_153</name>
-      <uri>model://wall_2m</uri>
-      <pose>0.00 -5.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_154</name>
-      <uri>model://wall_1m</uri>
-      <pose>0.00 -3.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_155</name>
-      <uri>model://wall_2m</uri>
-      <pose>0.00 0.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_156</name>
-      <uri>model://wall_2m</uri>
-      <pose>0.00 3.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_157</name>
-      <uri>model://wall_1m</uri>
-      <pose>0.00 4.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_158</name>
-      <uri>model://wall_1m</uri>
-      <pose>1.00 -9.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_4m_159</name>
-      <uri>model://wall_4m</uri>
-      <pose>1.00 -5.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_160</name>
-      <uri>model://wall_1m</uri>
-      <pose>1.00 -0.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_161</name>
-      <uri>model://wall_2m</uri>
-      <pose>1.00 2.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_162</name>
-      <uri>model://wall_1m</uri>
-      <pose>1.00 3.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_163</name>
-      <uri>model://wall_1m</uri>
-      <pose>1.00 5.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_164</name>
-      <uri>model://wall_2m</uri>
-      <pose>2.00 -8.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_165</name>
-      <uri>model://wall_1m</uri>
-      <pose>2.00 -1.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_166</name>
-      <uri>model://wall_1m</uri>
-      <pose>2.00 0.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_167</name>
-      <uri>model://wall_1m</uri>
-      <pose>2.00 2.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_168</name>
-      <uri>model://wall_1m</uri>
-      <pose>2.00 6.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_169</name>
-      <uri>model://wall_1m</uri>
-      <pose>2.00 8.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_170</name>
-      <uri>model://wall_2m</uri>
-      <pose>3.00 -9.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_4m_171</name>
-      <uri>model://wall_4m</uri>
-      <pose>3.00 0.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_172</name>
-      <uri>model://wall_1m</uri>
-      <pose>3.00 3.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_173</name>
-      <uri>model://wall_1m</uri>
-      <pose>3.00 7.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_174</name>
-      <uri>model://wall_1m</uri>
-      <pose>3.00 9.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_175</name>
-      <uri>model://wall_1m</uri>
-      <pose>4.00 -8.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_4m_176</name>
-      <uri>model://wall_4m</uri>
-      <pose>4.00 -5.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_177</name>
-      <uri>model://wall_2m</uri>
-      <pose>4.00 -2.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_178</name>
-      <uri>model://wall_2m</uri>
-      <pose>4.00 2.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_179</name>
-      <uri>model://wall_2m</uri>
-      <pose>4.00 5.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_180</name>
-      <uri>model://wall_1m</uri>
-      <pose>5.00 -7.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_181</name>
-      <uri>model://wall_2m</uri>
-      <pose>5.00 -5.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_182</name>
-      <uri>model://wall_2m</uri>
-      <pose>5.00 -1.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_183</name>
-      <uri>model://wall_1m</uri>
-      <pose>5.00 3.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_4m_184</name>
-      <uri>model://wall_4m</uri>
-      <pose>6.00 -7.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_185</name>
-      <uri>model://wall_1m</uri>
-      <pose>6.00 -3.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_186</name>
-      <uri>model://wall_2m</uri>
-      <pose>6.00 0.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_187</name>
-      <uri>model://wall_1m</uri>
-      <pose>6.00 1.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_188</name>
-      <uri>model://wall_2m</uri>
-      <pose>6.00 4.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_189</name>
-      <uri>model://wall_1m</uri>
-      <pose>6.00 8.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_190</name>
-      <uri>model://wall_1m</uri>
-      <pose>7.00 -6.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_191</name>
-      <uri>model://wall_1m</uri>
-      <pose>7.00 -4.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_192</name>
-      <uri>model://wall_2m</uri>
-      <pose>7.00 -2.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_193</name>
-      <uri>model://wall_1m</uri>
-      <pose>7.00 5.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_194</name>
-      <uri>model://wall_2m</uri>
-      <pose>7.00 8.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_195</name>
-      <uri>model://wall_1m</uri>
-      <pose>7.00 9.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_196</name>
-      <uri>model://wall_1m</uri>
-      <pose>8.00 -7.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_197</name>
-      <uri>model://wall_2m</uri>
-      <pose>8.00 -5.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_198</name>
-      <uri>model://wall_2m</uri>
-      <pose>8.00 6.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_199</name>
-      <uri>model://wall_1m</uri>
-      <pose>9.00 -4.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_200</name>
-      <uri>model://wall_2m</uri>
-      <pose>9.00 -1.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_2m_201</name>
-      <uri>model://wall_2m</uri>
-      <pose>9.00 2.00 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_1m_202</name>
-      <uri>model://wall_1m</uri>
-      <pose>9.00 3.50 0 0 0 1.5708</pose>
-    </include>
-    <include>
-      <name>wall_8m_203</name>
+      <name>wall_8m_1_111</name>
       <uri>model://wall_8m</uri>
-      <pose>-6.00 10.00 0 0 0 0.0000</pose>
+      <pose>-8.00 2.00 2.0 0 0 1.5708</pose>
     </include>
     <include>
-      <name>wall_8m_204</name>
-      <uri>model://wall_8m</uri>
-      <pose>2.00 10.00 0 0 0 0.0000</pose>
+      <name>wall_1m_1_112</name>
+      <uri>model://wall_1m</uri>
+      <pose>-8.00 7.50 2.0 0 0 1.5708</pose>
     </include>
     <include>
-      <name>wall_4m_205</name>
+      <name>wall_2m_1_113</name>
+      <uri>model://wall_2m</uri>
+      <pose>-7.00 -9.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_114</name>
+      <uri>model://wall_1m</uri>
+      <pose>-7.00 -7.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_115</name>
+      <uri>model://wall_2m</uri>
+      <pose>-7.00 -4.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_116</name>
+      <uri>model://wall_1m</uri>
+      <pose>-7.00 -2.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_117</name>
+      <uri>model://wall_1m</uri>
+      <pose>-7.00 0.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_1_118</name>
       <uri>model://wall_4m</uri>
-      <pose>8.00 10.00 0 0 0 0.0000</pose>
+      <pose>-7.00 5.00 2.0 0 0 1.5708</pose>
     </include>
     <include>
-      <name>wall_8m_206</name>
-      <uri>model://wall_8m</uri>
-      <pose>10.00 -6.00 0 0 0 1.5708</pose>
+      <name>wall_1m_1_119</name>
+      <uri>model://wall_1m</uri>
+      <pose>-7.00 8.50 2.0 0 0 1.5708</pose>
     </include>
     <include>
-      <name>wall_8m_207</name>
-      <uri>model://wall_8m</uri>
-      <pose>10.00 2.00 0 0 0 1.5708</pose>
+      <name>wall_1m_1_120</name>
+      <uri>model://wall_1m</uri>
+      <pose>-6.00 -6.50 2.0 0 0 1.5708</pose>
     </include>
     <include>
-      <name>wall_4m_208</name>
+      <name>wall_4m_1_121</name>
       <uri>model://wall_4m</uri>
-      <pose>10.00 8.00 0 0 0 1.5708</pose>
+      <pose>-6.00 -3.00 2.0 0 0 1.5708</pose>
     </include>
-    <!-- Chests -->
     <include>
-      <name>chest_0</name>
+      <name>wall_2m_1_122</name>
+      <uri>model://wall_2m</uri>
+      <pose>-6.00 0.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_123</name>
+      <uri>model://wall_1m</uri>
+      <pose>-6.00 1.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_1_124</name>
+      <uri>model://wall_4m</uri>
+      <pose>-6.00 6.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_125</name>
+      <uri>model://wall_2m</uri>
+      <pose>-5.00 -8.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_126</name>
+      <uri>model://wall_1m</uri>
+      <pose>-5.00 -5.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_127</name>
+      <uri>model://wall_2m</uri>
+      <pose>-5.00 -3.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_128</name>
+      <uri>model://wall_1m</uri>
+      <pose>-5.00 0.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_129</name>
+      <uri>model://wall_1m</uri>
+      <pose>-5.00 2.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_130</name>
+      <uri>model://wall_2m</uri>
+      <pose>-5.00 5.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_131</name>
+      <uri>model://wall_2m</uri>
+      <pose>-5.00 9.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_132</name>
+      <uri>model://wall_1m</uri>
+      <pose>-4.00 -6.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_133</name>
+      <uri>model://wall_2m</uri>
+      <pose>-4.00 -1.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_134</name>
+      <uri>model://wall_1m</uri>
+      <pose>-4.00 6.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_135</name>
+      <uri>model://wall_2m</uri>
+      <pose>-3.00 -8.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_136</name>
+      <uri>model://wall_2m</uri>
+      <pose>-3.00 -2.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_137</name>
+      <uri>model://wall_2m</uri>
+      <pose>-3.00 7.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_138</name>
+      <uri>model://wall_1m</uri>
+      <pose>-3.00 8.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_139</name>
+      <uri>model://wall_2m</uri>
+      <pose>-2.00 -9.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_140</name>
+      <uri>model://wall_1m</uri>
+      <pose>-2.00 -5.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_1_141</name>
+      <uri>model://wall_4m</uri>
+      <pose>-2.00 -2.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_142</name>
+      <uri>model://wall_1m</uri>
+      <pose>-2.00 0.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_143</name>
+      <uri>model://wall_1m</uri>
+      <pose>-2.00 2.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_144</name>
+      <uri>model://wall_2m</uri>
+      <pose>-2.00 5.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_145</name>
+      <uri>model://wall_1m</uri>
+      <pose>-2.00 8.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_146</name>
+      <uri>model://wall_2m</uri>
+      <pose>-1.00 -6.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_1_147</name>
+      <uri>model://wall_4m</uri>
+      <pose>-1.00 0.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_148</name>
+      <uri>model://wall_1m</uri>
+      <pose>-1.00 4.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_149</name>
+      <uri>model://wall_1m</uri>
+      <pose>-1.00 7.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_150</name>
+      <uri>model://wall_1m</uri>
+      <pose>0.00 -7.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_151</name>
+      <uri>model://wall_1m</uri>
+      <pose>0.00 -5.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_152</name>
+      <uri>model://wall_1m</uri>
+      <pose>0.00 -3.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_153</name>
+      <uri>model://wall_1m</uri>
+      <pose>0.00 -0.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_154</name>
+      <uri>model://wall_1m</uri>
+      <pose>0.00 1.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_155</name>
+      <uri>model://wall_1m</uri>
+      <pose>0.00 3.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_156</name>
+      <uri>model://wall_2m</uri>
+      <pose>0.00 6.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_157</name>
+      <uri>model://wall_2m</uri>
+      <pose>0.00 9.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_158</name>
+      <uri>model://wall_2m</uri>
+      <pose>1.00 -1.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_159</name>
+      <uri>model://wall_2m</uri>
+      <pose>1.00 8.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_1_160</name>
+      <uri>model://wall_4m</uri>
+      <pose>2.00 6.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_161</name>
+      <uri>model://wall_1m</uri>
+      <pose>2.00 8.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_162</name>
+      <uri>model://wall_1m</uri>
+      <pose>3.00 -8.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_163</name>
+      <uri>model://wall_1m</uri>
+      <pose>3.00 -5.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_164</name>
+      <uri>model://wall_1m</uri>
+      <pose>3.00 -3.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_165</name>
+      <uri>model://wall_2m</uri>
+      <pose>3.00 0.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_166</name>
+      <uri>model://wall_1m</uri>
+      <pose>3.00 1.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_167</name>
+      <uri>model://wall_1m</uri>
+      <pose>3.00 3.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_168</name>
+      <uri>model://wall_1m</uri>
+      <pose>3.00 5.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_169</name>
+      <uri>model://wall_1m</uri>
+      <pose>4.00 -9.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_170</name>
+      <uri>model://wall_2m</uri>
+      <pose>4.00 -3.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_171</name>
+      <uri>model://wall_2m</uri>
+      <pose>4.00 3.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_172</name>
+      <uri>model://wall_1m</uri>
+      <pose>4.00 4.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_173</name>
+      <uri>model://wall_1m</uri>
+      <pose>4.00 6.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_174</name>
+      <uri>model://wall_2m</uri>
+      <pose>5.00 -7.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_175</name>
+      <uri>model://wall_2m</uri>
+      <pose>5.00 -4.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_176</name>
+      <uri>model://wall_1m</uri>
+      <pose>5.00 -1.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_177</name>
+      <uri>model://wall_2m</uri>
+      <pose>5.00 1.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_178</name>
+      <uri>model://wall_2m</uri>
+      <pose>5.00 7.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_179</name>
+      <uri>model://wall_1m</uri>
+      <pose>5.00 8.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_1_180</name>
+      <uri>model://wall_4m</uri>
+      <pose>6.00 -6.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_181</name>
+      <uri>model://wall_2m</uri>
+      <pose>6.00 -3.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_182</name>
+      <uri>model://wall_1m</uri>
+      <pose>6.00 -0.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_1_183</name>
+      <uri>model://wall_4m</uri>
+      <pose>6.00 8.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_184</name>
+      <uri>model://wall_1m</uri>
+      <pose>7.00 -8.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_185</name>
+      <uri>model://wall_1m</uri>
+      <pose>7.00 -3.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_186</name>
+      <uri>model://wall_2m</uri>
+      <pose>7.00 0.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_187</name>
+      <uri>model://wall_1m</uri>
+      <pose>7.00 2.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_188</name>
+      <uri>model://wall_2m</uri>
+      <pose>7.00 5.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_189</name>
+      <uri>model://wall_2m</uri>
+      <pose>7.00 8.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_190</name>
+      <uri>model://wall_1m</uri>
+      <pose>7.00 9.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_191</name>
+      <uri>model://wall_2m</uri>
+      <pose>8.00 -9.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_192</name>
+      <uri>model://wall_1m</uri>
+      <pose>8.00 -6.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_193</name>
+      <uri>model://wall_2m</uri>
+      <pose>8.00 -4.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_194</name>
+      <uri>model://wall_1m</uri>
+      <pose>8.00 -0.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_195</name>
+      <uri>model://wall_1m</uri>
+      <pose>8.00 1.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_196</name>
+      <uri>model://wall_2m</uri>
+      <pose>8.00 5.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_197</name>
+      <uri>model://wall_2m</uri>
+      <pose>9.00 -7.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_198</name>
+      <uri>model://wall_1m</uri>
+      <pose>9.00 -5.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_199</name>
+      <uri>model://wall_1m</uri>
+      <pose>9.00 -1.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_1_200</name>
+      <uri>model://wall_1m</uri>
+      <pose>9.00 0.50 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_1_201</name>
+      <uri>model://wall_2m</uri>
+      <pose>9.00 3.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_8m_1_202</name>
+      <uri>model://wall_8m</uri>
+      <pose>-6.00 10.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_8m_1_203</name>
+      <uri>model://wall_8m</uri>
+      <pose>2.00 10.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_1_204</name>
+      <uri>model://wall_4m</uri>
+      <pose>8.00 10.00 2.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_8m_1_205</name>
+      <uri>model://wall_8m</uri>
+      <pose>10.00 -6.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_8m_1_206</name>
+      <uri>model://wall_8m</uri>
+      <pose>10.00 2.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_1_207</name>
+      <uri>model://wall_4m</uri>
+      <pose>10.00 8.00 2.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>chest_1_0</name>
       <uri>model://treasure_chest</uri>
-      <pose>2.50 -4.50 0.20 0 0 0</pose>
+      <pose>7.50 6.50 2.2 0 0 0</pose>
     </include>
     <include>
-      <name>chest_1</name>
+      <name>chest_1_1</name>
       <uri>model://treasure_chest</uri>
-      <pose>7.50 2.50 0.20 0 0 0</pose>
+      <pose>3.50 5.50 2.2 0 0 0</pose>
+    </include>
+    <!-- Rampe von Etage 1 zu 2 -->
+    <include>
+      <name>ramp_1</name>
+      <uri>model://ramp</uri>
+      <pose>-8.50 -8.50 2.00 0 0 0</pose>
+    </include>
+    <!-- Boden mit Loch für Etage 1 -->
+    <include>
+      <name>ground_hole_1</name>
+      <uri>model://ground_hole_2</uri>
+      <pose>0 0 2.00 0 0 0</pose>
+    </include>
+    <!-- Etage 2 -->
+    <include>
+      <name>wall_8m_2_0</name>
+      <uri>model://wall_8m</uri>
+      <pose>-6.00 -10.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_8m_2_1</name>
+      <uri>model://wall_8m</uri>
+      <pose>2.00 -10.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_2</name>
+      <uri>model://wall_4m</uri>
+      <pose>8.00 -10.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_3</name>
+      <uri>model://wall_2m</uri>
+      <pose>-4.00 -9.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_4</name>
+      <uri>model://wall_4m</uri>
+      <pose>0.00 -9.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_5</name>
+      <uri>model://wall_4m</uri>
+      <pose>6.00 -9.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_6</name>
+      <uri>model://wall_1m</uri>
+      <pose>8.50 -9.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_7</name>
+      <uri>model://wall_2m</uri>
+      <pose>-6.00 -8.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_8</name>
+      <uri>model://wall_1m</uri>
+      <pose>-4.50 -8.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_9</name>
+      <uri>model://wall_1m</uri>
+      <pose>2.50 -8.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_10</name>
+      <uri>model://wall_4m</uri>
+      <pose>7.00 -8.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_11</name>
+      <uri>model://wall_1m</uri>
+      <pose>-9.50 -7.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_12</name>
+      <uri>model://wall_1m</uri>
+      <pose>-7.50 -7.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_13</name>
+      <uri>model://wall_1m</uri>
+      <pose>-5.50 -7.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_14</name>
+      <uri>model://wall_1m</uri>
+      <pose>-2.50 -7.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_15</name>
+      <uri>model://wall_1m</uri>
+      <pose>0.50 -7.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_16</name>
+      <uri>model://wall_2m</uri>
+      <pose>3.00 -7.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_17</name>
+      <uri>model://wall_4m</uri>
+      <pose>8.00 -7.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_18</name>
+      <uri>model://wall_2m</uri>
+      <pose>-8.00 -6.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_19</name>
+      <uri>model://wall_1m</uri>
+      <pose>-6.50 -6.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_20</name>
+      <uri>model://wall_4m</uri>
+      <pose>-3.00 -6.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_21</name>
+      <uri>model://wall_1m</uri>
+      <pose>-0.50 -6.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_22</name>
+      <uri>model://wall_2m</uri>
+      <pose>2.00 -6.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_23</name>
+      <uri>model://wall_4m</uri>
+      <pose>7.00 -6.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_24</name>
+      <uri>model://wall_4m</uri>
+      <pose>-4.00 -5.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_25</name>
+      <uri>model://wall_1m</uri>
+      <pose>-1.50 -5.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_26</name>
+      <uri>model://wall_1m</uri>
+      <pose>1.50 -5.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_27</name>
+      <uri>model://wall_1m</uri>
+      <pose>3.50 -5.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_28</name>
+      <uri>model://wall_1m</uri>
+      <pose>9.50 -5.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_29</name>
+      <uri>model://wall_1m</uri>
+      <pose>-9.50 -4.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_30</name>
+      <uri>model://wall_1m</uri>
+      <pose>-7.50 -4.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_31</name>
+      <uri>model://wall_1m</uri>
+      <pose>-4.50 -4.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_32</name>
+      <uri>model://wall_2m</uri>
+      <pose>-2.00 -4.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_33</name>
+      <uri>model://wall_1m</uri>
+      <pose>0.50 -4.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_34</name>
+      <uri>model://wall_1m</uri>
+      <pose>2.50 -4.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_35</name>
+      <uri>model://wall_1m</uri>
+      <pose>8.50 -4.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_36</name>
+      <uri>model://wall_2m</uri>
+      <pose>-8.00 -3.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_37</name>
+      <uri>model://wall_1m</uri>
+      <pose>-3.50 -3.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_38</name>
+      <uri>model://wall_1m</uri>
+      <pose>1.50 -3.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_39</name>
+      <uri>model://wall_1m</uri>
+      <pose>5.50 -3.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_40</name>
+      <uri>model://wall_1m</uri>
+      <pose>7.50 -3.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_41</name>
+      <uri>model://wall_4m</uri>
+      <pose>-8.00 -2.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_42</name>
+      <uri>model://wall_2m</uri>
+      <pose>3.00 -2.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_43</name>
+      <uri>model://wall_4m</uri>
+      <pose>8.00 -2.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_44</name>
+      <uri>model://wall_2m</uri>
+      <pose>-8.00 -1.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_45</name>
+      <uri>model://wall_1m</uri>
+      <pose>-6.50 -1.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_46</name>
+      <uri>model://wall_1m</uri>
+      <pose>-4.50 -1.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_47</name>
+      <uri>model://wall_1m</uri>
+      <pose>-1.50 -1.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_48</name>
+      <uri>model://wall_1m</uri>
+      <pose>0.50 -1.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_49</name>
+      <uri>model://wall_2m</uri>
+      <pose>3.00 -1.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_50</name>
+      <uri>model://wall_2m</uri>
+      <pose>6.00 -1.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_51</name>
+      <uri>model://wall_1m</uri>
+      <pose>-9.50 0.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_52</name>
+      <uri>model://wall_1m</uri>
+      <pose>-5.50 0.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_53</name>
+      <uri>model://wall_1m</uri>
+      <pose>-2.50 0.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_54</name>
+      <uri>model://wall_1m</uri>
+      <pose>-0.50 0.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_55</name>
+      <uri>model://wall_1m</uri>
+      <pose>1.50 0.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_56</name>
+      <uri>model://wall_1m</uri>
+      <pose>4.50 0.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_57</name>
+      <uri>model://wall_2m</uri>
+      <pose>8.00 0.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_58</name>
+      <uri>model://wall_2m</uri>
+      <pose>-6.00 1.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_59</name>
+      <uri>model://wall_1m</uri>
+      <pose>-4.50 1.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_60</name>
+      <uri>model://wall_2m</uri>
+      <pose>1.00 1.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_61</name>
+      <uri>model://wall_1m</uri>
+      <pose>2.50 1.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_62</name>
+      <uri>model://wall_4m</uri>
+      <pose>6.00 1.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_63</name>
+      <uri>model://wall_2m</uri>
+      <pose>-5.00 2.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_64</name>
+      <uri>model://wall_1m</uri>
+      <pose>-3.50 2.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_65</name>
+      <uri>model://wall_1m</uri>
+      <pose>1.50 2.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_66</name>
+      <uri>model://wall_2m</uri>
+      <pose>6.00 2.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_67</name>
+      <uri>model://wall_1m</uri>
+      <pose>8.50 2.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_68</name>
+      <uri>model://wall_2m</uri>
+      <pose>-9.00 3.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_69</name>
+      <uri>model://wall_1m</uri>
+      <pose>-5.50 3.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_70</name>
+      <uri>model://wall_2m</uri>
+      <pose>-3.00 3.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_71</name>
+      <uri>model://wall_1m</uri>
+      <pose>-0.50 3.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_72</name>
+      <uri>model://wall_4m</uri>
+      <pose>6.00 3.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_73</name>
+      <uri>model://wall_2m</uri>
+      <pose>-8.00 4.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_74</name>
+      <uri>model://wall_4m</uri>
+      <pose>4.00 4.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_75</name>
+      <uri>model://wall_2m</uri>
+      <pose>7.00 4.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_76</name>
+      <uri>model://wall_1m</uri>
+      <pose>8.50 4.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_77</name>
+      <uri>model://wall_1m</uri>
+      <pose>-6.50 5.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_78</name>
+      <uri>model://wall_2m</uri>
+      <pose>-1.00 5.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_79</name>
+      <uri>model://wall_1m</uri>
+      <pose>0.50 5.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_80</name>
+      <uri>model://wall_1m</uri>
+      <pose>5.50 5.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_81</name>
+      <uri>model://wall_1m</uri>
+      <pose>7.50 5.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_82</name>
+      <uri>model://wall_2m</uri>
+      <pose>-9.00 6.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_83</name>
+      <uri>model://wall_1m</uri>
+      <pose>-7.50 6.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_84</name>
+      <uri>model://wall_1m</uri>
+      <pose>-5.50 6.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_85</name>
+      <uri>model://wall_1m</uri>
+      <pose>-3.50 6.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_86</name>
+      <uri>model://wall_1m</uri>
+      <pose>-0.50 6.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_87</name>
+      <uri>model://wall_1m</uri>
+      <pose>1.50 6.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_88</name>
+      <uri>model://wall_4m</uri>
+      <pose>6.00 6.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_89</name>
+      <uri>model://wall_1m</uri>
+      <pose>8.50 6.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_90</name>
+      <uri>model://wall_1m</uri>
+      <pose>-8.50 7.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_91</name>
+      <uri>model://wall_1m</uri>
+      <pose>-6.50 7.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_92</name>
+      <uri>model://wall_1m</uri>
+      <pose>-1.50 7.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_93</name>
+      <uri>model://wall_1m</uri>
+      <pose>0.50 7.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_94</name>
+      <uri>model://wall_2m</uri>
+      <pose>3.00 7.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_95</name>
+      <uri>model://wall_1m</uri>
+      <pose>7.50 7.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_96</name>
+      <uri>model://wall_1m</uri>
+      <pose>9.50 7.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_97</name>
+      <uri>model://wall_1m</uri>
+      <pose>-9.50 8.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_98</name>
+      <uri>model://wall_1m</uri>
+      <pose>-7.50 8.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_99</name>
+      <uri>model://wall_2m</uri>
+      <pose>-2.00 8.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_100</name>
+      <uri>model://wall_4m</uri>
+      <pose>3.00 8.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_101</name>
+      <uri>model://wall_1m</uri>
+      <pose>-8.50 9.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_102</name>
+      <uri>model://wall_2m</uri>
+      <pose>-6.00 9.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_103</name>
+      <uri>model://wall_1m</uri>
+      <pose>-3.50 9.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_104</name>
+      <uri>model://wall_1m</uri>
+      <pose>-0.50 9.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_8m_2_105</name>
+      <uri>model://wall_8m</uri>
+      <pose>-10.00 -6.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_8m_2_106</name>
+      <uri>model://wall_8m</uri>
+      <pose>-10.00 2.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_107</name>
+      <uri>model://wall_4m</uri>
+      <pose>-10.00 8.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_108</name>
+      <uri>model://wall_1m</uri>
+      <pose>-9.00 -5.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_109</name>
+      <uri>model://wall_1m</uri>
+      <pose>-9.00 -3.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_110</name>
+      <uri>model://wall_2m</uri>
+      <pose>-9.00 1.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_111</name>
+      <uri>model://wall_1m</uri>
+      <pose>-9.00 4.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_112</name>
+      <uri>model://wall_2m</uri>
+      <pose>-8.00 -5.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_113</name>
+      <uri>model://wall_4m</uri>
+      <pose>-8.00 1.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_114</name>
+      <uri>model://wall_1m</uri>
+      <pose>-8.00 5.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_115</name>
+      <uri>model://wall_2m</uri>
+      <pose>-8.00 8.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_116</name>
+      <uri>model://wall_1m</uri>
+      <pose>-8.00 9.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_117</name>
+      <uri>model://wall_2m</uri>
+      <pose>-7.00 -9.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_118</name>
+      <uri>model://wall_1m</uri>
+      <pose>-7.00 -7.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_119</name>
+      <uri>model://wall_1m</uri>
+      <pose>-7.00 -4.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_120</name>
+      <uri>model://wall_4m</uri>
+      <pose>-7.00 2.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_121</name>
+      <uri>model://wall_1m</uri>
+      <pose>-7.00 4.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_122</name>
+      <uri>model://wall_1m</uri>
+      <pose>-6.00 -8.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_123</name>
+      <uri>model://wall_2m</uri>
+      <pose>-6.00 -5.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_124</name>
+      <uri>model://wall_1m</uri>
+      <pose>-6.00 -3.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_125</name>
+      <uri>model://wall_1m</uri>
+      <pose>-6.00 -0.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_126</name>
+      <uri>model://wall_1m</uri>
+      <pose>-6.00 3.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_127</name>
+      <uri>model://wall_2m</uri>
+      <pose>-6.00 6.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_128</name>
+      <uri>model://wall_1m</uri>
+      <pose>-6.00 8.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_129</name>
+      <uri>model://wall_1m</uri>
+      <pose>-5.00 -9.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_130</name>
+      <uri>model://wall_1m</uri>
+      <pose>-5.00 -6.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_131</name>
+      <uri>model://wall_4m</uri>
+      <pose>-5.00 -2.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_132</name>
+      <uri>model://wall_2m</uri>
+      <pose>-4.00 -7.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_133</name>
+      <uri>model://wall_1m</uri>
+      <pose>-4.00 -4.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_134</name>
+      <uri>model://wall_1m</uri>
+      <pose>-4.00 -1.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_135</name>
+      <uri>model://wall_1m</uri>
+      <pose>-4.00 0.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_136</name>
+      <uri>model://wall_2m</uri>
+      <pose>-3.00 -8.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_137</name>
+      <uri>model://wall_4m</uri>
+      <pose>-3.00 -1.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_138</name>
+      <uri>model://wall_2m</uri>
+      <pose>-3.00 3.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_139</name>
+      <uri>model://wall_4m</uri>
+      <pose>-3.00 7.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_140</name>
+      <uri>model://wall_2m</uri>
+      <pose>-2.00 -8.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_141</name>
+      <uri>model://wall_1m</uri>
+      <pose>-2.00 -3.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_142</name>
+      <uri>model://wall_1m</uri>
+      <pose>-2.00 -1.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_143</name>
+      <uri>model://wall_2m</uri>
+      <pose>-2.00 5.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_144</name>
+      <uri>model://wall_1m</uri>
+      <pose>-2.00 6.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_145</name>
+      <uri>model://wall_1m</uri>
+      <pose>-2.00 9.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_146</name>
+      <uri>model://wall_2m</uri>
+      <pose>-1.00 -7.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_147</name>
+      <uri>model://wall_1m</uri>
+      <pose>-1.00 3.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_148</name>
+      <uri>model://wall_2m</uri>
+      <pose>0.00 -8.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_149</name>
+      <uri>model://wall_2m</uri>
+      <pose>0.00 -5.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_150</name>
+      <uri>model://wall_2m</uri>
+      <pose>0.00 0.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_151</name>
+      <uri>model://wall_2m</uri>
+      <pose>0.00 3.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_152</name>
+      <uri>model://wall_4m</uri>
+      <pose>0.00 8.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_153</name>
+      <uri>model://wall_2m</uri>
+      <pose>1.00 -7.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_154</name>
+      <uri>model://wall_1m</uri>
+      <pose>1.00 -5.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_155</name>
+      <uri>model://wall_1m</uri>
+      <pose>1.00 -3.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_156</name>
+      <uri>model://wall_1m</uri>
+      <pose>1.00 -1.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_157</name>
+      <uri>model://wall_4m</uri>
+      <pose>1.00 4.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_158</name>
+      <uri>model://wall_1m</uri>
+      <pose>1.00 6.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_159</name>
+      <uri>model://wall_1m</uri>
+      <pose>1.00 8.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_160</name>
+      <uri>model://wall_1m</uri>
+      <pose>2.00 -4.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_161</name>
+      <uri>model://wall_2m</uri>
+      <pose>2.00 -1.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_162</name>
+      <uri>model://wall_1m</uri>
+      <pose>2.00 3.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_163</name>
+      <uri>model://wall_1m</uri>
+      <pose>2.00 5.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_164</name>
+      <uri>model://wall_1m</uri>
+      <pose>2.00 7.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_165</name>
+      <uri>model://wall_1m</uri>
+      <pose>2.00 9.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_166</name>
+      <uri>model://wall_2m</uri>
+      <pose>3.00 -9.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_167</name>
+      <uri>model://wall_2m</uri>
+      <pose>3.00 -3.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_168</name>
+      <uri>model://wall_4m</uri>
+      <pose>3.00 2.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_169</name>
+      <uri>model://wall_2m</uri>
+      <pose>3.00 6.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_170</name>
+      <uri>model://wall_1m</uri>
+      <pose>3.00 8.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_171</name>
+      <uri>model://wall_4m</uri>
+      <pose>4.00 -7.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_172</name>
+      <uri>model://wall_2m</uri>
+      <pose>4.00 -4.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_173</name>
+      <uri>model://wall_1m</uri>
+      <pose>4.00 -0.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_174</name>
+      <uri>model://wall_2m</uri>
+      <pose>4.00 2.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_175</name>
+      <uri>model://wall_1m</uri>
+      <pose>4.00 4.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_176</name>
+      <uri>model://wall_1m</uri>
+      <pose>4.00 9.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_177</name>
+      <uri>model://wall_2m</uri>
+      <pose>5.00 -7.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_178</name>
+      <uri>model://wall_1m</uri>
+      <pose>5.00 -5.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_179</name>
+      <uri>model://wall_2m</uri>
+      <pose>5.00 -3.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_180</name>
+      <uri>model://wall_1m</uri>
+      <pose>5.00 -1.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_181</name>
+      <uri>model://wall_1m</uri>
+      <pose>5.00 0.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_182</name>
+      <uri>model://wall_2m</uri>
+      <pose>5.00 7.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_183</name>
+      <uri>model://wall_1m</uri>
+      <pose>5.00 8.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_184</name>
+      <uri>model://wall_1m</uri>
+      <pose>6.00 -0.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_185</name>
+      <uri>model://wall_1m</uri>
+      <pose>6.00 5.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_186</name>
+      <uri>model://wall_2m</uri>
+      <pose>6.00 8.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_187</name>
+      <uri>model://wall_1m</uri>
+      <pose>6.00 9.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_188</name>
+      <uri>model://wall_1m</uri>
+      <pose>7.00 -0.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_189</name>
+      <uri>model://wall_1m</uri>
+      <pose>7.00 2.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_190</name>
+      <uri>model://wall_1m</uri>
+      <pose>7.00 4.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_191</name>
+      <uri>model://wall_2m</uri>
+      <pose>7.00 8.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_192</name>
+      <uri>model://wall_1m</uri>
+      <pose>7.00 9.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_2m_2_193</name>
+      <uri>model://wall_2m</uri>
+      <pose>8.00 -5.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_194</name>
+      <uri>model://wall_1m</uri>
+      <pose>8.00 -3.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_195</name>
+      <uri>model://wall_1m</uri>
+      <pose>8.00 -1.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_196</name>
+      <uri>model://wall_1m</uri>
+      <pose>8.00 0.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_197</name>
+      <uri>model://wall_1m</uri>
+      <pose>9.00 -8.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_198</name>
+      <uri>model://wall_1m</uri>
+      <pose>9.00 -2.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_199</name>
+      <uri>model://wall_1m</uri>
+      <pose>9.00 -0.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_200</name>
+      <uri>model://wall_4m</uri>
+      <pose>9.00 3.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_1m_2_201</name>
+      <uri>model://wall_1m</uri>
+      <pose>9.00 5.50 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_8m_2_202</name>
+      <uri>model://wall_8m</uri>
+      <pose>-6.00 10.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_8m_2_203</name>
+      <uri>model://wall_8m</uri>
+      <pose>2.00 10.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_204</name>
+      <uri>model://wall_4m</uri>
+      <pose>8.00 10.00 4.0 0 0 0.0000</pose>
+    </include>
+    <include>
+      <name>wall_8m_2_205</name>
+      <uri>model://wall_8m</uri>
+      <pose>10.00 -6.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_8m_2_206</name>
+      <uri>model://wall_8m</uri>
+      <pose>10.00 2.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>wall_4m_2_207</name>
+      <uri>model://wall_4m</uri>
+      <pose>10.00 8.00 4.0 0 0 1.5708</pose>
+    </include>
+    <include>
+      <name>chest_2_0</name>
+      <uri>model://treasure_chest</uri>
+      <pose>0.00 5.50 4.2 0 0 0</pose>
+    </include>
+    <include>
+      <name>chest_2_1</name>
+      <uri>model://treasure_chest</uri>
+      <pose>8.00 -0.50 4.2 0 0 0</pose>
+    </include>
+    <!-- Boden mit Loch für Etage 2 -->
+    <include>
+      <name>ground_hole_2</name>
+      <uri>model://ground_hole_1</uri>
+      <pose>0 0 4.00 0 0 0</pose>
     </include>
   </world>
 </sdf>

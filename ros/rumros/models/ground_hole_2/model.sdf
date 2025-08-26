@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <sdf version="1.8">
-  <model name="ground">
+  <model name="ground_hole_2">
     <static>true</static>
 
     <link name="link">
@@ -11,7 +11,7 @@
       <visual name="visual">
         <geometry>
           <mesh>
-            <uri>model://ground_hole/meshes/ground_hole.dae</uri>
+            <uri>model://ground_hole_2/meshes/ground_hole_2.dae</uri>
           </mesh>
         </geometry>
       </visual>
@@ -19,7 +19,7 @@
       <collision name="collision">
         <geometry>
           <mesh>
-            <uri>model://ground_hole/meshes/ground_hole.dae</uri>
+            <uri>model://ground_hole_2/meshes/ground_hole_2.dae</uri>
           </mesh>
         </geometry>
       </collision>

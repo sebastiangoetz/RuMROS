@@ -63,7 +63,7 @@ def add_ramp_between_floors(f, grid, cell_size, offset_z, floor_num):
     offset_y = height * cell_size / 2.0
     world_x = (ramp_x + 0.5) * cell_size - offset_x
     world_y = (ramp_y + 0.5) * cell_size - offset_y
-    world_z = offset_z + 0.1  # Leicht über dem Boden
+    world_z = offset_z
     
     f.write(f"""    <!-- Rampe von Etage {floor_num} zu {floor_num + 1} -->
     <include>
@@ -80,7 +80,7 @@ def add_floor_with_hole(f, cell_size, offset_z, floor_num):
     f.write(f"""    <!-- Boden mit Loch für Etage {floor_num} -->
     <include>
       <name>ground_hole_{floor_num}</name>
-      <uri>model://ground_hole</uri>
+      <uri>model://ground_hole_{(floor_num % 2) + 1}</uri>
       <pose>0 0 {world_z:.2f} 0 0 0</pose>
     </include>\n""")
 
