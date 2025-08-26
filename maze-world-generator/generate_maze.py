@@ -10,9 +10,9 @@ class Cell:
         self.visited = False
 
 
-def generate_maze(width, height, n_rooms=3, max_attempts=20, chest_probability=0.4):
+def generate_maze(width, height, n_rooms=3, max_attempts=20, chest_probability=0.4, room_size=3):
     for attempt in range(max_attempts):
-        grid, start, end, chests = _generate_single_maze(width, height, n_rooms, chest_probability)
+        grid, start, end, chests = _generate_single_maze(width, height, n_rooms, chest_probability, room_size)
         if is_fully_connected(grid, start):
             print(f"Maze valid after {attempt + 1} attempt(s).")
             return grid, start, end, chests
@@ -23,7 +23,7 @@ def generate_maze(width, height, n_rooms=3, max_attempts=20, chest_probability=0
     return grid, start, end, chests  # return last attempt anyway
 
 
-def _generate_single_maze(width, height, n_rooms=3, chest_probability=0.4):
+def _generate_single_maze(width, height, n_rooms=3, chest_probability=0.4, room_size=5):
     grid = [[Cell(x, y) for x in range(width)] for y in range(height)]
     room_positions = []
     room_entrances = []
@@ -60,36 +60,36 @@ def _generate_single_maze(width, height, n_rooms=3, chest_probability=0.4):
     # -----------------------
     # Start room (top-left)
     # -----------------------
-    for y in range(3):
-        for x in range(3):
+    for y in range(room_size):
+        for x in range(room_size):
             cell = grid[y][x]
             cell.visited = True
             room_positions.append((x, y))
             if y > 0: cell.walls['top'] = False
-            if y < 2: cell.walls['bottom'] = False
+            if y < room_size - 1: cell.walls['bottom'] = False
             if x > 0: cell.walls['left'] = False
-            if x < 2: cell.walls['right'] = False
+            if x < room_size - 1: cell.walls['right'] = False
     # Entry into maze
-    grid[2][1].walls['bottom'] = False
-    grid[3][1].walls['top'] = False
-    room_entrances.append((3, 1))
+    grid[room_size - 1][room_size // 2].walls['bottom'] = False
+    grid[room_size][room_size // 2].walls['top'] = False
+    room_entrances.append((room_size, room_size // 2))
 
     # -----------------------
     # Goal room (bottom-right)
     # -----------------------
-    for y in range(height - 3, height):
-        for x in range(width - 3, width):
+    for y in range(height - room_size, height):
+        for x in range(width - room_size, width):
             cell = grid[y][x]
             cell.visited = True
             room_positions.append((x, y))
-            if y > height - 3: cell.walls['top'] = False
+            if y > height - room_size: cell.walls['top'] = False
             if y < height - 1: cell.walls['bottom'] = False
-            if x > width - 3: cell.walls['left'] = False
+            if x > width - room_size: cell.walls['left'] = False
             if x < width - 1: cell.walls['right'] = False
     # Entry into maze
-    grid[height - 3][width - 2].walls['top'] = False
-    grid[height - 4][width - 2].walls['bottom'] = False
-    room_entrances.append((height - 4, width - 2))
+    grid[height - room_size][width - room_size // 2 - 1].walls['top'] = False
+    grid[height - room_size - 1][width - room_size // 2 - 1].walls['bottom'] = False
+    room_entrances.append((height - room_size - 1, width - room_size // 2 - 1))
 
     # -----------------------
     # Random rooms (3x3)
@@ -149,11 +149,11 @@ def _generate_single_maze(width, height, n_rooms=3, chest_probability=0.4):
     # -----------------------
     # Maze carving
     # -----------------------
-    carve(3, 3)
+    carve(room_size, room_size // 2)
     draw_maze(grid, "maze_step2_after_carving.png", chests=chests)
 
-    start = (1, 1)
-    end = (width - 2, height - 2)
+    start = (room_size // 2, room_size // 2)
+    end = (width - room_size // 2 - 1, height - room_size // 2 - 1)
     return grid, start, end, chests
 
 
