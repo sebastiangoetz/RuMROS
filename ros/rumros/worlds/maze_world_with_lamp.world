@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<sdf version="1.8">
+  <world name="maze_world">
+    <include>
+      <uri>model://ground</uri>
+    </include>
+    <include>
+      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Sun</uri>
+    </include>
+    <include>
+      <name>wall_lamp</name>
+      <uri>model://wall_lamp</uri>
+      <pose>-7.5 -7.1 1.3 0 0 0</pose>
+    </include>
+    <!-- <light type="point" name="torch_light">
+      <pose>-8 -8 1.5 0 0 0</pose>
+      <diffuse>1 0.8 0.5 1</diffuse>
+      <specular>0.9 0.9 0.9 1</specular>
+      <attenuation>
+        <range>3</range>
+        <constant>0.5</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <cast_shadows>true</cast_shadows>
+    </light> -->
+
+    <!-- Etage 0 -->
+    
+  </world>
+</sdf>

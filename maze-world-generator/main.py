@@ -7,8 +7,8 @@ width = 20
 height = 20
 n_rooms = 5
 max_attempts = 20
-chest_probability = 0.3
-n_floors = 3  # Anzahl der Etagen
+chest_probability = 0.1
+n_floors = 2  # Anzahl der Etagen
 floor_height = 2.0  # Höhe pro Etage in Metern (2m für Wandhöhe)
 
 # Generiere Mazes für alle Etagen
