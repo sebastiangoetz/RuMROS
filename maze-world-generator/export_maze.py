@@ -7,7 +7,7 @@ def generate_multi_floor_world(mazes, n_floors, floor_height, filename="maze_wor
     with open(filename, "w") as f:
         f.write('<?xml version="1.0"?>\n')
         f.write('<sdf version="1.8">\n')
-        f.write('  <world name="multi_floor_maze">\n')
+        f.write('  <world name="maze_world">\n')
         
         # Grundbeleuchtung und Himmel
         f.write("""    <include>
@@ -36,15 +36,18 @@ def generate_multi_floor_world(mazes, n_floors, floor_height, filename="maze_wor
 def add_floor_to_world(f, grid, chests, cell_size, offset_z, floor_num):
     width = len(grid[0])
     height = len(grid)
+
+    offset_x = width * cell_size / 2.0
+    offset_y = height * cell_size / 2.0
     
     wall_segments = generate_wall_segments(grid, cell_size, offset_z, floor_num)
-    chest_includes = generate_chest_includes(chests, cell_size, offset_z, floor_num)
+    chest_includes = generate_chest_includes(chests, cell_size,offset_x,offset_y, offset_z, floor_num)
     
     f.write(f"    <!-- Etage {floor_num} -->\n")
-    for wall in wall_segments:
-        f.write(wall + "\n")
     for chest in chest_includes:
         f.write(chest + "\n")
+    for wall in wall_segments:
+        f.write(wall + "\n")
 
 def add_ramp_between_floors(f, grid, cell_size, offset_z, floor_num):
     width = len(grid[0])
@@ -179,23 +182,17 @@ def generate_wall_segments(grid, cell_size, offset_z, floor=0):
 
     return wall_segments
 
-def generate_chest_includes(chests, cell_size, offset_z, floor=0):
+def generate_chest_includes(chests, cell_size,offset_x,offset_y, offset_z, floor=0):
     includes = []
     if not chests:
         return includes
-        
-    width = max(x for x, y in chests) + 1 if chests else 0
-    height = max(y for x, y in chests) + 1 if chests else 0
-    
-    offset_x = width * cell_size / 2.0
-    offset_y = height * cell_size / 2.0
-    
+           
     for i, (cx, cy) in enumerate(chests):
         world_x = (cx + 0.5) * cell_size - offset_x
         world_y = (cy + 0.5) * cell_size - offset_y
         includes.append(f"""    <include>
       <name>chest_{floor}_{i}</name>
       <uri>model://treasure_chest</uri>
-      <pose>{world_x:.2f} {world_y:.2f} {offset_z + 0.2} 0 0 0</pose>
+      <pose>{world_x:.2f} {world_y:.2f} {offset_z:.2f} 0 0 0</pose>
     </include>""")
     return includes
