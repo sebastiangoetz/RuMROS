@@ -207,7 +207,7 @@ def generate_lamp_includes(grid, cell_size, offset_x, offset_y, offset_z, floor=
     height = len(grid)
     
     # Platziere Lampen an den Wänden in regelmäßigen Abständen
-    lamp_spacing = 4
+    lamp_spacing = 6
     
     for y in range(height):
         for x in range(width):
@@ -275,8 +275,8 @@ def generate_lamp_includes(grid, cell_size, offset_x, offset_y, offset_z, floor=
         <attenuation>
             <range>3</range>
             <constant>0.5</constant>
-            <linear>0.01</linear>
-            <quadratic>0.001</quadratic>
+            <linear>0.1</linear>
+            <quadratic>0.01</quadratic>
         </attenuation>
         <cast_shadows>true</cast_shadows>
     </light>
