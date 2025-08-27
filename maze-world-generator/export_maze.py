@@ -1,4 +1,5 @@
 import math
+import random
 
 SEGMENT_SIZES = [8, 4, 2, 1]
 ROOM_SIZE = 3
@@ -41,13 +42,16 @@ def add_floor_to_world(f, grid, chests, cell_size, offset_z, floor_num):
     offset_y = height * cell_size / 2.0
     
     wall_segments = generate_wall_segments(grid, cell_size, offset_z, floor_num)
-    chest_includes = generate_chest_includes(chests, cell_size,offset_x,offset_y, offset_z, floor_num)
+    chest_includes = generate_chest_includes(chests, cell_size, offset_x, offset_y, offset_z, floor_num)
+    lamp_includes = generate_lamp_includes(grid, cell_size, offset_x, offset_y, offset_z, floor_num)
     
     f.write(f"    <!-- Etage {floor_num} -->\n")
     for chest in chest_includes:
         f.write(chest + "\n")
     for wall in wall_segments:
         f.write(wall + "\n")
+    for lamp in lamp_includes:
+        f.write(lamp + "\n")
 
 def add_ramp_between_floors(f, grid, cell_size, offset_z, floor_num):
     width = len(grid[0])
@@ -182,7 +186,7 @@ def generate_wall_segments(grid, cell_size, offset_z, floor=0):
 
     return wall_segments
 
-def generate_chest_includes(chests, cell_size,offset_x,offset_y, offset_z, floor=0):
+def generate_chest_includes(chests, cell_size, offset_x, offset_y, offset_z, floor=0):
     includes = []
     if not chests:
         return includes
@@ -195,4 +199,87 @@ def generate_chest_includes(chests, cell_size,offset_x,offset_y, offset_z, floor
       <uri>model://treasure_chest</uri>
       <pose>{world_x:.2f} {world_y:.2f} {offset_z:.2f} 0 0 0</pose>
     </include>""")
+    return includes
+
+def generate_lamp_includes(grid, cell_size, offset_x, offset_y, offset_z, floor=0):
+    includes = []
+    width = len(grid[0])
+    height = len(grid)
+    
+    # Platziere Lampen an den Wänden in regelmäßigen Abständen
+    lamp_spacing = 4
+    
+    for y in range(height):
+        for x in range(width):
+            # Prüfe, ob wir an dieser Position eine Lampe platzieren sollen
+            if x % lamp_spacing == 0 and y % lamp_spacing == 0:
+                cell = grid[y][x]
+                
+                # Bestimme verfügbare Wände für Lampen
+                available_walls = []
+                if cell.walls['top'] and y > 0:
+                    available_walls.append('top')
+                if cell.walls['left'] and x > 0:
+                    available_walls.append('left')
+                if cell.walls['right'] and x < width - 1:
+                    available_walls.append('right')
+                if cell.walls['bottom'] and y < height - 1:
+                    available_walls.append('bottom')
+                
+                # Wähle eine zufällige Wand für die Lampe
+                if available_walls:
+                    wall_side = random.choice(available_walls)
+                    
+                    # Berechne Position und Ausrichtung basierend auf der Wand
+                    if wall_side == 'top':
+                        world_x = (x + 0.5) * cell_size - offset_x
+                        world_y = y * cell_size - offset_y - 0.1  # Leicht vor der Wand
+                        yaw = 0
+                        # Lichtquelle 0.2 Einheiten von der Lampe entfernt
+                        light_x = world_x
+                        light_y = world_y - 0.2
+                    elif wall_side == 'bottom':
+                        world_x = (x + 0.5) * cell_size - offset_x
+                        world_y = (y + 1) * cell_size - offset_y + 0.1  # Leicht vor der Wand
+                        yaw = math.pi
+                        # Lichtquelle 0.2 Einheiten von der Lampe entfernt
+                        light_x = world_x
+                        light_y = world_y + 0.2
+                    elif wall_side == 'left':
+                        world_x = x * cell_size - offset_x - 0.1  # Leicht vor der Wand
+                        world_y = (y + 0.5) * cell_size - offset_y
+                        yaw = -math.pi / 2
+                        # Lichtquelle 0.2 Einheiten von der Lampe entfernt
+                        light_x = world_x - 0.2
+                        light_y = world_y
+                    elif wall_side == 'right':
+                        world_x = (x + 1) * cell_size - offset_x + 0.1  # Leicht vor der Wand
+                        world_y = (y + 0.5) * cell_size - offset_y
+                        yaw = math.pi / 2
+                        # Lichtquelle 0.2 Einheiten von der Lampe entfernt
+                        light_x = world_x + 0.2
+                        light_y = world_y
+                    
+                    # Höhe der Lampe
+                    world_z = offset_z + 1.3  # 1.3m über dem Boden
+                    
+                    includes.append(f"""    <include>
+      <name>wall_lamp_{floor}_{x}_{y}_{wall_side}</name>
+      <uri>model://wall_lamp</uri>
+      <pose>{world_x:.2f} {world_y:.2f} {world_z:.2f} 0 0 {yaw:.4f}</pose>
+    </include>
+    <light type="point" name="wall_lamp_light_{floor}_{x}_{y}_{wall_side}">
+        <pose>{light_x:.2f} {light_y:.2f} {world_z:.2f} 0 0 {yaw:.4f}</pose>
+        <diffuse>1 0.8 0.5 1</diffuse>
+        <specular>0.9 0.9 0.9 1</specular>
+        <attenuation>
+            <range>3</range>
+            <constant>0.5</constant>
+            <linear>0.01</linear>
+            <quadratic>0.001</quadratic>
+        </attenuation>
+        <cast_shadows>true</cast_shadows>
+    </light>
+    """)
+    
     return includes
