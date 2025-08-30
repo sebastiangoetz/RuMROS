@@ -268,18 +268,6 @@ def generate_lamp_includes(grid, cell_size, offset_x, offset_y, offset_z, floor=
       <uri>model://wall_lamp</uri>
       <pose>{world_x:.2f} {world_y:.2f} {world_z:.2f} 0 0 {yaw:.4f}</pose>
     </include>
-    <light type="point" name="wall_lamp_light_{floor}_{x}_{y}_{wall_side}">
-        <pose>{light_x:.2f} {light_y:.2f} {world_z:.2f} 0 0 {yaw:.4f}</pose>
-        <diffuse>1 0.8 0.5 1</diffuse>
-        <specular>0.9 0.9 0.9 1</specular>
-        <attenuation>
-            <range>3</range>
-            <constant>0.5</constant>
-            <linear>0.1</linear>
-            <quadratic>0.01</quadratic>
-        </attenuation>
-        <cast_shadows>true</cast_shadows>
-    </light>
     """)
     
     return includes
