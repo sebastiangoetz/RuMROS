@@ -7,7 +7,7 @@ ROOM_SIZE = 3
 def generate_multi_floor_world(mazes, n_floors, floor_height, filename="maze_world.world", cell_size=1.0):
     with open(filename, "w") as f:
         f.write('<?xml version="1.0"?>\n')
-        f.write('<sdf version="1.8">\n')
+        f.write('<sdf version="1.10">\n')
         f.write('  <world name="maze_world">\n')
         
         # Grundbeleuchtung und Himmel
@@ -197,7 +197,7 @@ def generate_chest_includes(chests, cell_size, offset_x, offset_y, offset_z, flo
         includes.append(f"""    <include>
       <name>chest_{floor}_{i}</name>
       <uri>model://treasure_chest</uri>
-      <pose>{world_x:.2f} {world_y:.2f} {offset_z:.2f} 0 0 0</pose>
+      <pose>{world_x:.2f} {world_y:.2f} {(offset_z + 0.1):.2f} 0 0 0</pose>
     </include>""")
     return includes
 
