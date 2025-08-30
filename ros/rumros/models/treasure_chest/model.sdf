@@ -12,10 +12,11 @@
       </visual>
 
       <collision name="treasure_chest_collision">
+        <pose>0 0 0.31 0 0 0</pose>
         <geometry>
-          <mesh>
-            <uri>model://treasure_chest/meshes/treasure_chest.dae</uri>
-          </mesh>
+          <box>
+            <size>0.96 0.52 0.63</size>
+          </box>
         </geometry>
       </collision>
     </link>
