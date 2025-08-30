@@ -14,9 +14,20 @@ def generate_multi_floor_world(mazes, n_floors, floor_height, filename="maze_wor
         f.write("""    <include>
       <uri>model://ground</uri>
     </include>
-    <include>
-      <uri>https://fuel.gazebosim.org/1.0/OpenRobotics/models/Sun</uri>
-    </include>\n""")
+    <light type="directional" name="sun">
+      <visualize>false</visualize>
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse> 
+      <specular>0.2 0.2 0.2 1</specular>
+      <attenuation>
+        <range>1000</range> 
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+      <direction>-0.5 0.5 -1</direction>
+    </light>\n""")
 
         # Füge jede Etage hinzu
         for floor_num, (maze, chests) in enumerate(mazes):
