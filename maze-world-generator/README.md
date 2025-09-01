@@ -1,5 +1,3 @@
-Hier ist die ergänzte Readme mit den Quellenangaben:
-
 # 🧱 Maze Generator for Gazebo / ROS 2
 
 ## 📌 Project Goal
@@ -114,6 +112,14 @@ This will:
 
 ## 📚 Sources & References
 
+### Material & Asset References
+- **Ground Material**: [Rocky Terrain from Poly Haven](https://polyhaven.com/a/rocky_terrain) (CC0)
+- **Wall Material**: [Mossy Rock from Poly Haven](https://polyhaven.com/a/mossy_rock) (CC0)
+- **Ramp Material**: [Japanese Stone Wall from Poly Haven](https://polyhaven.com/a/japanese_stone_wall) (CC0)
+- **Chest Model**: [Treasure Chest from Poly Haven](https://polyhaven.com/a/treasure_chest) (CC0)
+- **Lamp Model**: [Industrial Wall Lamp from Poly Haven](https://polyhaven.com/a/industrial_wall_lamp) (CC0)
+
+### Code References
 - **Room Generation Algorithm**: [Rooms and Mazes - journal.stuffwithstuff.com](https://journal.stuffwithstuff.com/2014/12/21/rooms-and-mazes/)
 - **Maze Cell Structure**: [Build a Maze Game in Python - thepythoncode.com](https://thepythoncode.com/article/build-a-maze-game-in-python)
 - **Pathfinding Concepts**: [Basic Pathfinding Explained with Python - codementor.io](https://www.codementor.io/blog/basic-pathfinding-explained-with-python-5pil8767c1)
