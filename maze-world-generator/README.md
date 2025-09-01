@@ -1,3 +1,5 @@
+Hier ist die ergänzte Readme mit den Quellenangaben:
+
 # 🧱 Maze Generator for Gazebo / ROS 2
 
 ## 📌 Project Goal
@@ -107,3 +109,15 @@ This will:
 * Maze centered around `(0, 0)` by offsetting wall positions
 * Each wall segment correctly oriented with position and yaw angle
 * Generates a valid `.world` file including ground plane and sun light source
+
+---
+
+## 📚 Sources & References
+
+- **Room Generation Algorithm**: [Rooms and Mazes - journal.stuffwithstuff.com](https://journal.stuffwithstuff.com/2014/12/21/rooms-and-mazes/)
+- **Maze Cell Structure**: [Build a Maze Game in Python - thepythoncode.com](https://thepythoncode.com/article/build-a-maze-game-in-python)
+- **Pathfinding Concepts**: [Basic Pathfinding Explained with Python - codementor.io](https://www.codementor.io/blog/basic-pathfinding-explained-with-python-5pil8767c1)
+- **BFS Algorithm Theory**: [Breadth-first Search - Wikipedia](https://en.wikipedia.org/wiki/Breadth-first_search)
+- **BFS Python Implementation**: [Solve Maze using BFS Algorithm - medium.com](https://medium.com/@luthfisauqi17_68455/artificial-intelligence-search-problem-solve-maze-using-breadth-first-search-bfs-algorithm-255139c6e1a3)
+
+_Last accessed: 01-09-2025_
