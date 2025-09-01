@@ -1,17 +1,39 @@
 import math
 import random
 
-SEGMENT_SIZES = [8, 4, 2, 1]
+WALL_SEGMENT_SIZES = [8, 4, 2, 1]
 ROOM_SIZE = 3
+LAMP_SPACING = 6
+LAMP_HEIGHT_OFFSET = 1.3
+CHEST_HEIGHT_OFFSET = 0.1
 
-def generate_multi_floor_world(mazes, n_floors, floor_height, filename="maze_world.world", cell_size=1.0):
-    with open(filename, "w") as f:
-        f.write('<?xml version="1.0"?>\n')
-        f.write('<sdf version="1.10">\n')
-        f.write('  <world name="maze_world">\n')
+
+def generate_multi_floor_world(mazes, floor_count, floor_height, filename="maze_world.world", cell_size=1.0):
+    """Generates a complete multi-floor maze world in SDF format."""
+    with open(filename, "w") as world_file:
+        _write_world_header(world_file)
         
-        # Grundbeleuchtung und Himmel
-        f.write("""    <include>
+        for floor_number, (maze_grid, chest_locations) in enumerate(mazes):
+            z_offset = floor_number * floor_height
+            _add_floor_to_world(world_file, maze_grid, chest_locations, cell_size, z_offset, floor_number)
+            
+            if floor_number < floor_count - 1:
+                _add_ramp_between_floors(world_file, maze_grid, cell_size, z_offset, floor_number)
+                
+            if floor_number > 0:
+                _add_floor_with_hole(world_file, cell_size, z_offset, floor_number)
+
+        _write_world_footer(world_file)
+    
+    print(f"Exported {floor_count} floors to '{filename}'")
+
+
+def _write_world_header(file):
+    """Writes the static world header content."""
+    file.write('<?xml version="1.0"?>\n')
+    file.write('<sdf version="1.10">\n')
+    file.write('  <world name="maze_world">\n')
+    file.write("""    <include>
       <uri>model://ground</uri>
     </include>
     <light type="directional" name="sun">
@@ -29,254 +51,246 @@ def generate_multi_floor_world(mazes, n_floors, floor_height, filename="maze_wor
       <direction>-0.5 0.5 -1</direction>
     </light>\n""")
 
-        # Füge jede Etage hinzu
-        for floor_num, (maze, chests) in enumerate(mazes):
-            offset_z = floor_num * floor_height
-            add_floor_to_world(f, maze, chests, cell_size, offset_z, floor_num)
-            
-            # Füge Rampe hinzu (außer für die oberste Etage)
-            if floor_num < n_floors - 1:
-                add_ramp_between_floors(f, maze, cell_size, offset_z, floor_num)
-                
-            # Füge Boden mit Loch hinzu (außer für die unterste Etage)
-            if floor_num > 0:
-                add_floor_with_hole(f, cell_size, offset_z, floor_num)
 
-        f.write("  </world>\n</sdf>\n")
-    print(f"Exportierte {n_floors} Etagen nach '{filename}'")
+def _write_world_footer(file):
+    """Writes the closing tags for the world file."""
+    file.write("  </world>\n</sdf>\n")
 
-def add_floor_to_world(f, grid, chests, cell_size, offset_z, floor_num):
-    width = len(grid[0])
-    height = len(grid)
 
-    offset_x = width * cell_size / 2.0
-    offset_y = height * cell_size / 2.0
+def _add_floor_to_world(file, maze_grid, chest_locations, cell_size, z_offset, floor_number):
+    """Adds a complete floor with walls, chests and lamps to the world."""
+    grid_width = len(maze_grid[0])
+    grid_height = len(maze_grid)
     
-    wall_segments = generate_wall_segments(grid, cell_size, offset_z, floor_num)
-    chest_includes = generate_chest_includes(chests, cell_size, offset_x, offset_y, offset_z, floor_num)
-    #lamp_includes = generate_lamp_includes(grid, cell_size, offset_x, offset_y, offset_z, floor_num)
+    x_center_offset = grid_width * cell_size / 2.0
+    y_center_offset = grid_height * cell_size / 2.0
     
-    f.write(f"    <!-- Etage {floor_num} -->\n")
-    for chest in chest_includes:
-        f.write(chest + "\n")
-    for wall in wall_segments:
-        f.write(wall + "\n")
+    file.write(f"    <!-- Floor {floor_number} -->\n")
+    
+    for chest_xml in _generate_chest_xml(chest_locations, cell_size, x_center_offset, y_center_offset, z_offset, floor_number):
+        file.write(chest_xml + "\n")
+    
+    for wall_xml in _generate_wall_segments_xml(maze_grid, cell_size, z_offset, floor_number):
+        file.write(wall_xml + "\n")
+    
+    for lamp_xml in _generate_lamp_xml(maze_grid, cell_size, x_center_offset, y_center_offset, z_offset, floor_number):
+        file.write(lamp_xml + "\n")
 
-def add_ramp_between_floors(f, grid, cell_size, offset_z, floor_num):
-    width = len(grid[0])
-    height = len(grid)
+
+def _add_ramp_between_floors(file, maze_grid, cell_size, z_offset, floor_number):
+    """Adds a ramp connection between consecutive floors."""
+    grid_width = len(maze_grid[0])
+    grid_height = len(maze_grid)
     
-    # Bestimme Position basierend auf Etagennummer (gerade/ungerade)
-    if floor_num % 2 == 0:  # Gerade Etage - Rampe oben rechts
-        ramp_x = width - ROOM_SIZE // 2 - 1
-        ramp_y = height - ROOM_SIZE // 2 - 1
-    else:  # Ungerade Etage - Rampe unten links
+    # Determine ramp position based on floor parity
+    if floor_number % 2 == 0:
+        ramp_x = grid_width - ROOM_SIZE // 2 - 1
+        ramp_y = grid_height - ROOM_SIZE // 2 - 1
+    else:
         ramp_x = ROOM_SIZE // 2
         ramp_y = ROOM_SIZE // 2
     
-    # Weltkoordinaten
-    offset_x = width * cell_size / 2.0
-    offset_y = height * cell_size / 2.0
-    world_x = (ramp_x + 0.5) * cell_size - offset_x
-    world_y = (ramp_y + 0.5) * cell_size - offset_y
-    world_z = offset_z
+    x_center_offset = grid_width * cell_size / 2.0
+    y_center_offset = grid_height * cell_size / 2.0
     
-    f.write(f"""    <!-- Rampe von Etage {floor_num} zu {floor_num + 1} -->
+    world_x = (ramp_x + 0.5) * cell_size - x_center_offset
+    world_y = (ramp_y + 0.5) * cell_size - y_center_offset
+    
+    file.write(f"""    <!-- Ramp from Floor {floor_number} to {floor_number + 1} -->
     <include>
-      <name>ramp_{floor_num}</name>
+      <name>ramp_{floor_number}</name>
       <uri>model://ramp</uri>
-      <pose>{world_x:.2f} {world_y:.2f} {world_z:.2f} 0 0 0</pose>
+      <pose>{world_x:.2f} {world_y:.2f} {z_offset:.2f} 0 0 0</pose>
     </include>\n""")
 
-def add_floor_with_hole(f, cell_size, offset_z, floor_num):
-    # Boden mit Loch wird einfach in der Mitte platziert (wie gewünscht)
-    # Die Höhe wird entsprechend der Etage angepasst
-    world_z = offset_z  # Auf der Höhe der aktuellen Etage
-    
-    f.write(f"""    <!-- Boden mit Loch für Etage {floor_num} -->
+
+def _add_floor_with_hole(file, cell_size, z_offset, floor_number):
+    """Adds a floor plate with hole for vertical connections."""
+    file.write(f"""    <!-- Floor with hole for Level {floor_number} -->
     <include>
-      <name>ground_hole_{floor_num}</name>
-      <uri>model://ground_hole_{(floor_num % 2) + 1}</uri>
-      <pose>0 0 {world_z:.2f} 0 0 0</pose>
+      <name>ground_hole_{floor_number}</name>
+      <uri>model://ground_hole_{(floor_number % 2) + 1}</uri>
+      <pose>0 0 {z_offset:.2f} 0 0 0</pose>
     </include>\n""")
 
-def generate_wall_segments(grid, cell_size, offset_z, floor=0):
-    width = len(grid[0])
-    height = len(grid)
+
+def _generate_wall_segments_xml(grid, cell_size, z_offset, floor_number):
+    """Generates XML definitions for all wall segments in the maze."""
+    grid_width = len(grid[0])
+    grid_height = len(grid)
     wall_segments = []
-    index = 0
+    segment_counter = 0
 
-    offset_x = width * cell_size / 2.0
-    offset_y = height * cell_size / 2.0
+    x_center_offset = grid_width * cell_size / 2.0
+    y_center_offset = grid_height * cell_size / 2.0
 
-    def generate_wall(x, y, length, orientation, index, floor=0):
-        model = f"wall_{length}m"
-        name = f"{model}_{floor}_{index}"
-
-        if orientation == "H":
-            cx = (x + length / 2.0) * cell_size - offset_x
-            cy = y * cell_size - offset_y
+    def generate_segment(x, y, length, orientation):
+        nonlocal segment_counter
+        model_name = f"wall_{length}m"
+        segment_name = f"{model_name}_{floor_number}_{segment_counter}"
+        
+        if orientation == "HORIZONTAL":
+            center_x = (x + length / 2.0) * cell_size - x_center_offset
+            center_y = y * cell_size - y_center_offset
             yaw = 0
         else:
-            cx = x * cell_size - offset_x
-            cy = (y + length / 2.0) * cell_size - offset_y
+            center_x = x * cell_size - x_center_offset
+            center_y = (y + length / 2.0) * cell_size - y_center_offset
             yaw = math.pi / 2
 
-        pose = f"{cx:.2f} {cy:.2f} {offset_z} 0 0 {yaw:.4f}"
+        pose = f"{center_x:.2f} {center_y:.2f} {z_offset} 0 0 {yaw:.4f}"
+        segment_counter += 1
+        
         return f"""    <include>
-      <name>{name}</name>
-      <uri>model://{model}</uri>
+      <name>{segment_name}</name>
+      <uri>model://{model_name}</uri>
       <pose>{pose}</pose>
     </include>"""
 
-    # Process horizontal walls (top walls only)
-    for y in range(height):
-        x = 0
-        while x < width:
-            if grid[y][x].walls['top']:
-                for size in SEGMENT_SIZES:
-                    if x + size <= width and all(grid[y][x + i].walls['top'] for i in range(size)):
-                        wall_segments.append(generate_wall(x, y, size, "H", index, floor))
-                        index += 1
-                        x += size
+    # Process horizontal walls
+    for row_idx in range(grid_height):
+        col_idx = 0
+        while col_idx < grid_width:
+            if grid[row_idx][col_idx].walls['top']:
+                segment_added = False
+                for segment_size in WALL_SEGMENT_SIZES:
+                    if (col_idx + segment_size <= grid_width and 
+                        all(grid[row_idx][col_idx + i].walls['top'] for i in range(segment_size))):
+                        wall_segments.append(generate_segment(col_idx, row_idx, segment_size, "HORIZONTAL"))
+                        col_idx += segment_size
+                        segment_added = True
                         break
-                else:
-                    x += 1
+                if not segment_added:
+                    col_idx += 1
             else:
-                x += 1
+                col_idx += 1
 
-    # Process vertical walls (left walls only)
-    for x in range(width):
-        y = 0
-        while y < height:
-            if grid[y][x].walls['left']:
-                for size in SEGMENT_SIZES:
-                    if y + size <= height and all(grid[y + i][x].walls['left'] for i in range(size)):
-                        wall_segments.append(generate_wall(x, y, size, "V", index, floor))
-                        index += 1
-                        y += size
+    # Process vertical walls
+    for col_idx in range(grid_width):
+        row_idx = 0
+        while row_idx < grid_height:
+            if grid[row_idx][col_idx].walls['left']:
+                segment_added = False
+                for segment_size in WALL_SEGMENT_SIZES:
+                    if (row_idx + segment_size <= grid_height and 
+                        all(grid[row_idx + i][col_idx].walls['left'] for i in range(segment_size))):
+                        wall_segments.append(generate_segment(col_idx, row_idx, segment_size, "VERTICAL"))
+                        row_idx += segment_size
+                        segment_added = True
                         break
-                else:
-                    y += 1
+                if not segment_added:
+                    row_idx += 1
             else:
-                y += 1
+                row_idx += 1
 
-    # Add bottom wall of last row
-    y = height
-    x = 0
-    while x < width:
-        if grid[height-1][x].walls['bottom']:
-            for size in SEGMENT_SIZES:
-                if x + size <= width and all(grid[height-1][x + i].walls['bottom'] for i in range(size)):
-                    wall_segments.append(generate_wall(x, y, size, "H", index, floor))
-                    index += 1
-                    x += size
+    # Add bottom boundary walls
+    row_idx = grid_height
+    col_idx = 0
+    while col_idx < grid_width:
+        if grid[grid_height-1][col_idx].walls['bottom']:
+            segment_added = False
+            for segment_size in WALL_SEGMENT_SIZES:
+                if (col_idx + segment_size <= grid_width and 
+                    all(grid[grid_height-1][col_idx + i].walls['bottom'] for i in range(segment_size))):
+                    wall_segments.append(generate_segment(col_idx, row_idx, segment_size, "HORIZONTAL"))
+                    col_idx += segment_size
+                    segment_added = True
                     break
-            else:
-                x += 1
+            if not segment_added:
+                col_idx += 1
         else:
-            x += 1
+            col_idx += 1
 
-    # Add right wall of last column
-    x = width
-    y = 0
-    while y < height:
-        if grid[y][width-1].walls['right']:
-            for size in SEGMENT_SIZES:
-                if y + size <= height and all(grid[y + i][width-1].walls['right'] for i in range(size)):
-                    wall_segments.append(generate_wall(x, y, size, "V", index, floor))
-                    index += 1
-                    y += size
+    # Add right boundary walls
+    col_idx = grid_width
+    row_idx = 0
+    while row_idx < grid_height:
+        if grid[row_idx][grid_width-1].walls['right']:
+            segment_added = False
+            for segment_size in WALL_SEGMENT_SIZES:
+                if (row_idx + segment_size <= grid_height and 
+                    all(grid[row_idx + i][grid_width-1].walls['right'] for i in range(segment_size))):
+                    wall_segments.append(generate_segment(col_idx, row_idx, segment_size, "VERTICAL"))
+                    row_idx += segment_size
+                    segment_added = True
                     break
-            else:
-                y += 1
+            if not segment_added:
+                row_idx += 1
         else:
-            y += 1
+            row_idx += 1
 
     return wall_segments
 
-def generate_chest_includes(chests, cell_size, offset_x, offset_y, offset_z, floor=0):
-    includes = []
-    if not chests:
-        return includes
-           
-    for i, (cx, cy) in enumerate(chests):
-        world_x = (cx + 0.5) * cell_size - offset_x
-        world_y = (cy + 0.5) * cell_size - offset_y
-        includes.append(f"""    <include>
-      <name>chest_{floor}_{i}</name>
-      <uri>model://treasure_chest</uri>
-      <pose>{world_x:.2f} {world_y:.2f} {(offset_z + 0.1):.2f} 0 0 0</pose>
-    </include>""")
-    return includes
 
-def generate_lamp_includes(grid, cell_size, offset_x, offset_y, offset_z, floor=0):
-    includes = []
-    width = len(grid[0])
-    height = len(grid)
+def _generate_chest_xml(chest_locations, cell_size, x_offset, y_offset, z_offset, floor_number):
+    """Generates XML definitions for all treasure chests."""
+    chest_definitions = []
     
-    # Platziere Lampen an den Wänden in regelmäßigen Abständen
-    lamp_spacing = 6
+    for chest_index, (x_coord, y_coord) in enumerate(chest_locations):
+        world_x = (x_coord + 0.5) * cell_size - x_offset
+        world_y = (y_coord + 0.5) * cell_size - y_offset
+        chest_z = z_offset + CHEST_HEIGHT_OFFSET
+        
+        chest_definitions.append(f"""    <include>
+      <name>chest_{floor_number}_{chest_index}</name>
+      <uri>model://treasure_chest</uri>
+      <pose>{world_x:.2f} {world_y:.2f} {chest_z:.2f} 0 0 0</pose>
+    </include>""")
     
-    for y in range(height):
-        for x in range(width):
-            # Prüfe, ob wir an dieser Position eine Lampe platzieren sollen
-            if x % lamp_spacing == 0 and y % lamp_spacing == 0:
-                cell = grid[y][x]
+    return chest_definitions
+
+
+def _generate_lamp_xml(grid, cell_size, x_offset, y_offset, z_offset, floor_number):
+    """Generates XML definitions for wall-mounted lamps."""
+    lamp_definitions = []
+    grid_width = len(grid[0])
+    grid_height = len(grid)
+    
+    for row_idx in range(grid_height):
+        for col_idx in range(grid_width):
+            if col_idx % LAMP_SPACING != 0 or row_idx % LAMP_SPACING != 0:
+                continue
                 
-                # Bestimme verfügbare Wände für Lampen
-                available_walls = []
-                if cell.walls['top'] and y > 0:
-                    available_walls.append('top')
-                if cell.walls['left'] and x > 0:
-                    available_walls.append('left')
-                if cell.walls['right'] and x < width - 1:
-                    available_walls.append('right')
-                if cell.walls['bottom'] and y < height - 1:
-                    available_walls.append('bottom')
+            cell = grid[row_idx][col_idx]
+            available_walls = []
+            
+            if cell.walls['top'] and row_idx > 0:
+                available_walls.append('top')
+            if cell.walls['left'] and col_idx > 0:
+                available_walls.append('left')
+            if cell.walls['right'] and col_idx < grid_width - 1:
+                available_walls.append('right')
+            if cell.walls['bottom'] and row_idx < grid_height - 1:
+                available_walls.append('bottom')
+            
+            if not available_walls:
+                continue
                 
-                # Wähle eine zufällige Wand für die Lampe
-                if available_walls:
-                    wall_side = random.choice(available_walls)
-                    
-                    # Berechne Position und Ausrichtung basierend auf der Wand
-                    if wall_side == 'top':
-                        world_x = (x + 0.5) * cell_size - offset_x
-                        world_y = y * cell_size - offset_y - 0.1  # Leicht vor der Wand
-                        yaw = 0
-                        # Lichtquelle 0.2 Einheiten von der Lampe entfernt
-                        light_x = world_x
-                        light_y = world_y - 0.2
-                    elif wall_side == 'bottom':
-                        world_x = (x + 0.5) * cell_size - offset_x
-                        world_y = (y + 1) * cell_size - offset_y + 0.1  # Leicht vor der Wand
-                        yaw = math.pi
-                        # Lichtquelle 0.2 Einheiten von der Lampe entfernt
-                        light_x = world_x
-                        light_y = world_y + 0.2
-                    elif wall_side == 'left':
-                        world_x = x * cell_size - offset_x - 0.1  # Leicht vor der Wand
-                        world_y = (y + 0.5) * cell_size - offset_y
-                        yaw = -math.pi / 2
-                        # Lichtquelle 0.2 Einheiten von der Lampe entfernt
-                        light_x = world_x - 0.2
-                        light_y = world_y
-                    elif wall_side == 'right':
-                        world_x = (x + 1) * cell_size - offset_x + 0.1  # Leicht vor der Wand
-                        world_y = (y + 0.5) * cell_size - offset_y
-                        yaw = math.pi / 2
-                        # Lichtquelle 0.2 Einheiten von der Lampe entfernt
-                        light_x = world_x + 0.2
-                        light_y = world_y
-                    
-                    # Höhe der Lampe
-                    world_z = offset_z + 1.3  # 1.3m über dem Boden
-                    
-                    includes.append(f"""    <include>
-      <name>wall_lamp_{floor}_{x}_{y}_{wall_side}</name>
+            chosen_wall = random.choice(available_walls)
+            
+            if chosen_wall == 'top':
+                world_x = (col_idx + 0.5) * cell_size - x_offset
+                world_y = row_idx * cell_size - y_offset - 0.1
+                yaw = 0
+            elif chosen_wall == 'bottom':
+                world_x = (col_idx + 0.5) * cell_size - x_offset
+                world_y = (row_idx + 1) * cell_size - y_offset + 0.1
+                yaw = math.pi
+            elif chosen_wall == 'left':
+                world_x = col_idx * cell_size - x_offset - 0.1
+                world_y = (row_idx + 0.5) * cell_size - y_offset
+                yaw = -math.pi / 2
+            else:  # right wall
+                world_x = (col_idx + 1) * cell_size - x_offset + 0.1
+                world_y = (row_idx + 0.5) * cell_size - y_offset
+                yaw = math.pi / 2
+            
+            lamp_z = z_offset + LAMP_HEIGHT_OFFSET
+            
+            lamp_definitions.append(f"""    <include>
+      <name>wall_lamp_{floor_number}_{col_idx}_{row_idx}_{chosen_wall}</name>
       <uri>model://wall_lamp</uri>
-      <pose>{world_x:.2f} {world_y:.2f} {world_z:.2f} 0 0 {yaw:.4f}</pose>
-    </include>
-    """)
+      <pose>{world_x:.2f} {world_y:.2f} {lamp_z:.2f} 0 0 {yaw:.4f}</pose>
+    </include>""")
     
-    return includes
+    return lamp_definitions
