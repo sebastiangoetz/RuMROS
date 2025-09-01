@@ -6,38 +6,61 @@ This project generates a complete **maze in SDF format** (`.world`), compatible 
 
 ---
 
-## 🛠️ Setup & Prerequisites
+## 🚀 Quick Start
 
-Before running the maze generator, set up a Python virtual environment and install the required dependencies:
+**Note:** Tested with Python 3.12.3
 
+1. **Clone the repository:**
 ```bash
-# Create a virtual environment
-python3 -m venv venv
+git clone https://github.com/sebastiangoetz/RuMROS.git
+cd rumros
+```
 
-# Activate the virtual environment
+2. **Setup Python environment:**
+```bash
+cd maze-world-generator
+python3 -m venv venv
 # On Linux/macOS:
 source venv/bin/activate
 # On Windows:
 venv\Scripts\activate
-
-# Install required dependencies
 pip install -r requirements.txt
 ```
 
-**Note:** Tested with Python 3.12.3
-
----
-
-## 🚀 How to Run
-
+3. **Generate the maze:**
 ```bash
 python3 main.py
 ```
 
-This will:
+4. **Move world file to ROS directory:**
+```bash
+mv maze_world.world ../ros/rumros/worlds/
+```
 
+5. **Launch the simulation:**
+```bash
+cd ..
+./launch_maze.sh
+```
+
+This will:
 * Export the maze as a Gazebo `.world` file
-* Save visualization images
+* Save visualization images of each generation step
+* Launch the maze simulation in Gazebo
+
+---
+
+## ⚙️ Configuration
+
+The maze generation can be customized by adjusting the parameters in `main.py`:
+
+```python
+MAZE_WIDTH = 20          # Maze width in cells
+MAZE_HEIGHT = 20         # Maze height in cells  
+NUM_ROOMS = 5            # Number of random rooms
+CHEST_SPAWN_PROBABILITY = 0.6  # Probability for treasure chests in rooms
+NUM_FLOORS = 1           # Number of floors
+```
 
 ---
 
