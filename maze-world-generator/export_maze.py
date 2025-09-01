@@ -54,15 +54,13 @@ def add_floor_to_world(f, grid, chests, cell_size, offset_z, floor_num):
     
     wall_segments = generate_wall_segments(grid, cell_size, offset_z, floor_num)
     chest_includes = generate_chest_includes(chests, cell_size, offset_x, offset_y, offset_z, floor_num)
-    lamp_includes = generate_lamp_includes(grid, cell_size, offset_x, offset_y, offset_z, floor_num)
+    #lamp_includes = generate_lamp_includes(grid, cell_size, offset_x, offset_y, offset_z, floor_num)
     
     f.write(f"    <!-- Etage {floor_num} -->\n")
     for chest in chest_includes:
         f.write(chest + "\n")
     for wall in wall_segments:
         f.write(wall + "\n")
-    for lamp in lamp_includes:
-        f.write(lamp + "\n")
 
 def add_ramp_between_floors(f, grid, cell_size, offset_z, floor_num):
     width = len(grid[0])
