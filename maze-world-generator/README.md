@@ -36,15 +36,12 @@ python3 main.py
 
 This will:
 
-* Generate the maze with rooms
-* Carve the maze paths
-* Find and draw the shortest path solution with treasure chests marked
-* Export the maze as a Gazebo `.world` file named `maze_world.world`
-* Save visualization images (`maze_step1_rooms_only.png`, `maze_step2_after_carving.png`, `maze_step3_solution.png`)
+* Export the maze as a Gazebo `.world` file
+* Save visualization images
 
 ---
 
-## ✅ Currently Implemented
+## ✅ Implemented Features
 
 ### ✔️ Maze Generation
 
@@ -66,7 +63,24 @@ This will:
 * Maze origin centered at `(0, 0)` with correct wall pose calculation
 * Outputs a fully functional `.world` file (`maze_world.world`) for simulation
 
+### ✔️ Multi-Level Support
+* **Multiple floors** can be created with configurable height levels
+* **Ramps** between floors allow the robot to navigate between levels
+* Each floor has its own maze layout with connected pathways
+
+### ✔️ Lighting System
+* **Wall lamps** are randomly distributed throughout the maze
+* Lamps provide ambient lighting for better visual experience
+* Configurable lamp density and placement probability
+
+### ✔️ Treasure System
+* **Treasure chests** are randomly placed in rooms
+* Chests serve as points of interest throughout the maze
+* Visual markers help identify chest locations
+
 ---
+
+## 🧩 Maze Generation Step by Step
 
 | Step                            | Description                                                                         | Preview                                                 |
 | ------------------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------- |
@@ -77,18 +91,7 @@ This will:
 
 ---
 
-## 📌 Planned Extensions
-
-| Feature                  | Status                         |
-| ------------------------ | ------------------------------ |
-| Goal Marking             | ✅ Done                        |
-| Interior Rooms           | ✅ Done                        |
-| Treasure Chests          | ✅ Done                        |
-| Ramps / Multiple Floors  | ✅ Done                        |
-
----
-
-## 🧠 Key Design Decisions
+## 🧠 Key Design Decisions & Learnings
 
 ### Maze Algorithm
 
@@ -101,6 +104,16 @@ This will:
 * Detects and merges consecutive wall cells into larger wall segments
 * Reduces number of Gazebo model `<include>` elements for better simulation performance
 * Supports wall segments of sizes `[8m, 4m, 2m, 1m]`
+
+### Pathfinding & Connectivity
+* **BFS algorithm** used for pathfinding and connectivity verification
+* Ensures all areas of the maze are reachable from the start position
+* Provides visual representation of the optimal path through the maze
+
+### Performance Optimization
+* **Simple collision shapes** significantly improve simulation performance
+* **Optimal performance** achieved with single-floor mazes
+* Each additional floor adds substantial performance overhead
 
 ### Maze Positioning and Export
 
