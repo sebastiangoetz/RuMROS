@@ -6,6 +6,44 @@ This project generates a complete **maze in SDF format** (`.world`), compatible 
 
 ---
 
+## 🛠️ Setup & Prerequisites
+
+Before running the maze generator, set up a Python virtual environment and install the required dependencies:
+
+```bash
+# Create a virtual environment
+python3 -m venv venv
+
+# Activate the virtual environment
+# On Linux/macOS:
+source venv/bin/activate
+# On Windows:
+venv\Scripts\activate
+
+# Install required dependencies
+pip install -r requirements.txt
+```
+
+**Note:** Tested with Python 3.12.3
+
+---
+
+## 🚀 How to Run
+
+```bash
+python3 main.py
+```
+
+This will:
+
+* Generate the maze with rooms
+* Carve the maze paths
+* Find and draw the shortest path solution with treasure chests marked
+* Export the maze as a Gazebo `.world` file named `maze_world.world`
+* Save visualization images (`maze_step1_rooms_only.png`, `maze_step2_after_carving.png`, `maze_step3_solution.png`)
+
+---
+
 ## ✅ Currently Implemented
 
 ### ✔️ Maze Generation
@@ -41,12 +79,12 @@ This project generates a complete **maze in SDF format** (`.world`), compatible 
 
 ## 📌 Planned Extensions
 
-| Feature               | Status                         |
-| --------------------- | ------------------------------ |
-| Start/Goal Markings   | ✅ Done                         |
-| Interior Rooms        | ✅ Done                         |
-| Treasure Chests       | ✅ Done                         |
-| Ramps / Second Floor  | ❌ Open                         |
+| Feature                  | Status                         |
+| ------------------------ | ------------------------------ |
+| Goal Marking             | ✅ Done                        |
+| Interior Rooms           | ✅ Done                        |
+| Treasure Chests          | ✅ Done                        |
+| Ramps / Multiple Floors  | ✅ Done                        |
 
 ---
 
@@ -69,19 +107,3 @@ This project generates a complete **maze in SDF format** (`.world`), compatible 
 * Maze centered around `(0, 0)` by offsetting wall positions
 * Each wall segment correctly oriented with position and yaw angle
 * Generates a valid `.world` file including ground plane and sun light source
-
----
-
-## 🚀 How to Run
-
-```bash
-python3 main.py
-```
-
-This will:
-
-* Generate the maze with rooms
-* Carve the maze paths
-* Find and draw the shortest path solution with treasure chests marked
-* Export the maze as a Gazebo `.world` file named `maze_world.world`
-* Save visualization images (`maze_step1_rooms_only.png`, `maze_step2_after_carving.png`, `maze_step3_solution.png`)
