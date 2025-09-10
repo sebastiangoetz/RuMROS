@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+<sdf version="1.10">
+  <model name="ground_hole_1">
+    <static>true</static>
+    <link name="ground_hole_1_link">
+      <visual name="ground_hole_1_visual">
+        <geometry>
+          <mesh>
+            <uri>model://ground_hole_1/meshes/ground_hole_1.dae</uri>
+          </mesh>
+        </geometry>
+      </visual>
+      <collision name="collision_1">
+        <pose>0 1.5 0 0 0 0</pose>
+        <geometry>
+          <plane>
+            <size>20 17</size>
+          </plane>
+        </geometry>
+      </collision>
+      <collision name="collision_2">
+        <pose>1.5 -8.5 0 0 0 0</pose>
+        <geometry>
+          <plane>
+            <size>17 3</size>
+          </plane>
+        </geometry>
+      </collision>
+    </link>
+  </model>
+</sdf>

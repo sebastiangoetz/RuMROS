@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<sdf version="1.10">
+  <model name="wall_lamp">
+    <static>true</static>
+    <link name="lamp_link">
+      <visual name="lamp_visual">
+        <geometry>
+          <mesh>
+            <uri>model://wall_lamp/meshes/wall_lamp.dae</uri>
+          </mesh>
+        </geometry>
+        <cast_shadows>false</cast_shadows>
+      </visual>
+      <light type="point" name="lamp_light">
+        <pose>0 -0.2 0 0 0 0</pose>
+        <diffuse>1 0.8 0.5 1</diffuse>
+        <specular>0.9 0.9 0.9 1</specular>
+        <attenuation>
+            <range>3</range>
+            <constant>0.5</constant>
+            <linear>0.1</linear>
+            <quadratic>0.01</quadratic>
+        </attenuation>
+        <cast_shadows>true</cast_shadows>
+        <visualize>false</visualize>
+    </light>
+    </link>
+  </model>
+</sdf>
