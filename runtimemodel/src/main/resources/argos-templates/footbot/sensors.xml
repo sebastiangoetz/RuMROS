@@ -1,0 +1,5 @@
+<?xml version="1.0" ?>
+<sensors>
+  <footbot_proximity implementation="default" show_rays="true" />
+  <positioning implementation="default"/>
+</sensors>

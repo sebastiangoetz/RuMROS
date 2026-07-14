@@ -1,0 +1,407 @@
+/**
+ * This aspect initializes the simulation scenario for ARGoS, including group setup, robot placement
+ * action initialization and more. It is assumed that when ArgosInit is used, the user wants to make
+ * use of swarm simulation features. Therefore, this file also refines Model.init() with behavior to
+ * setup a swarm. This file adds AST attributes to the model related to the initialization of the
+ * ARGoS scenario. 
+ */
+aspect ArgosInit {
+    syn Model Model.init();
+    eq Model.init() {
+        this.setCommandManager(new CommandManager());
+
+        // Optional: initialize recording of latencies
+        //LatencyRecorder.initialize();
+
+        // Setup web UI actions
+        this.setupActions();
+
+        // Setup states
+        this.setupStates();
+
+        // Setup environment
+        this.setupEnvironment();
+
+        // =========== Evaluation scenario code ===========
+        // SwarmGroup gGround = new SwarmGroup(0, "Warehouse");
+        // this.addSwarmGroup(gGround);
+
+        // //Batch-initialize robots
+        // this.spawnTurtlebotsInGrid(gGround, 50);
+
+        // //Retrieve and set initial state (by ID as defined in Init.jrag)
+        // State sIdle = this.getState(0);
+
+        // //Set group states. This propagates to all robots and
+        // //nested groups, so call after group setup
+        // gGround.setCurrentState(sIdle);
+
+        // //Since BM init is not called, initialize dummy manually
+        // BehaviorModel bm = new BehaviorModel();
+        // bm.setrunning(false);
+        // bm.setcurrentTime(System.currentTimeMillis());
+        // bm.setStopAction(this.getActionById("stop")); //Requirement: action without parameters
+        // this.setBehaviorModel(bm);
+
+        // =========== Exemplary scenario code ===========
+        // Areas
+        Area aZonePickup = new Area(0, "Pickup", -4.5, -1.5, -3.3, 1.5);
+        Area aZoneWaiting = new Area(1, "Waiting", -2.8, -1.5, -0.8, 1.5);
+        Area aZoneStorage1 = new Area(2, "Storage 1", 1.0, 1.0, 3.0, 3.0);
+        Area aZoneStorage2 = new Area(3, "Storage 2", 1.0, -3.0, 3.0, -1.0);
+        Area aDockTransport = new Area(4, "Transport", -0.5, -3.5, 0.5, -2.0);
+        //Area aDockCleaning = new Area(5, "Cleaning", -0.5, 2.0, 0.5, 3.5);
+
+        // When adding areas, make sure the areas that should be drawn on top
+        // of others in the simulation are added first
+        this.addArea(aZonePickup);
+        this.addArea(aZoneWaiting);
+        this.addArea(aZoneStorage1);
+        this.addArea(aZoneStorage2);
+        this.addArea(aDockTransport);
+        //this.addArea(aDockCleaning);
+
+        // Swarm groups (tasks briefly described here, but assigned in BehaviorModel in ArgosMainLoop.java)
+        SwarmGroup gGround = new SwarmGroup(0, "Ground");       // Hierarchically groups ground robots
+            SwarmGroup gTransport = new SwarmGroup(1, "Transport");
+                SwarmGroup gTransport1 = new SwarmGroup(2, "Transport 1"); // Ground transport robots: Moving imaginary goods
+                SwarmGroup gTransport2 = new SwarmGroup(3, "Transport 2"); // Ground transport robots: Moving imaginary goods
+                gTransport.addSwarmGroup(gTransport1);
+                gTransport.addSwarmGroup(gTransport2);
+            gGround.addSwarmGroup(gTransport);
+
+            //SwarmGroup gCleaning = new SwarmGroup(4, "Cleaning");   // Ground cleaning robots: Moving to a vacant area
+            //gGround.addSwarmGroup(gCleaning);
+            SwarmGroup gSecurity = new SwarmGroup(4, "Security");   // Ground security robots: block and unblock entry area (TODO (later, for now velocity for a certain time can be set): add behavior for relative ground robot movement (i.e. given a vec2/3 each robot moves along that vector in local space))
+            gGround.addSwarmGroup(gSecurity);
+        
+        // Groups for single drones to allow individual addressing 
+        SwarmGroup gDrones = new SwarmGroup(5, "Drones"); // Drones: Patrol perimiter around warehouse (no sensors, runtimemodel can detect vacant corner and move adjacent drone there. Once arrived, the corner it came from is vacant so the next drone can move and so on)
+            SwarmGroup gD1 = new SwarmGroup(6, "Drone 1");
+            SwarmGroup gD2 = new SwarmGroup(7, "Drone 2");
+            SwarmGroup gD3 = new SwarmGroup(8, "Drone 3");
+            SwarmGroup gD4 = new SwarmGroup(9, "Drone 4");
+            gDrones.addSwarmGroup(gD1);
+            gDrones.addSwarmGroup(gD2);
+            gDrones.addSwarmGroup(gD3);
+            gDrones.addSwarmGroup(gD4);
+
+        // Add groups to model
+        this.addSwarmGroup(gGround);
+        this.addSwarmGroup(gTransport);
+        this.addSwarmGroup(gTransport1);
+        this.addSwarmGroup(gTransport2);
+        //this.addSwarmGroup(gCleaning);
+        this.addSwarmGroup(gSecurity);
+        this.addSwarmGroup(gDrones);
+        this.addSwarmGroup(gD1);
+        this.addSwarmGroup(gD2);
+        this.addSwarmGroup(gD3);
+        this.addSwarmGroup(gD4);
+
+        // Robot setup
+        //int id = 0;
+
+        // Transport robots in their dock
+        spawnTurtlebotsInGrid(gTransport1, 3, 3, 1, 0.4, new Position(aDockTransport.getXCenter(), aDockTransport.getYCenter() + 0.4, 0.0, 0.0));
+        spawnTurtlebotsInGrid(gTransport2, 3, 3, 1, 0.4, new Position(aDockTransport.getXCenter(), aDockTransport.getYCenter() - 0.4, 0.0, 0.0));
+
+        // Cleaning robots in their dock
+        //spawnTurtlebotsInGrid(gCleaning, 5, 0.4, new Position(aDockCleaning.getXCenter(), aDockCleaning.getYCenter(), 0.0, 0.0));
+
+        // Security robots in front of gate
+        spawnTurtlebotsInGrid(gSecurity, 5, 1, 5, 0.5, new Position(-3.0, 0.0, 0.0, Math.PI * 0.5));
+
+        // Add drones
+        int idDrones = 231;
+        int i = 0;
+        for (double x = -4.5; x < 5.0; x+=9.0)
+        {
+            for (double y = -4.5; y < 5.0; y+=9.0)
+            {
+                // Leave one spot vacant
+                // if (x + y > 8)
+                //     break;
+                Position p = new Position(x, y, 0.0, 0.0);
+                Crazyflie cf = new Crazyflie("cf" + idDrones + i, idDrones + i, new PosePositionReference(p));
+                this.addSwarmUnit(cf);
+                switch(i) {
+                    case 0:
+                        gD1.addSwarmUnit(cf);
+                        break;
+                    case 1:
+                        gD2.addSwarmUnit(cf);
+                        break;
+                    case 2:
+                        gD3.addSwarmUnit(cf);
+                        break;
+                    case 3:
+                        gD4.addSwarmUnit(cf);
+                        break;
+                }
+
+                i++;
+            }
+        }
+
+        // Retrieve and set initial state (by ID as defined in Init.jrag)
+        State sIdle = this.getState(0);
+
+        // Set group states. This propagates to all robots and
+        // nested groups, so call after group setup
+        gGround.setCurrentState(sIdle);
+
+        gDrones.setCurrentState(sIdle);
+
+        // Setup behavior
+        BehaviorModel.init(this);
+
+        return this;
+    }
+
+    private int Model.gridSpawnIdCounter = 0;
+    syn Model Model.spawnTurtlebotsInGrid(SwarmGroup group, int numRobots, double spacing, Position startPosition) {
+        int cols = (int)Math.ceil(Math.sqrt(numRobots));
+        int rows = (int)Math.ceil((double)numRobots / cols);
+        return spawnTurtlebotsInGrid(group, numRobots, rows, cols, spacing, startPosition);
+    }
+
+    syn Model Model.spawnTurtlebotsInGrid(SwarmGroup group, int numRobots, int rows, int cols, double spacing, Position startPosition) {
+        int cBase = gridSpawnIdCounter; // Snapshot initial count
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                if (gridSpawnIdCounter >= cBase + numRobots)
+                    return this;
+                
+                double y = (j - (cols - 1) / 2.0) * spacing;
+                double x = (i - (rows - 1) / 2.0) * spacing;
+
+                Position p = new Position(startPosition.getx() + x, startPosition.gety() + y, startPosition.getz(), startPosition.gettheta());
+                Turtlebot tb = new Turtlebot("tb" + gridSpawnIdCounter, gridSpawnIdCounter, new PosePositionReference(p));
+
+                addSwarmUnit(tb);
+                group.addSwarmUnit(tb);
+                gridSpawnIdCounter++;
+            }
+        }
+        return this;
+    }
+
+    syn Model Model.setupActions();
+    eq Model.setupActions() {
+        // =============== Web UI inputs setup ===============
+        // Inputs for web UI, selecting a class here corresponds to
+        // a dropdown input selector for instances of that class
+        Input swarmUnitInput = new Input("swarm_unit", "Unit", "de.tudresden.inf.st.rumros.runtimemodel.SwarmUnit");
+        Input swarmGroupInput = new Input("group", "Swarm Group", "de.tudresden.inf.st.rumros.runtimemodel.SwarmGroup");
+        Input areaInput = new Input("area", "Area", "de.tudresden.inf.st.rumros.runtimemodel.Area");
+        
+        // Each action in the web UI has a list of inputs,
+        // these are defined here
+        JastAddList<Input> swarmOnlyInputs = new JastAddList<>();
+        swarmOnlyInputs.add(swarmGroupInput);
+
+        // Swarm actions - diffusing, flocking, etc.
+        JastAddList<Input> driveInputs = new JastAddList<>();
+        driveInputs.add(swarmGroupInput);
+        driveInputs.add(new Input("v_lin", "Linear velocity (m/s)", "java.lang.Double", "1.0"));
+        driveInputs.add(new Input("v_ang", "Angular velocity (rad/s)", "java.lang.Double", "1.0"));
+        Action drive = new Action("drive", "Drive", driveInputs, null);
+        this.addAction(drive);
+
+        JastAddList<Input> randomWalkInputs = new JastAddList<>();
+        randomWalkInputs.add(swarmGroupInput);
+        randomWalkInputs.add(new Input("v_lin", "Linear velocity (m/s)", "java.lang.Double", "2.0"));
+        randomWalkInputs.add(new Input("v_ang", "Angular velocity (m/s)", "java.lang.Double", "2.0"));
+        randomWalkInputs.add(new Input("t_lin_min", "Minimum linear time (s)", "java.lang.Double", "2.0"));
+        randomWalkInputs.add(new Input("t_lin_max", "Maximum linear time (s)", "java.lang.Double", "8.0"));
+        randomWalkInputs.add(new Input("t_ang", "Turn time (s)", "java.lang.Double", "3.0"));
+        Action randomWalk = new Action("random_walk", "Random Walk", randomWalkInputs, null);
+        this.addAction(randomWalk);
+
+        JastAddList<Input> diffuseInputs = new JastAddList<>();
+        diffuseInputs.add(swarmGroupInput);
+        diffuseInputs.add(new Input("angle_tolerance_deg", "Opening angle in front of the robot for collision detection (degrees)", "java.lang.Double", "60.0"));
+        diffuseInputs.add(new Input("d_min", "Minimum distance for collision detection (m)", "java.lang.Double", "0.05"));
+        diffuseInputs.add(new Input("d_max", "Maximum distance for collision detection (m)", "java.lang.Double", "1.0"));
+        diffuseInputs.add(new Input("velocity", "Speed of the robot while diffusing (m/s)", "java.lang.Double", "2.0"));
+        diffuseInputs.add(new Input("turn_velocity", "Speed of the robot while turning (rad/s)", "java.lang.Double", "1.5"));
+        Action diffuse = new Action("diffuse", "Diffuse", diffuseInputs, null);
+        this.addAction(diffuse);
+
+        JastAddList<Input> flockingInputs = new JastAddList<>();
+        flockingInputs.add(swarmGroupInput);
+        flockingInputs.add(areaInput);
+        flockingInputs.add(new Input("neighbor_radius", "Neighbor detection radius (m)", "java.lang.Double", "3.0"));
+        flockingInputs.add(new Input("spacing", "Desired spacing (m)", "java.lang.Double", "1.0"));
+        flockingInputs.add(new Input("k_align", "Alignment force gain", "java.lang.Double", "0.5"));
+        flockingInputs.add(new Input("k_spacing", "Spacing force gain", "java.lang.Double", "2.0"));
+        flockingInputs.add(new Input("k_heading", "Heading force gain", "java.lang.Double", "1.5"));
+        flockingInputs.add(new Input("cluster_epsilon", "Threshold for lidar point clustering", "java.lang.Double", "0.2"));
+        flockingInputs.add(new Input("max_speed", "Maximum speed of the robot (m/s)", "java.lang.Double", "1.0"));
+        Action flock = new Action("flock", "Flock", flockingInputs, null);
+        this.addAction(flock);
+
+        JastAddList<Input> flockPosInputs = new JastAddList<>();
+        flockPosInputs.add(swarmGroupInput);
+        flockPosInputs.add(new Input("target_x", "Target X coordinate", "java.lang.Double"));
+        flockPosInputs.add(new Input("target_y", "Target Y coordinate", "java.lang.Double"));
+        flockPosInputs.add(new Input("neighbor_radius", "Neighbor detection radius (m)", "java.lang.Double", "3.0"));
+        flockPosInputs.add(new Input("spacing", "Desired spacing (m)", "java.lang.Double", "1.0"));
+        flockPosInputs.add(new Input("k_align", "Alignment force gain", "java.lang.Double", "0.5"));
+        flockPosInputs.add(new Input("k_spacing", "Spacing force gain", "java.lang.Double", "2.0"));
+        flockPosInputs.add(new Input("k_heading", "Heading force gain", "java.lang.Double", "1.5"));
+        flockPosInputs.add(new Input("cluster_epsilon", "Threshold for lidar point clustering", "java.lang.Double", "0.2"));
+        flockPosInputs.add(new Input("max_speed", "Maximum speed of the robot (m/s)", "java.lang.Double", "2.0"));
+        Action flock_to_position = new Action("flock_to_position", "Drive to position in a formation", flockPosInputs, null);
+        this.addAction(flock_to_position);
+
+        // Change group action
+        JastAddList<Input> changeGroupInputs = new JastAddList<>();
+        changeGroupInputs.add(swarmUnitInput);
+        changeGroupInputs.add(swarmGroupInput);
+        changeGroupInputs.add(new Input("move_to_group", "Move to group", "java.lang.Boolean", "true"));
+        Action changeGroup = new Action("change_group", "Change Group", changeGroupInputs, null);
+        this.addAction(changeGroup);
+
+        JastAddList<Input> groupTakeoffInputs = new JastAddList<>();
+        groupTakeoffInputs.add(swarmGroupInput);
+        groupTakeoffInputs.add(new Input("height", "Height (m)", "java.lang.Double"));
+        groupTakeoffInputs.add(new Input("duration", "Duration (s)", "java.lang.Double"));
+        Action groupTakeoff = new Action("group_takeoff", "Takeoff (Group)", groupTakeoffInputs, null);
+        this.addAction(groupTakeoff);
+
+        JastAddList<Input> groupLandInputs = new JastAddList<>();
+        groupLandInputs.add(swarmGroupInput);
+        groupLandInputs.add(new Input("height", "Height (m)", "java.lang.Double"));
+        groupLandInputs.add(new Input("duration", "Duration (s)", "java.lang.Double"));
+        Action groupLand = new Action("group_land", "Land (Group)", groupLandInputs, null);
+        this.addAction(groupLand);
+
+        JastAddList<Input> groupRelativeGoToPosInputs = new JastAddList<>();
+        groupRelativeGoToPosInputs.add(swarmGroupInput);
+        groupRelativeGoToPosInputs.add(new Input("x", "Center X", "java.lang.Double"));
+        groupRelativeGoToPosInputs.add(new Input("y", "Center Y", "java.lang.Double"));
+        groupRelativeGoToPosInputs.add(new Input("z", "Center Z", "java.lang.Double"));
+        groupRelativeGoToPosInputs.add(new Input("theta", "Orientation", "java.lang.Double", "0.0"));
+        groupRelativeGoToPosInputs.add(new Input("duration", "Duration (s)", "java.lang.Double", "2.0"));
+        Action groupRelativeGoToPosition = new Action("group_relative_go_to_position", "Go to position relatively (Group, no OA)", groupRelativeGoToPosInputs, null);
+        this.addAction(groupRelativeGoToPosition);
+
+        JastAddList<Input> groupGoToPosInputs = new JastAddList<>();
+        groupGoToPosInputs.add(swarmGroupInput);
+        groupGoToPosInputs.add(new Input("x", "Position X", "java.lang.Double"));
+        groupGoToPosInputs.add(new Input("y", "Position Y", "java.lang.Double"));
+        groupGoToPosInputs.add(new Input("z", "Position Z", "java.lang.Double", "0.0"));
+        groupGoToPosInputs.add(new Input("theta", "Orientation", "java.lang.Double", "0.0"));
+        groupGoToPosInputs.add(new Input("vel", "Velocity (m/s)", "java.lang.Double", "2.0"));
+        groupGoToPosInputs.add(new Input("duration", "Duration (s)", "java.lang.Double", "2.0"));
+        Action groupGoToPosition = new Action("group_go_to_position", "Go to position (Group, no OA)", groupGoToPosInputs, null);
+        this.addAction(groupGoToPosition);
+
+        JastAddList<Input> groupGoToAreaInputs = new JastAddList<>();
+        groupGoToAreaInputs.add(swarmGroupInput);
+        groupGoToAreaInputs.add(areaInput);
+        groupGoToAreaInputs.add(new Input("theta", "Orientation", "java.lang.Double", "0.0"));
+        groupGoToAreaInputs.add(new Input("vel", "Velocity (m/s)", "java.lang.Double", "2.0"));
+        Action groupGoToArea = new Action("group_go_to_area", "Go to area (Group, no OA)", groupGoToAreaInputs, null);
+        this.addAction(groupGoToArea);
+
+        JastAddList<Input> groupMoveToPosInputs = new JastAddList<>();
+        groupMoveToPosInputs.add(swarmGroupInput);
+        groupMoveToPosInputs.add(new Input("x", "Position X", "java.lang.Double"));
+        groupMoveToPosInputs.add(new Input("y", "Position Y", "java.lang.Double"));
+        groupMoveToPosInputs.add(new Input("theta", "Orientation", "java.lang.Double", "0.0"));
+        groupMoveToPosInputs.add(new Input("vel", "Velocity (m/s)", "java.lang.Double", "2.0"));
+        Action groupMoveToPosition = new Action("group_move_to_position", "Move to position (Group, with OA)", groupMoveToPosInputs, null);
+        this.addAction(groupMoveToPosition);
+
+        JastAddList<Input> groupMoveToAreaInputs = new JastAddList<>();
+        groupMoveToAreaInputs.add(swarmGroupInput);
+        groupMoveToAreaInputs.add(areaInput);
+        groupMoveToAreaInputs.add(new Input("theta", "Orientation", "java.lang.Double", "0.0"));
+        groupMoveToAreaInputs.add(new Input("vel", "Velocity (m/s)", "java.lang.Double", "2.0"));
+        Action groupMoveToArea = new Action("group_move_to_area", "Move to area (Group, with OA)", groupMoveToAreaInputs, null);
+        this.addAction(groupMoveToArea);
+
+        // Unit actions
+        JastAddList<Input> unitGoToPosInputs = new JastAddList<>();
+        unitGoToPosInputs.add(swarmUnitInput);
+        unitGoToPosInputs.add(new Input("x", "Position X", "java.lang.Double"));
+        unitGoToPosInputs.add(new Input("y", "Position Y", "java.lang.Double"));
+        unitGoToPosInputs.add(new Input("theta", "Orientation", "java.lang.Double", "0.0"));
+        unitGoToPosInputs.add(new Input("vel", "Velocity (m/s)", "java.lang.Double", "2.0"));
+        Action unitGoToPosition = new Action("unit_go_to_position", "Go to position (Unit, no OA)", unitGoToPosInputs, null);
+        this.addAction(unitGoToPosition);
+
+        JastAddList<Input> unitMoveToPosInputs = new JastAddList<>();
+        unitMoveToPosInputs.add(swarmUnitInput);
+        unitMoveToPosInputs.add(new Input("x", "Position X", "java.lang.Double"));
+        unitMoveToPosInputs.add(new Input("y", "Position Y", "java.lang.Double"));
+        unitMoveToPosInputs.add(new Input("theta", "Orientation", "java.lang.Double", "0.0"));
+        unitMoveToPosInputs.add(new Input("vel", "Velocity (m/s)", "java.lang.Double", "2.0"));
+        Action unitMoveToPosition = new Action("unit_move_to_position", "Move to position (Unit, with OA)", unitMoveToPosInputs, null);
+        this.addAction(unitMoveToPosition);
+
+        // Generic actions
+        // Stop
+        Action stop = new Action("stop", "Stop", swarmOnlyInputs, null);
+        this.addAction(stop);
+
+        // Resume
+        //Action resume = new Action("resume", "Resume", swarmOnlyInputs, null);
+        //this.addAction(resume);
+
+        // Cancel
+        Action cancel = new Action("cancel", "Cancel", swarmOnlyInputs, null);
+        this.addAction(cancel);
+
+        return this;
+    }
+
+    syn Model Model.setupStates();
+    eq Model.setupStates() {
+        // Separate from scenario setup as this changes rarely
+        // States (Make sure to add initial state first!)
+        State stateIdle = new State(0, "idle");
+        State stateError = new State(1, "error");
+        State stateShutDown = new State(2, "shut down");
+        State stateDriving = new State(3, "driving");
+        State stateRandomWalking = new State(4, "random_walking");
+        State stateTargeting = new State(5, "targeting");
+        State stateDiffusing = new State(6, "diffusing");
+        State stateFlocking = new State(7, "flocking");
+        State stateMoving = new State(8, "moving");
+        State stateMovingOA = new State(9, "moving_oa");
+        State stateChangingGroup = new State(10, "changing_group");
+        State stateTakeoff = new State(11, "takeoff");
+        State stateLanding = new State(12, "landing");
+        State movingRelative = new State(13, "moving_relative");
+        this.addState(stateIdle);
+        this.addState(stateError);
+        this.addState(stateShutDown);
+        this.addState(stateDriving);
+        this.addState(stateRandomWalking);
+        this.addState(stateTargeting);
+        this.addState(stateDiffusing);
+        this.addState(stateFlocking);
+        this.addState(stateMoving);
+        this.addState(stateMovingOA);
+        this.addState(stateChangingGroup);
+        this.addState(stateTakeoff);
+        this.addState(stateLanding);
+        this.addState(movingRelative);
+
+        return this;
+    }
+
+    syn Model Model.setupEnvironment();
+    eq Model.setupEnvironment() {
+        Environment e = new Environment();
+        e.setWaitingAreaReserved(false);
+        e.setWaitingAreaOccupied(false);
+        this.setEnvironment(e);
+
+        return this;
+    }
+}

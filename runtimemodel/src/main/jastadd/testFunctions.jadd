@@ -1,0 +1,62 @@
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.Paths;
+import java.util.stream.Collectors;
+
+/**
+ * This aspect adds functionality like event logging, related to debugging
+ * or profiling the application.
+*/
+aspect TestFunctions {
+    public static final String Model.LOG_DIR = "../perflogs";
+    public static final String Model.EVENTS_FILE = "events.log";
+    public static final String Model.METRICS_FILE = "metrics.log";
+
+    // Test data structures
+    public static long Model.testStartTime = 0;
+    private static long Model.tGroupChangeDone = 0;
+    private static List<Long> Model.loopStepTimestamps = new ArrayList<>();
+
+    private static Path Model.createLogDir() throws IOException {
+        // Ensure the log directory exists
+        Path logDirPath = Paths.get(LOG_DIR);
+        Files.createDirectories(logDirPath);
+        return logDirPath;
+    }
+
+    public static void Model.writeEvent(String name) {
+        if (Model.DEBUG) {
+            try {
+                Long now = System.currentTimeMillis();
+                Path logDirPath = createLogDir();
+                Path eventFilePath = logDirPath.resolve(EVENTS_FILE).toAbsolutePath().normalize();
+
+                // Write timestamps
+                Files.writeString(eventFilePath, now.toString() + " " + name + System.lineSeparator(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+            } 
+            catch (IOException e) {
+                System.err.println("An error occurred writing event: " + e.getMessage());
+                System.exit(1);
+            }
+        }
+    }
+
+    private static void Model.writeResultsFile() {
+        try {
+            Path logDirPath = createLogDir();
+            Path metricsFilePath = logDirPath.resolve(METRICS_FILE).toAbsolutePath().normalize();
+
+            // Write timestamps
+            List<String> tsStrings = loopStepTimestamps.stream().map(Object::toString)
+                                .collect(Collectors.toUnmodifiableList());
+            Files.write(metricsFilePath, tsStrings);
+
+        } 
+        catch (IOException e) {
+            System.err.println("An error occurred writing the metrics file: " + e.getMessage());
+            System.exit(1);
+        }
+    }
+}

@@ -1,0 +1,266 @@
+/**
+ * This aspect allows for programmatic composition of behaviors.
+ * The Model.step() method allows programmers to freely perform actions.
+ *
+ * The provided runtime model also offers structures to compose behavior
+ * in a structured way, which is recommended over free composition, as it
+ * is compatible with the UI while offering powerful composition helpers:
+ * CompositeBehavior (CB), BasicBehavior (BB) and various Transitions. This
+ * allows building hierarchical finite state machine (HFSM) like graphs modeling
+ * the behavior of all groups and robots. For more details on how to work with
+ * components and transitions, see the provided exemplary behavior model below.
+ *
+ * As the initialization code as well as model itself differs between ARGoS and
+ * Gazebo, they have separate files for the behavior model. Support for
+ * Gazebo is limited due to lack of feature support for groups and other MRS
+ * concepts.
+ */
+
+aspect MainLoop {
+    // Model.step() is called every TIME_STEP milliseconds
+    // Evaluate 100x per second. Caution: very fast timings
+    // (>100/s) may cause unpredictable RAGConnect exceptions
+    // at high robot counts
+    public static final Integer Model.TIME_STEP = 100;
+
+    // For performance evaluation, see also testFunctions.jadd
+    public static final boolean Model.DEBUG = false;
+    public static final long Model.testTimeMs = 300000; //5 minutes
+
+    // This may be something one would want to configure via
+    // the UI in the future, for now use the variables here
+    public static final boolean Model.AUTOSTART = false; // Start once initialized
+    public static final Integer Model.AUTOSTART_DELAY = 30000; // When autostart is enabled, it is delayed by X ms
+
+    public static BehaviorModel BehaviorModel.init(Model model) {
+        BehaviorModel bm = new BehaviorModel();
+        bm.setrunning(false);
+        bm.setcurrentTime(System.currentTimeMillis());
+        bm.setStopAction(model.getActionById("stop")); // Requirement: action without parameters
+
+        // Retrieve objects (robots, actions, areas, etc.) for use with behaviors
+        Action aStop = model.getActionById("stop");
+        Action aUnitGoTo = model.getActionById("driveToArea");
+
+        SwarmUnit tb0 = model.getSwarmUnit(0);
+        SwarmUnit tb1 = model.getSwarmUnit(1);
+
+        Area aA = model.getAreaByName("Start");
+        Area aB = model.getAreaByName("Arrivals");
+        Area aC = model.getAreaByName("ShortTermStorage");
+        Area aD = model.getAreaByName("LongTermStorage");
+        Area aE = model.getAreaByName("Departure");
+
+        // ----------------------------------------------------
+        // Very basic showcase: single CB with parallel execution of multiple
+        // Turtlebot behaviors in simple BBs to emulate group actions
+        // ----------------------------------------------------
+        BB bbMoveToShort = new BB(aUnitGoTo, tb0);
+        bbMoveToShort.addAreaParameter("area", aC);
+
+        BB bbMoveToLong = new BB(aUnitGoTo, tb1);
+        bbMoveToLong.addAreaParameter("area", aD);
+
+        // Sequence behavior starts all contained behaviors immediately
+        CB cbTurtlebots = new CB("Move to storage areas", true);
+        cbTurtlebots.addBehavior(bbMoveToShort);
+        cbTurtlebots.addBehavior(bbMoveToLong);
+
+        // Add CBs to model
+        bm.addCB(cbTurtlebots);
+
+        // Set start behaviors
+        bm.addStartBehavior(cbTurtlebots);
+        model.setBehaviorModel(bm);
+
+        return bm;
+    }
+
+    /** Starts the modeled behavior */
+    public void BehaviorModel.run() {
+        System.out.println("[BehaviorModel] Starting behavior sequence");
+        for (CB cb : getStartBehaviors()) {
+            // Start first block in all complex behavior nodes
+            cb.start();
+            System.out.println("[BehaviorModel] Started " + cb.getname());
+        }
+        setrunning(true);
+
+        Model.writeEvent("start"); // Only triggers if Model.DEBUG = true
+        if (Model.DEBUG) {
+            System.out.println("[BehaviorModel] Debugging enabled, logging metrics to " + Model.LOG_DIR);
+            System.out.println("[BehaviorModel] Debugging for " + Model.testTimeMs + " ms before terminating");
+            Model.testStartTime = System.currentTimeMillis();
+        }
+    }
+
+    /** Stops the modeled behavior */
+    public void BehaviorModel.stop() {
+        System.out.println("[BehaviorModel] Stopping behavior sequence");
+        for (CB cb : getCBs()) {
+            cb.stop(false);
+        }
+        setrunning(false);
+        Model.writeEvent("stop");
+    }
+
+    /** Called once at the start by runtime model controller */
+    public void Model.start() throws InterruptedException {
+        if (Model.AUTOSTART) {
+            System.out.println("[Model] BehaviorModel autostart enabled, starting in " + AUTOSTART_DELAY + " ms");
+            Thread.sleep(Model.AUTOSTART_DELAY);
+            getBehaviorModel().run(); //Delegate to behavior model
+        }
+    }
+
+    // This function is called every TIME_STEP milliseconds by the backend
+    // It may be used to modify the model programmatically, as opposed to using the UI
+    public Model Model.step() {
+        long now = System.currentTimeMillis();
+        BehaviorModel bm = getBehaviorModel();
+
+        if (Model.DEBUG) {
+            loopStepTimestamps.add(now);
+            if (testStartTime > 0 && now >= testStartTime + testTimeMs) {
+                // Write results to file and stop runtime model application
+                // Launch script will then exit the other loggers (if any)
+                System.out.println("[BehaviorModel] Debug time elapsed, writing results and terminating...");
+                writeResultsFile();
+
+                bm.stop();
+                LatencyRecorder.flushSafely();
+                System.exit(5); //Code 5 unique to debug timed stop
+            }
+        }
+        
+        // Workaround for RAGConnect exceptions at high loop speeds
+        // For production, this issue should be investigated further
+        try {
+            bm.setcurrentTime(now);
+        } catch (Exception e) {
+            System.out.println("[Model] Warning: Error setting current time in BehaviorModel, try decreasing behavior loop runs per second");
+        }
+        
+
+        if (bm.getrunning()) {
+            // Make shallow copy, as step can start and stop CBs, adding or removing them to the active list
+            // These should only be processed in the next tick
+            for (CB cb : new ArrayList<>(bm.getActiveCBs())) {
+                cb.step();
+            }
+        }
+
+        // Process results for AwaitableActions
+        // This is currently done for actions on the UI by ModelMain, in order to
+        // properly display results. However, when an action is called by the
+        // BehaviorModel via reflection, this handler is bypassed, hence
+        // the need for manual processing here
+        processAllAwaitables();
+
+        return this;
+    }
+
+    /**
+     * This helper class contains utilities for conditional BB transitions.
+     * They serve as examples as to how reactions certain events may be
+     * encoded as conditionals, in an effort to make the MRS adaptive.
+     */
+    public class ConditionHelpers {
+        // Helper
+        private static boolean checkBehaviorAcknowledged(Behavior b) {
+            if (b instanceof BB) {
+                BB bb = (BB)b;
+                Result r = bb.getAction().getResult();
+                if (r instanceof AwaitableResult) {
+                    AwaitableResult res = (AwaitableResult) r;
+                    return res.isAcknowledged(bb.getModel());
+                }
+                return true; // Not awaitable -> immediately acknowledged by default
+            } else if (b instanceof CB) {
+                CB cb = (CB)b;
+                for (Behavior b2 : cb.getBehaviors()) {
+                    if (!checkBehaviorAcknowledged(b2))
+                        return false; // If any child BB within any nested CBs is not acknowledged return false
+                }
+                return true; // Only return true if all child BBs acknowledged
+            }
+            return false; // Unsupported behavior type, false by default
+        }
+
+        // A block's own AwaitableAction is done
+        public static boolean awaitableAcknowledged(Behavior b, long now) {
+            return checkBehaviorAcknowledged(b);
+        }
+
+        // Another BB is finished
+        public static boolean blockFinished(Behavior self, Behavior other) {
+            // Make sure the other block finished after this behavior started
+            return other.getLastEnd() > self.getLastStart();
+        }
+
+        public static boolean areaVacant(Model model, Area area) {
+            for (SwarmUnit u : model.getSwarmUnits()) {
+                if (unitInside(u, area))
+                    return false;
+            }
+            return true;
+        }
+
+        public static boolean groupOutOfBounds(SwarmGroup group, Area area) {
+            return groupOutOfBounds(group, area.getxPos1(), area.getyPos1(), area.getxPos2(), area.getyPos2());
+        }
+
+        public static boolean groupOutOfBounds(SwarmGroup group, Position corner1, Position corner2) {
+            return groupOutOfBounds(group, corner1.getx(), corner1.gety(), corner2.getx(), corner2.gety());
+        }
+
+        public static boolean groupOutOfBounds(SwarmGroup group, Double xPos1, Double yPos1, Double xPos2, Double yPos2) {
+            for (SwarmUnit u : group.getSwarmUnits()) {
+                Position pos = u.getPositionReference().getPosition();
+                // True if one or more units out of bounds
+                if (!unitInside(u, xPos1, yPos1, xPos2, yPos2))
+                    return true;
+            }
+            return false;
+        }
+
+        public static boolean groupInside(SwarmGroup group, Area area) {
+            return groupInside(group, area.getxPos1(), area.getyPos1(), area.getxPos2(), area.getyPos2());
+        }
+
+        public static boolean groupInside(SwarmGroup group, Position corner1, Position corner2) {
+            return groupInside(group, corner1.getx(), corner1.gety(), corner2.getx(), corner2.gety());
+        }
+
+        public static boolean groupInside(SwarmGroup group, Double xPos1, Double yPos1, Double xPos2, Double yPos2) {
+            for (SwarmUnit u : group.getSwarmUnits()) {
+                Position pos = u.getPositionReference().getPosition();
+                // True if one or more units out of bounds
+                if (!unitInside(u, xPos1, yPos1, xPos2, yPos2))
+                    return false;
+            }
+            return true;
+        }
+
+        public static boolean unitInside(SwarmUnit unit, Area area) {
+            return unitInside(unit, area.getxPos1(), area.getyPos1(), area.getxPos2(), area.getyPos2());
+        }
+
+        public static boolean unitInside(SwarmUnit unit, Position corner1, Position corner2) {
+            return unitInside(unit, corner1.getx(), corner1.gety(), corner2.getx(), corner2.gety());
+        }
+
+        public static boolean unitInside(SwarmUnit unit, Double xPos1, Double yPos1, Double xPos2, Double yPos2) {
+            Position pos = unit.getPositionReference().getPosition();
+            double x = pos.getx();
+            double y = pos.gety();
+
+            double minX = Math.min(xPos1, xPos2);
+            double maxX = Math.max(xPos1, xPos2);
+            double minY = Math.min(yPos1, yPos2);
+            double maxY = Math.max(yPos1, yPos2);
+
+            return (x >= minX && x <= maxX) && (y >= minY && y <= maxY);
+        }
+    }
+}

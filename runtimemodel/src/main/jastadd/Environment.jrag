@@ -1,0 +1,15 @@
+aspect Environment {
+    // Update environment variables (called in main loop)
+    syn Environment Model.updateEnvironment() {
+        // Waiting area reservation done in behavior model
+        Environment e = getEnvironment();
+        // Waiting area occupied status
+        SwarmGroup occupant = ConditionHelpers.getAreaOccupantGroup(this, getAreaByName("Waiting"));
+
+        e.setWaitingAreaOccupied(occupant != null);
+        if (occupant != null)
+            e.setWaitingAreaOccupiedBy(occupant);
+
+        return e;
+    }
+}

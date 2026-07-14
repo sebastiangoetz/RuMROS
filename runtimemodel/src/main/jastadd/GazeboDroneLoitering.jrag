@@ -1,0 +1,80 @@
+/**
+ * This aspect contains an exemplary extension for the few-robot simulation part with Gazebo,
+ * simulation, which directly controls robots. It illustrates how aspects can be refined,
+ * in order to avoid having to change existing code for new functional extensions.
+ */
+aspect DroneLoitering {
+    // Refine init (Init.jrag) to include loiter state, etc.
+    refine GazeboInit eq Model.init() {
+        // Call original method, initializing 'this'
+        refined();
+
+        // Add loiter state
+        State stateTurning = new State(0, "turning", 1.0, 0.05); // Turning towards orbit
+        State stateLoitering = new State(0, "loitering", 1.0, 0.25); // Loitering (orbiting)
+        this.addState(stateTurning);
+        this.addState(stateLoitering);
+
+        // Add inputs for loitering (shown in web UI)
+        JastAddList<Input> droneLoiterInputs = new JastAddList<>();
+        Input droneInput = new Input("drone", "Drone", "de.tudresden.inf.st.rumros.runtimemodel.Drone");
+        droneLoiterInputs.add(droneInput);
+        droneLoiterInputs.add(new Input("radius", "Radius (m)", "java.lang.Double"));
+
+        // Add loiter action
+        Action loiter = new Action("loiter", "Loiter (orbit current position)", droneLoiterInputs, null);
+        this.addAction(loiter);
+
+        // Return value should match original method
+        return this;
+    }
+
+    // Add loiter action
+    Result Action.loiter(Model model, Drone drone, Double radius) {
+        Position targetPosition = null;
+        try {
+            targetPosition = drone.getOdomPositionReference().getPosition().clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+
+        // Fly to radius, then turn and orbit. The latter parts are implemented in getVelocity3D() below
+        targetPosition.setx(targetPosition.getx() + radius);
+        drone.setTargetPosition(model.getOrAddPositionReference(targetPosition));
+        drone.setLoiteringRadius(radius); //Added above, required for getVelocity3D() to set correct velocity
+        drone.setLoiterAfterMove(true);
+        drone.setCurrentState(drone.getStateWithName("targeting"));
+
+        Result result = new Result(ActionResultType.SUCCESS, "Beginning to loiter with radius: " + radius + " m", 2000);
+        return result;
+    }
+
+    // Refine getVelocity (DroneImpl.jrag) to implement loitering behavior
+    refine DroneImpl eq Drone.getVelocity3D() {
+        State stateTurning = getStateWithName("turning");
+        State stateLoitering = getStateWithName("loitering");
+
+        if (this.getTargetPosition() != null && this.getTargetReached() && this.loiterAfterMove) {
+            // After reaching the position at the radius, turn towards orbit
+            setCurrentState(stateTurning);
+            setLoiterAfterMove(false);
+        }
+        
+        if (getCurrentState() == stateTurning) {
+            // Turn until arriving at orbit position, then proceed with orbiting
+            if (this.getOdomPositionReference().getPosition().gettheta() + 0.5 * Math.PI <= this.getCurrentState().getangleTolerance())
+                setCurrentState(stateLoitering);
+            else
+                return new Velocity3D(0.0, 0.0, -this.getCurrentState().getspeedFactor());
+        }
+
+        if (getCurrentState() == stateLoitering) {
+            // Loiter: Orbit current position
+            return new Velocity3D(this.getCurrentState().getspeedFactor(), 0.0, -1.0 / loiteringRadius);
+
+        } else {
+            // Call original method for everything else
+            return refined();
+        }
+    }
+}

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <title>RuMROS Actions</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='icon/favicon.ico') }}">
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"
+        integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg=="
+        crossorigin="anonymous"
+    ></script>
+    <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js"
+        integrity="sha512-aMGMvNYu8Ue4G+fHa359jcPb1u+ytAF+P2SCb+PxrjCdO3n3ZTxJ30zuH39rimUggmTwmh2u7wvQsDTHESnmfQ=="
+        crossorigin="anonymous"
+    ></script>
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
+        integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"
+    />
+</head>
+<body class="{{ active_tab }}">
+    <header class="app-header">
+        <div class="logo">
+            <!-- Icon by Fontawesome, font icons licensed under SIL OFL (https://scripts.sil.org/OFL) -->
+            <i class="fa-solid fa-robot"></i> RuMROS
+        </div>
+        <nav class="nav-tabs">
+            <a href="{{ url_for('index') }}" class="tablink {% if active_tab == 'dashboard' %}active{% endif %}">Dashboard</a>
+            <a href="{{ url_for('tables') }}" class="tablink {% if active_tab == 'tables' %}active{% endif %}">Tables</a>
+            <a href="{{ url_for('actions') }}" class="tablink {% if active_tab == 'actions' %}active{% endif %}">Actions</a>
+            <a href="{{ url_for('behavior') }}" class="tablink {% if active_tab == 'behavior' %}active{% endif %}">Behavior</a>
+        </nav>
+    </header>
+
+    <div id="main-container">
+        <div id="action-container"></div>
+    </div>
+
+     <script>
+        const config_round_decimals = {{ round_decimals }};
+    </script>
+    <script src="{{ url_for('static', filename='js/common.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/actions.js') }}"></script>
+</body>
+</html>

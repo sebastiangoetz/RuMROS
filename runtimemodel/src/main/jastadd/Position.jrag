@@ -1,3 +1,9 @@
+/**
+ * Implements the functionality of the Position structure, which represents a
+ * robot's position in space. PositionReferences are used as wrappers, as there
+ * would be complications with uninitialized positions and references on the UI
+ * otherwise.
+ */
 aspect Position {
     syn PositionReference Model.getCenterPositionReference(Area area) {
         return getOrAddPositionReference(new Position(area.getXCenter(), area.getYCenter(), 0.0, 0.0));
@@ -15,11 +21,35 @@ aspect Position {
 
         return result;
     }
+    
+    // Propagate position getters upwards
+    syn PositionReference SwarmUnit.getPositionReference() {
+        return this.getPositionReference();
+    }
+
+    syn PositionReference Robot.getPositionReference() {
+        if (this instanceof Turtlebot) {
+            return ((Turtlebot) this).getPosePositionReference();
+        } else if (this instanceof Footbot) {
+            return ((Footbot) this).getPosePositionReference();
+        } else {
+            return ((Rover) this).getOdomPositionReference();
+        }
+    }
+
+    syn PositionReference Crazyflie.getPositionReference()
+    {
+        return this.getPosePositionReference(); 
+    }
+
+    syn PositionReference Drone.getPositionReference() {
+        return this.getOdomPositionReference();
+    }
 
     syn Position PositionReference.getPosition() {
-        if(this instanceof PosePositionReference) {
+        if (this instanceof PosePositionReference) {
             return ((PosePositionReference) this).getPosition();
-        } else if(this instanceof OdomPositionReference) {
+        } else if (this instanceof OdomPositionReference) {
               return ((OdomPositionReference) this).getPosition();
         } else {
             throw new UnsupportedOperationException("Not supported here");

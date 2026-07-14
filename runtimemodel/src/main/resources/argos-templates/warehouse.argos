@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<argos-configuration>
+  <framework>
+    <system threads="0"/>
+    <experiment length="0" random_seed="123" ticks_per_second="10"/>
+  </framework>
+  <controllers />
+  <arena center="0,0,0" size="10, 10, 10">
+    <box id="wall_north" size="0.1,10,1.0" movable="false">
+      <body position="5,0,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_south" size="0.1,10,1.0" movable="false">
+      <body position="-5,0,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_west" size="10,0.1,1.0" movable="false">
+      <body position="0,5,0" orientation="0,0,0" />
+    </box>
+    <box id="wall_east" size="10,0.1,1.0" movable="false">
+      <body position="0,-5,0" orientation="0,0,0" />
+    </box>
+
+    <box id="house_north" size="0.1,7,1.0" movable="false">
+      <body position="3.5,0,0" orientation="0,0,0" />
+    </box>
+    <box id="house_south_l" size="0.1,2.5,1.0" movable="false">
+      <body position="-3.5,2.25,0" orientation="0,0,0" />
+    </box>
+    <box id="house_south_r" size="0.1,2.5,1.0" movable="false">
+      <body position="-3.5,-2.25,0" orientation="0,0,0" />
+    </box>
+    <box id="house_west" size="7,0.1,1.0" movable="false">
+      <body position="0,3.5,0" orientation="0,0,0" />
+    </box>
+    <box id="house_east" size="7,0.1,1.0" movable="false">
+      <body position="0,-3.5,0" orientation="0,0,0" />
+    </box>
+  </arena>
+  <media/>
+  <physics_engines>
+    <dynamics2d id="dyn2d"/>
+  </physics_engines>
+  <visualization>
+    <qt-opengl>
+      <camera>
+        <placements>
+          <placement index="0" position="-16.9616,-0.00773664,14.2678" look_at="-16.1421,-0.00773664,13.6947" up="0.573093,-3.30062e-16,0.81949" lens_focal_length="56" />
+          <placement index="1" position="-16.6616,-5.11344,16.0083" look_at="-15.9704,-4.90976,15.3149" up="0.665094,0.195978,0.720585" lens_focal_length="56" />
+          <placement index="2" position="0,0,36" look_at="0,0,0" up="1,0,0" lens_focal_length="82" />
+        </placements>
+      </camera>
+    </qt-opengl>
+  </visualization>
+</argos-configuration>

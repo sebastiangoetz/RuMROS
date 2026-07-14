@@ -3,6 +3,7 @@ project(ros2_serialization_utils)
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
@@ -11,7 +12,7 @@ find_package(rosidl_runtime_cpp REQUIRED)
 find_package(JNI REQUIRED)
 
 add_library(ros2_serialization_utils SHARED src/ros2_serialization_utils.cpp)
-ament_target_dependencies(ros2_serialization_utils rclcpp geometry_msgs nav_msgs)
+ament_target_dependencies(ros2_serialization_utils rclcpp std_msgs geometry_msgs nav_msgs)
 
 install(TARGETS
   ros2_serialization_utils

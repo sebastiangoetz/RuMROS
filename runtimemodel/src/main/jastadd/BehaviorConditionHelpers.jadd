@@ -1,0 +1,159 @@
+aspect BehaviorConditionHelpers {
+    /**
+     * This helper class contains utilities for conditional BB transitions.
+     * They serve as examples as to how reactions certain events may be
+     * encoded as conditionals, in an effort to make the MRS adaptive.
+     */
+    public class ConditionHelpers {
+        // Helper for checking if a positional component is close
+        static boolean near(double v, double target) {
+            return Math.abs(v - target) < 0.05;
+        }
+
+        // AwaitableAction has been completed
+        private static boolean checkBehaviorAcknowledged(Behavior b) {
+            if (b instanceof BB) {
+                BB bb = (BB)b;
+                Result r = bb.getAction().getResult();
+                if (r instanceof AwaitableResult) {
+                    AwaitableResult res = (AwaitableResult) r;
+                    return res.isAcknowledged(bb.getModel());
+                }
+                return true; // Not awaitable -> immediately acknowledged by default
+            } else if (b instanceof CB) {
+                CB cb = (CB)b;
+                for (Behavior b2 : cb.getBehaviors()) {
+                    if (!checkBehaviorAcknowledged(b2))
+                        return false; // If any child BB within any nested CBs is not acknowledged return false
+                }
+                return true; // Only return true if all child BBs acknowledged
+            }
+            return false; // Unsupported behavior type, false by default
+        }
+
+        // A block's own AwaitableAction is done
+        public static boolean awaitableAcknowledged(Behavior b, long now) {
+            return checkBehaviorAcknowledged(b);
+        }
+
+        // Another BB is finished
+        public static boolean blockFinished(Behavior self, Behavior other) {
+            // Make sure the other block finished after this behavior started
+            return other.getLastEnd() > self.getLastStart();
+        }
+
+        public static boolean areaVacant(Model model, Position corner1, Position corner2) {
+            for (SwarmUnit u : model.getSwarmUnits()) {
+                if (unitInside(u, corner1, corner2))
+                    return false;
+            }
+            return true;
+        }
+
+        public static boolean areaVacant(Model model, Area area) {
+            for (SwarmUnit u : model.getSwarmUnits()) {
+                if (unitInside(u, area))
+                    return false;
+            }
+            return true;
+        }
+
+        public static boolean groupOutOfBounds(SwarmGroup group, Area area) {
+            return groupOutOfBounds(group, area.getxPos1(), area.getyPos1(), null,
+                                    area.getxPos2(), area.getyPos2(), null);
+        }
+
+        public static boolean groupOutOfBounds(SwarmGroup group, Position corner1, Position corner2) {
+            return groupOutOfBounds(group, corner1.getx(), corner1.gety(), corner1.getz(),
+                                    corner2.getx(), corner2.gety(), corner2.getz());
+        }
+
+        // Simplicity for ground robots
+        public static boolean groupOutOfBounds(SwarmGroup group, Double xPos1, Double yPos1, Double xPos2, Double yPos2) {
+            return groupOutOfBounds(group, xPos1, yPos1, null, xPos2, yPos2, null);
+        }
+
+        public static boolean groupOutOfBounds(SwarmGroup group, Double xPos1, Double yPos1, Double zPos1,
+                                               Double xPos2, Double yPos2, Double zPos2) {
+            for (SwarmUnit u : group.getUnitsRecursive()) {
+                if (!unitInside(u, xPos1, yPos1, zPos1, xPos2, yPos2, zPos2))
+                    return true;
+            }
+            return false;
+        }
+
+        public static boolean groupInside(SwarmGroup group, Area area) {
+            return !groupOutOfBounds(group, area.getxPos1(), area.getyPos1(), null,
+                               area.getxPos2(), area.getyPos2(), null);
+        }
+
+        public static boolean groupInside(SwarmGroup group, Position corner1, Position corner2) {
+            return !groupOutOfBounds(group,
+                                     corner1.getx(), corner1.gety(), corner1.getz(),
+                                     corner2.getx(), corner2.gety(), corner2.getz());
+        }
+
+        public static boolean groupInside(SwarmGroup group, Double xPos1, Double yPos1, Double xPos2, Double yPos2) {
+            return !groupOutOfBounds(group, xPos1, yPos1, null, xPos2, yPos2, null);
+        }
+
+        public static SwarmGroup getAreaOccupantGroup(Model model, Area area) {
+            for (SwarmUnit u : model.getSwarmUnits()) {
+                if (unitInside(u, area))
+                    return model.getUnitGroup(u);
+            }
+            return null;
+        }
+
+        public static boolean unitInside(SwarmUnit unit, Double xPos1, Double yPos1, Double zPos1,
+                                         Double xPos2, Double yPos2, Double zPos2) {
+
+            Position pos = unit.getPositionReference().getPosition();
+
+            double x = pos.getx();
+            double y = pos.gety();
+            double z = pos.getz();
+
+            double minX = Math.min(xPos1, xPos2);
+            double maxX = Math.max(xPos1, xPos2);
+            double minY = Math.min(yPos1, yPos2);
+            double maxY = Math.max(yPos1, yPos2);
+
+            if (x < minX || x > maxX || y < minY || y > maxY)
+                return false;
+
+            // Ignore Z if either bound is unspecified
+            if (zPos1 != null && zPos2 != null) {
+                double minZ = Math.min(zPos1, zPos2);
+                double maxZ = Math.max(zPos1, zPos2);
+
+                if (z < minZ || z > maxZ)
+                    return false;
+            }
+
+            return true;
+        }
+
+        public static boolean unitInside(SwarmUnit unit, Area area) {
+            return unitInside(unit, area.getxPos1(), area.getyPos1(), area.getxPos2(), area.getyPos2());
+        }
+
+        public static boolean unitInside(SwarmUnit unit, Position corner1, Position corner2) {
+            return unitInside(unit, corner1.getx(), corner1.gety(), corner1.getz(),
+                              corner2.getx(), corner2.gety(), corner2.getz());
+        }
+
+        public static boolean unitInside(SwarmUnit unit, Double xPos1, Double yPos1, Double xPos2, Double yPos2) {
+            Position pos = unit.getPositionReference().getPosition();
+            double x = pos.getx();
+            double y = pos.gety();
+
+            double minX = Math.min(xPos1, xPos2);
+            double maxX = Math.max(xPos1, xPos2);
+            double minY = Math.min(yPos1, yPos2);
+            double maxY = Math.max(yPos1, yPos2);
+
+            return (x >= minX && x <= maxX) && (y >= minY && y <= maxY);
+        }
+    }
+}

@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<argos-configuration>
+  <framework>
+    <system threads="0"/>
+    <experiment length="0" random_seed="123" ticks_per_second="10"/>
+  </framework>
+  <controllers>
+    <footbot_ros_controller id="footbot_ros_controller" library="build/argos3_ros2_bridge/plugins/bridge/libfootbot_bridge">
+      <sensors>
+          
+        <footbot_proximity implementation="default" show_rays="true"/>
+          
+        <positioning implementation="default"/>
+        
+      </sensors>
+      <actuators>
+          
+        <differential_steering implementation="default"/>
+        
+      </actuators>
+      <params multiple_domains="false" nodes_per_domain="10" ros_domain_id="0"/>
+    </footbot_ros_controller>
+    <turtlebot_ros_controller id="turtlebot_ros_controller" library="build/argos3_ros2_bridge/plugins/bridge/libturtlebot_bridge">
+      <sensors>
+          
+        <turtlebot3_lidar implementation="default" num_readings="360" show_rays="false"/>
+          
+        <positioning implementation="default"/>
+        
+      </sensors>
+      <actuators>
+          
+        <differential_steering implementation="default"/>
+        
+      </actuators>
+      <params multiple_domains="false" nodes_per_domain="10" ros_domain_id="0"/>
+    </turtlebot_ros_controller>
+    <crazyflie_ros_controller id="crazyflie_ros_controller" library="build/argos3_ros2_bridge/plugins/bridge/libcrazyflie_bridge">
+      <sensors>
+          
+        <positioning implementation="default"/>
+        
+      </sensors>
+      <actuators>
+          
+        <leds implementation="default" medium="leds"/>
+          
+        <quadrotor_position implementation="default"/>
+          
+
+      </actuators>
+      <params multiple_domains="false" nodes_per_domain="10" ros_domain_id="0"/>
+    </crazyflie_ros_controller>
+  </controllers>
+  <loop_functions label="ros_bridge_loop_functions" library="build/argos3_ros2_bridge/plugins/loop_functions/libros_bridge_loop_functions">
+    <areas>
+      <area name="Pickup" x1="-4.5" x2="-3.3" y1="-1.5" y2="1.5"/>
+      <area name="Waiting" x1="-2.8" x2="-0.8" y1="-1.5" y2="1.5"/>
+      <area name="Storage 1" x1="1.0" x2="3.0" y1="1.0" y2="3.0"/>
+      <area name="Storage 2" x1="1.0" x2="3.0" y1="-3.0" y2="-1.0"/>
+      <area name="Transport" x1="-0.5" x2="0.5" y1="-3.5" y2="-2.0"/>
+    </areas>
+    <options>
+      <draw_robot_group enabled="false"/>
+      <draw_robot_name enabled="false"/>
+    </options>
+  </loop_functions>
+  <arena center="0,0,0" size="10, 10, 10">
+    <box id="wall_north" movable="false" size="0.1,10,1.0">
+      <body orientation="0,0,0" position="5,0,0"/>
+          
+    </box>
+    <box id="wall_south" movable="false" size="0.1,10,1.0">
+      <body orientation="0,0,0" position="-5,0,0"/>
+          
+    </box>
+    <box id="wall_west" movable="false" size="10,0.1,1.0">
+      <body orientation="0,0,0" position="0,5,0"/>
+          
+    </box>
+    <box id="wall_east" movable="false" size="10,0.1,1.0">
+      <body orientation="0,0,0" position="0,-5,0"/>
+          
+    </box>
+    <box id="house_north" movable="false" size="0.1,7,1.0">
+      <body orientation="0,0,0" position="3.5,0,0"/>
+          
+    </box>
+    <box id="house_south_l" movable="false" size="0.1,2.5,1.0">
+      <body orientation="0,0,0" position="-3.5,2.25,0"/>
+          
+    </box>
+    <box id="house_south_r" movable="false" size="0.1,2.5,1.0">
+      <body orientation="0,0,0" position="-3.5,-2.25,0"/>
+          
+    </box>
+    <box id="house_west" movable="false" size="7,0.1,1.0">
+      <body orientation="0,0,0" position="0,3.5,0"/>
+          
+    </box>
+    <box id="house_east" movable="false" size="7,0.1,1.0">
+      <body orientation="0,0,0" position="0,-3.5,0"/>
+          
+    </box>
+    <floor id="floor" pixels_per_meter="50" source="loop_functions"/>
+    <turtlebot3 group_id="Transport 1" id="tb0">
+      <body orientation="0.0,0,0" position="-0.4,-2.35,0.0"/>
+      <controller config="turtlebot_ros_controller"/>
+    </turtlebot3>
+    <turtlebot3 group_id="Transport 1" id="tb1">
+      <body orientation="0.0,0,0" position="0.0,-2.35,0.0"/>
+      <controller config="turtlebot_ros_controller"/>
+    </turtlebot3>
+    <turtlebot3 group_id="Transport 1" id="tb2">
+      <body orientation="0.0,0,0" position="0.4,-2.35,0.0"/>
+      <controller config="turtlebot_ros_controller"/>
+    </turtlebot3>
+    <turtlebot3 group_id="Transport 2" id="tb3">
+      <body orientation="0.0,0,0" position="-0.4,-3.15,0.0"/>
+      <controller config="turtlebot_ros_controller"/>
+    </turtlebot3>
+    <turtlebot3 group_id="Transport 2" id="tb4">
+      <body orientation="0.0,0,0" position="0.0,-3.15,0.0"/>
+      <controller config="turtlebot_ros_controller"/>
+    </turtlebot3>
+    <turtlebot3 group_id="Transport 2" id="tb5">
+      <body orientation="0.0,0,0" position="0.4,-3.15,0.0"/>
+      <controller config="turtlebot_ros_controller"/>
+    </turtlebot3>
+    <turtlebot3 group_id="Security" id="tb6">
+      <body orientation="90.0,0,0" position="-3.0,-1.0,0.0"/>
+      <controller config="turtlebot_ros_controller"/>
+    </turtlebot3>
+    <turtlebot3 group_id="Security" id="tb7">
+      <body orientation="90.0,0,0" position="-3.0,-0.5,0.0"/>
+      <controller config="turtlebot_ros_controller"/>
+    </turtlebot3>
+    <turtlebot3 group_id="Security" id="tb8">
+      <body orientation="90.0,0,0" position="-3.0,0.0,0.0"/>
+      <controller config="turtlebot_ros_controller"/>
+    </turtlebot3>
+    <turtlebot3 group_id="Security" id="tb9">
+      <body orientation="90.0,0,0" position="-3.0,0.5,0.0"/>
+      <controller config="turtlebot_ros_controller"/>
+    </turtlebot3>
+    <turtlebot3 group_id="Security" id="tb10">
+      <body orientation="90.0,0,0" position="-3.0,1.0,0.0"/>
+      <controller config="turtlebot_ros_controller"/>
+    </turtlebot3>
+    <crazyflie group_id="Drone 1" id="cf231">
+      <body orientation="0.0,0,0" position="-4.5,-4.5,0.0"/>
+      <controller config="crazyflie_ros_controller"/>
+    </crazyflie>
+    <crazyflie group_id="Drone 2" id="cf232">
+      <body orientation="0.0,0,0" position="-4.5,4.5,0.0"/>
+      <controller config="crazyflie_ros_controller"/>
+    </crazyflie>
+    <crazyflie group_id="Drone 3" id="cf233">
+      <body orientation="0.0,0,0" position="4.5,-4.5,0.0"/>
+      <controller config="crazyflie_ros_controller"/>
+    </crazyflie>
+    <crazyflie group_id="Drone 4" id="cf234">
+      <body orientation="0.0,0,0" position="4.5,4.5,0.0"/>
+      <controller config="crazyflie_ros_controller"/>
+    </crazyflie>
+  </arena>
+  <media>
+    <led id="leds"/>
+  </media>
+  <physics_engines>
+    <dynamics2d id="dyn2d"/>
+    <pointmass3d id="pm3d" iterations="10"/>
+  </physics_engines>
+  <visualization>
+    <qt-opengl>
+      <camera>
+        <placements>
+          <placement index="0" lens_focal_length="56" look_at="-16.1421,-0.00773664,13.6947" position="-16.9616,-0.00773664,14.2678" up="0.573093,-3.30062e-16,0.81949"/>
+          <placement index="1" lens_focal_length="56" look_at="-15.9704,-4.90976,15.3149" position="-16.6616,-5.11344,16.0083" up="0.665094,0.195978,0.720585"/>
+          <placement index="2" lens_focal_length="82" look_at="0,0,0" position="0,0,36" up="1,0,0"/>
+        </placements>
+      </camera>
+      <user_functions label="ros_bridge_user_functions" library="build/argos3_ros2_bridge/plugins/user_functions/libros_bridge_user_functions"/>
+    </qt-opengl>
+  </visualization>
+</argos-configuration>

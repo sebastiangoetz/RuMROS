@@ -1,0 +1,6 @@
+<?xml version="1.0" ?>
+<actuators>
+  <leds implementation="default" medium="leds" />
+  <quadrotor_position implementation="default" />
+  <!--<quadrotor_speed implementation="default" />-->
+</actuators>

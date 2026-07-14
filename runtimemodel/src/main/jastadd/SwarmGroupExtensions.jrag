@@ -1,0 +1,102 @@
+/**
+ * This aspect defines several simple and useful functionality extensions
+ * to swarm groups, which are used in many other aspects.
+ */
+aspect SwarmGroupExtensions {
+    // Retrieves all swarmUnits from a group, including ones from nested groups
+    syn JastAddList<SwarmUnit> SwarmGroup.getUnitsRecursive() {
+        JastAddList<SwarmUnit> result = new JastAddList<SwarmUnit>();
+
+        // Add direct units
+        for (SwarmUnit u : getSwarmUnits()) {
+            result.add(u);
+        }
+
+        // Recursively add units from subgroups
+        for (SwarmGroup g : getSwarmGroups()) {
+            result.addAll(g.getUnitsRecursive());
+        }
+
+        return result;
+    }
+
+    syn SwarmUnit Model.getSwarmUnitById(int id) {
+        for (SwarmUnit u : getSwarmUnits()) {
+            if (u.getid() == id)
+                return u;
+        }
+        return null;
+    }
+
+    syn SwarmUnit SwarmGroup.getSwarmUnitById(int id) {
+        for (SwarmUnit u : getUnitsRecursive()) {
+            if (u.getid() == id)
+                return u;
+        }
+        return null;
+    }
+
+    syn boolean SwarmGroup.containsUnit(SwarmUnit unit) {
+        for (SwarmUnit u : getUnitsRecursive()) {
+            if (u.getid() == unit.getid())
+                return true;
+        }
+        return false;
+    }
+
+    syn boolean SwarmGroup.isUnitDirectChild(SwarmUnit unit) {
+        // True if direct group member, false if not part of group or nested group member
+        for (SwarmUnit u : getSwarmUnits()) {
+            if (u.getid() == unit.getid())
+                return true;
+        }
+        return false;
+    }
+
+    syn SwarmGroup Model.getSwarmGroupById(int id) {
+        for (SwarmGroup g : getSwarmGroups()) {
+            if (g.getid() == id)
+                return g;
+        }
+        return null;
+    }
+
+    syn SwarmGroup Model.getUnitGroup(SwarmUnit u) {
+        for (SwarmGroup g : getSwarmGroups()) {
+            if (g.isUnitDirectChild(u))
+                return g;
+        }
+        return null;
+    }
+
+    syn Integer Model.getUnitGroupId(SwarmUnit u) {
+        SwarmGroup g = getUnitGroup(u);
+        if (g != null)
+            return g.getid();
+        return null;
+    }
+
+    syn String Model.getUnitGroupName(SwarmUnit u) {
+        SwarmGroup g = getUnitGroup(u);
+        if (g != null)
+            return g.getname();
+        return "";
+    }
+
+    syn Position SwarmGroup.getGroupCenter() {
+        JastAddList<SwarmUnit> group_units = this.getUnitsRecursive();
+        double n = (double)group_units.getNumChild();
+        double x = 0.0;
+        double y = 0.0;
+        double z = 0.0;
+        double theta = 0.0;
+        for (SwarmUnit u : group_units) {
+            Position upos = u.getPositionReference().getPosition();
+            x += upos.getx();
+            y += upos.gety();
+            z += upos.getz();
+            theta += upos.gettheta();
+        }
+        return new Position(x / n, y / n, z / n, theta / n);
+    }
+}

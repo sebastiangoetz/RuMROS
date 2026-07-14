@@ -1,0 +1,81 @@
+[
+  {
+    "class": "CommandManager",
+    "inputs": [
+      {
+        "attribute": "ReceivedMsgList",
+        "topic": "mqtt://localhost/rumros/cmd_ack"
+      }
+    ]
+  },
+  {
+    "class": "SwarmUnit",
+    "outputs": [
+      {
+        "attribute": "SendCommand",
+        "topic": "mqtt://localhost/rumros/cmd_ctrl",
+        "type": "std_msgs/msg/String"
+      }
+    ]
+  },
+  {
+    "class": "SwarmGroup",
+    "outputs": [
+      {
+        "attribute": "CurrentState",
+        "topic": "mqtt://localhost/swarm${id}/cmd_behavior",
+        "type": "std_msgs/msg/String"
+      }
+    ]
+  },
+  {
+    "class": "PosePositionReference",
+    "condition": "${Parent.Class.SimpleName} == \"Crazyflie\"",
+    "inputs": [
+      {
+        "attribute": "Position",
+        "topic": "mqtt://localhost/cf${Parent.id}/pose"
+      }
+    ]
+  },
+  {
+    "class": "PosePositionReference",
+    "condition": "${Parent.Class.SimpleName} == \"Footbot\"",
+    "inputs": [
+      {
+        "attribute": "Position",
+        "topic": "mqtt://localhost/fb${Parent.id}/pose"
+      }
+    ]
+  },
+  {
+    "class": "PosePositionReference",
+    "condition": "${Parent.Class.SimpleName} == \"Turtlebot\"",
+    "inputs": [
+      {
+        "attribute": "Position",
+        "topic": "mqtt://localhost/tb${Parent.id}/pose"
+      }
+    ]
+  },
+  {
+    "class": "OdomPositionReference",
+    "condition": "${Parent.Class.SimpleName} == \"Rover\"",
+    "inputs": [
+      {
+        "attribute": "Position",
+        "topic": "mqtt://localhost/rv${Parent.id}/odom"
+      }
+    ]
+  },
+  {
+    "class": "OdomPositionReference",
+    "condition": "${Parent.Class.SimpleName} == \"Drone\"",
+    "inputs": [
+      {
+        "attribute": "Position",
+        "topic": "mqtt://localhost/dr${Parent.id}/odom"
+      }
+    ]
+  }
+]

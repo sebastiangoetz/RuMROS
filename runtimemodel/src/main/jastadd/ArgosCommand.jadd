@@ -1,0 +1,83 @@
+/**
+ * Implements commands that can be sent to individual robots in the MRS version.
+ * In addition to this, it contains the logic for awaitable actions, for which
+ * a topic exists to receive acknowledgements upon completing an action.
+ * This file contains additional implementation code related to the aspect, which is not situated in AST attributes.
+ */
+aspect ArgosCommand {
+    private CommandMsg SwarmUnit.currentCommand = null;
+
+    public void SwarmUnit.setSendCommand(CommandMsg command) {
+        currentCommand = command;
+        _ragconnect__update_SendCommand(); // This is not called automatically by RAGConnect, so state update has to be manually declared
+        _ragconnect__writeLastValue_SendCommand();
+    }
+
+    // Awaitables are partially handled by ModelMain. For instance,
+    // it removes processed ACKs from the message list and cleans up pending results
+    // Action-specific code can be implemented here
+    public Result AwaitableResult.execute(Model model) {
+        if (!isAcknowledged(model))
+            return new Result(ActionResultType.WAIT, "Waiting for ACK", 2000);
+
+        if (this instanceof ChangeGroupResult) {
+            // Actually perform group change
+            ChangeGroupResult r = (ChangeGroupResult)this;
+            SwarmUnit u = model.getSwarmUnit(r.getUnitId());
+            SwarmGroup gOld = model.getSwarmGroup(r.getOldGroupId());
+            SwarmGroup gNew = model.getSwarmGroup(r.getNewGroupId());
+            gOld.removeSwarmUnit(u);
+            gNew.addSwarmUnit(u);
+            u.setCurrentState(gNew.getCurrentState());
+            return getExpectedResult();
+        } else if (this instanceof DoNothingResult) {
+            // On arrival, set behavior to idle
+            DoNothingResult r = (DoNothingResult)this;
+            r.getUnit().setCurrentState(model.getStateWithName("idle"));
+            return getExpectedResult();
+        }
+
+        // No object matches, error
+        return new Result(ActionResultType.ERROR, "Invalid subclass of AwaitableResult", 2000);
+    }
+
+    public Result AwaitableResult.getExpectedResult() {
+        if (this instanceof ChangeGroupResult) {
+            return new Result(ActionResultType.SUCCESS, "Group changed", 2000);
+        } else if (this instanceof DoNothingResult) {
+            return new Result(ActionResultType.SUCCESS, "Action performed successfully", 2000);
+        }
+        return new EmptyResult();
+    }
+
+    public Result Model.processPendingAwaitable(Action action) {
+        Result r = null;
+        JastAddList<AwaitableResult> pendingResults = getPendingResults();
+        if (pendingResults.getNumChild() > 0) {
+            // Process one at a time
+            AwaitableResult res = pendingResults.getChild(0);
+            if (res.isAcknowledged(this)) {
+                // Received ACK, execute logic
+                r = res.execute(this);
+                pendingResults.removeFirstChild(res); //Remove pending result
+
+                // Remove ACK message from received messages
+                int removeIndex = -1;
+                JastAddList<CommandMsg> receivedMsgs = getCommandManager().getReceivedMsgs();
+                for (int i = 0; i < receivedMsgs.getNumChild(); i++) {
+                    CommandMsg msg = receivedMsgs.getChild(i);
+                    if (msg != null && msg.gettype() == 0) {
+                        if (((AckMsg)msg).getuuid().equals(res.getuuid())) {
+                            removeIndex = i;
+                            break;
+                        }
+                    }
+                }   
+                if (removeIndex >= 0)
+                    receivedMsgs.removeChild(removeIndex);
+            }
+        }
+
+        return r;
+    }
+}

@@ -1,0 +1,68 @@
+import java.util.function.Function;
+
+aspect BehaviorParameters {
+    // Helper to reduce required syntax when creating models
+    public Parameter BB.getParameterByName(String name) {
+        for (Parameter parameter : getParameters()) {
+            if (parameter.getname().equals(name)) {
+                return parameter;
+            }
+        }
+        return null;
+    }
+
+    public class ParameterExecutionContext {
+        public final Model model;
+        public final SwarmGroup group;
+        public final SwarmUnit unit;
+        public final Behavior behavior; // Reference to the BB executing
+
+        public ParameterExecutionContext(Model model, SwarmGroup group, SwarmUnit unit, Behavior behavior) {
+            this.model = model;
+            this.group = group;
+            this.unit = unit;
+            this.behavior = behavior;
+        }
+    }
+
+    // Hook for dynamic parameters to receive context before execution
+    public void Parameter.prepare(ParameterExecutionContext ctx) {
+        // Default implementation does nothing (for static parameters)
+    }
+
+    // Computes a double parameter, can be extended further for other parameter types
+    public class ComputedDoubleParameter extends DoubleParameter {
+        // The logic to compute the value
+        private Function<ParameterExecutionContext, Double> computer;
+        // Cache the context passed during prepare()
+        private ParameterExecutionContext lastContext;
+
+        public ComputedDoubleParameter(String name, Function<ParameterExecutionContext, Double> computer) {
+            // Initialize AST node requirements (adjust constructor call to match your JastAdd gen)
+            super(); 
+            this.setname(name);
+            this.computer = computer;
+        }
+
+        @Override
+        public void prepare(ParameterExecutionContext ctx) {
+            this.lastContext = ctx;
+        }
+
+        @Override
+        public Double getvalue() {
+            if (computer != null && lastContext != null) {
+                return computer.apply(lastContext);
+            }
+            // Null breaks model serialization
+            return Double.NaN;
+        }
+
+        // Ensure the computing function is preserved when BBs are copied
+        @Override
+        public ComputedDoubleParameter treeCopyNoTransform() {
+            ComputedDoubleParameter copy = new ComputedDoubleParameter(getname(), computer);
+            return copy;
+        }
+    }
+}

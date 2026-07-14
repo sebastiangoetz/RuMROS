@@ -1,0 +1,68 @@
+/**
+ * This aspect defines AST various attributes used by the behavior model computations.
+ * It illustrates how cross-cutting concerns can be grouped in a single extension file
+ * with JastAdd, as well as how bottom-up synthesized and top-down inherited attributes
+ * can be implemented. 
+ */
+aspect BehaviorModel {
+    // === Model ===
+    syn Action Model.getActionById(String id) {
+        for (Action a : getActions()) {
+            if (a.getid().equals(id))
+                return a;
+        }
+        return null;
+    }
+
+    // === Area ===
+    syn Area Model.getAreaById(int id) {
+        for (Area a : getAreas()) {
+            if (a.getid() == id)
+                return a;
+        }
+        return null;
+    }
+
+    syn Area Model.getAreaByName(String name) {
+        for (Area a : getAreas()) {
+            if (a.getname().equals(name))
+                return a;
+        }
+        return null;
+    }
+
+    // === SwarmGroup ===
+    syn SwarmGroup Model.getSwarmGroupByName(String name) {
+        for (SwarmGroup g : getSwarmGroups()) {
+            if (g.getname().equals(name))
+                return g;
+        }
+        return null;
+    }
+
+    inh Model SwarmGroup.getModel();
+    eq Model.getSwarmGroup(int i).getModel() {
+        return this;
+    }
+
+    // === SwarmUnit ===
+    syn SwarmUnit Model.getSwarmUnitByName(String name) {
+        for (SwarmUnit u : getSwarmUnits()) {
+            if (u.getname().equals(name))
+                return u;
+        }
+        return null;
+    }
+
+    // === BehaviorModel ===
+    inh Model BehaviorModel.getModel();
+    eq Model.getBehaviorModel().getModel() {
+        return this;
+    }
+
+    // === Behavior ===
+    inh Model Behavior.getModel();
+    eq BehaviorModel.getCB(int i).getModel() {
+        return getModel();
+    }
+}

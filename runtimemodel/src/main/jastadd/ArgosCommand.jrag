@@ -1,0 +1,76 @@
+/**
+ * Implements commands that can be sent to individual robots in the MRS version.
+ * In addition to this, it contains the logic for awaitable actions, for which
+ * a topic exists to receive acknowledgements upon completing an action.
+ * This file contains the semantic AST attributes related to the aspect.
+ */
+aspect ArgosCommand {
+
+    syn CommandMsg SwarmUnit.getSendCommand() {
+        return currentCommand;
+    }
+
+    // Propagate model node upwards
+    syn Model ASTNode.root() {
+        if (getParent() == null) {
+            // This is the root node
+            return (Model)this;
+        }
+        return getParent().root();
+    }
+
+    // Check whether ACK was received for the given action
+    syn boolean AwaitableResult.isAcknowledged(Model model) {
+        for (CommandMsg msg : model.getCommandManager().getReceivedMsgs()) {
+            if (msg != null) {
+                switch (msg.gettype()) {
+                    case 0: // ACK
+                        if (((AckMsg)msg).getuuid().equals(getuuid())) {
+                            return true;
+                        }
+                        break;
+                }
+            }
+        }
+        
+        return false;
+    }
+
+    syn JastAddList<Result> Model.processAllAwaitables() {
+        List<Integer> removePendingIds = new ArrayList<>();
+        JastAddList<Result> results = new JastAddList<>();
+        int id = 0;
+        for (AwaitableResult res : getPendingResults()) {
+            if (res.isAcknowledged(this)) {
+                // Received ACK, execute logic
+                Result r = res.execute(this);
+                removePendingIds.add(id);
+
+                // Remove ACK message from received messages
+                int removeIndex = -1;
+                JastAddList<CommandMsg> receivedMsgs = getCommandManager().getReceivedMsgs();
+                for (int i = 0; i < receivedMsgs.getNumChild(); i++) {
+                    CommandMsg msg = receivedMsgs.getChild(i);
+                    if (msg != null && msg.gettype() == 0) {
+                        if (((AckMsg)msg).getuuid().equals(res.getuuid())) {
+                            removeIndex = i;
+                            break;
+                        }
+                    }
+                }   
+                if (removeIndex >= 0)
+                    receivedMsgs.removeChild(removeIndex);
+                
+                results.add(r);
+            } else
+                results.add(res);
+
+            id++;
+        }
+        // Remove pending results
+        for (Integer i : removePendingIds)
+            getPendingResults().removeChild(i);
+            
+        return results;
+    }
+}

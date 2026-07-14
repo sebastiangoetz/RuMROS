@@ -1,0 +1,26 @@
+import de.tudresden.inf.st.rumros.argosbridge.ArgosConfigManager;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * The ARGoS MRS version implements some functionality, which not implemented for
+ * Gazebo, but requires a mock implementation due to the shared structural
+ * definitions in the relational RAG.
+ */
+aspect GazeboInit {
+    /**
+     * For automatic mapping of RAGConnect's mqtt-connections.json
+     * to mqtt_client's config.yaml to work, the mapper needs to know
+     * how many objects (robots) of each class will exist. It gets
+     * these values from NUM_OBJECTS declared in each class.
+     * SwarmGroups also send commands and thus are handled as well.
+     * The methods below should handle robots accordingly.
+     */
+
+    // These are required to avoid compilation errors
+    // The actual value is of no importance
+    public static final String Model.ARGOS_TEMPLATE = "large_unbounded_arena.argos";
+    public void Model.setupArgosSimulation(ArgosConfigManager configManager, Model model) {}
+    public Map<Integer, List<Integer>> Model.getSwarmConfig() { return null; }
+    public Map<String, List<Integer>> Model.getTypeConfig() { return null; }
+}

@@ -1,0 +1,31 @@
+
+
+/** 
+ * The JRAG part of the DroneLoitering extension illustrates how additional
+ * non-AST helper attributes and getters/setters can be defined.
+ */
+aspect DroneLoitering {
+    // Add loiteringRadius attribute
+    private double Drone.loiteringRadius = 1.0;
+
+    public double Drone.getLoiteringRadius() {
+        return loiteringRadius;
+    }
+
+    public void Drone.setLoiteringRadius(double radius) {
+        if (radius > 0.0)
+            loiteringRadius = radius;
+    }
+
+    // Add attribute to determine wheter loitering is
+    // performed after the current move
+    private boolean Drone.loiterAfterMove = false;
+
+    public boolean Drone.getLoiterAfterMove() {
+        return loiterAfterMove;
+    }
+
+    public void Drone.setLoiterAfterMove(boolean loiter) {
+        loiterAfterMove = loiter;
+    }
+}

@@ -1,31 +1,76 @@
+/* Model.relast - Structural definition of the runtime model AST in the form of a relational RAG */
+// Careful - some specific structures are required by the controller / web interface:
+// 'Model' has to be the root node
+// 'Action' has to have the minimal structure as defined here and semantics as specified in aspects, including 'Input' and 'Result'
+// The model has to have a 'CommandManager' with the structure as defined here and semantics as specified in aspects, including 'AwaitableResult'
+// All other definitions may be changed, though it is recommended to keep communication structures
 Model ::=
-    Turtlebot*
-    Rover*
-    Drone*
+    SwarmGroup*
     Area*
     State*
+    SwarmUnit*
+    PositionReference*
     Action*
-    PositionReference*;
+    CommandManager
+    PendingResult:AwaitableResult*
+    BehaviorModel
+    Environment;
 
-abstract Robot ::=
+// Notice: All objects that are linked to via relations
+// have to be accessible directly from the root node in order
+// to correctly resolve relations on the web UI, since
+// resolving them recursively would be slow and introduce problems
+
+SwarmGroup ::=
     <id:int>
     <name:String>
+    /CurrentState:State/;
+
+abstract SwarmUnit ::=
+    <name:String>
+    <id:int>
+    /SendCommand:CommandMsg/;
+
+abstract Robot : SwarmUnit ::=
     /Velocity2D/;
 
-rel Robot.CurrentState -> State;
-rel Robot.TargetPosition? -> PositionReference;
+rel SwarmGroup.SwarmUnit* -> SwarmUnit;
+rel SwarmUnit.CurrentState -> State;
+rel SwarmUnit.TargetPosition? -> PositionReference;
 
-Turtlebot : Robot ::= PosePositionReference;
-Rover : Robot ::= OdomPositionReference;
+// Purely for cosmetic purposes - web UI can not
+// display computed attributes, e.g. /<CurrentState:State>/
+// is missing and has to be displayed separately
+// AggregateState setter is called when group state changes.
+rel SwarmGroup.AggregatedState -> State;
 
-Drone ::=
-    <id:int>
-    <name:String>
+// Hierarchical extension for group nesting
+rel SwarmGroup.SwarmGroup* -> SwarmGroup;
+
+Turtlebot : Robot ::=
+    PosePositionReference;
+Footbot : Robot ::=
+    PosePositionReference;
+Rover : Robot ::=
+    OdomPositionReference;
+
+// Generic Drone (Gazebo only)
+Drone : SwarmUnit ::=
     OdomPositionReference
     /Velocity3D/;
 
-rel Drone.CurrentState -> State;
-rel Drone.TargetPosition? -> PositionReference;
+// TODO: unify structure with legacy Drone
+ // Pose sensors: external or flow deck + gyroscope
+Crazyflie : SwarmUnit ::=
+    PosePositionReference;
+
+rel Crazyflie.CurrentTarget? -> Position;
+
+Position ::=
+    <x:Double>
+    <y:Double>
+    <z:Double>
+    <theta:Double>;
 
 abstract PositionReference ::=
     /Position/;
@@ -39,21 +84,15 @@ OdomPositionReference : PositionReference ::=
 DefaultPositionReference : PositionReference::=
     Position;
 
-Position ::=
-    <x:Double>
-    <y:Double>
-    <z:Double>
-    <theta:Double>;
-
 Velocity2D ::=
-     <speed:Double>
-     <rotationSpeed:Double>;
+    <speed:Double>
+    <rotationSpeed:Double>;
 
 Velocity3D ::=
-     <horizontalSpeed:Double>
-     <verticalSpeed:Double>
-     <rotationSpeed:Double>;
-	
+    <horizontalSpeed:Double>
+    <verticalSpeed:Double>
+    <rotationSpeed:Double>;
+
 Area ::=
     <id:int>
     <name:String>
@@ -66,7 +105,8 @@ State ::=
     <id:int>
     <name:String>
     <speedFactor:Double>
-    <angleTolerance:Double>;
+    <angleTolerance:Double>
+    Parameter*;
 
 Action ::=
     <id:String>
@@ -77,9 +117,138 @@ Action ::=
 Input ::=
     <id:String>
     <label:String>
-    <type:String>;
+    <type:String>
+    <defaultValue:String>;
 
 Result ::=
     <type:ActionResultType>
     <message:String>
     <displayMillis:int>;
+
+abstract AwaitableResult : Result ::=
+    <uuid:String>;
+
+ChangeGroupResult : AwaitableResult ::=
+    <OldGroupId:int>
+    <NewGroupId:int>
+    <UnitId:int>;
+
+DoNothingResult : AwaitableResult;
+
+rel DoNothingResult.Unit -> SwarmUnit;
+
+// Command message (Argos/multi-robot version only)
+abstract CommandMsg ::=
+    <sender:String>
+    <receiver:String>
+    <type:Integer>
+    <uuid:String>;
+
+ChangeGroupCommand : CommandMsg ::=
+    <newGroupId:int>
+    <newGroupName:String>
+    <newBehavior:String>
+    Position
+    newBehaviorParam:Parameter*;
+
+PositionCommand : CommandMsg ::=
+    Position
+    <velocity:double>;
+
+AckMsg : CommandMsg ::=
+    <uuid:String>;
+
+// Additional intermediate object required, as ModelMain has issues with connecting Model attributes directly
+CommandManager ::=
+    ReceivedMsg:CommandMsg*;
+
+// Behavior parameters to be sent to robots (Argos/multi-robot version only)
+abstract Parameter ::=
+    <name:String>;
+
+StringParameter : Parameter ::=
+    <value:String>;
+
+IntParameter : Parameter ::=
+    <value:Integer>;
+
+DoubleParameter : Parameter ::=
+    <value:Double>;
+
+BooleanParameter : Parameter ::=
+    <value:Boolean>;
+
+// Due to issues with inherited method lookup when directly linking
+// ASTNodes with relations, IDs are used here
+SwarmGroupParameter : Parameter ::=
+    <value:Integer>; //Group ID
+
+AreaParameter : Parameter ::=
+    <value:Integer>; //Area ID
+
+// === The following part contains behavioral composition components ===
+// Behavior model root node, contains all relevant nodes
+BehaviorModel ::=
+    <running:Boolean>
+    <currentTime:Long>
+    CB*;
+
+rel BehaviorModel.StartBehavior* -> CB;
+rel BehaviorModel.ActiveCB* -> CB;
+rel BehaviorModel.StopAction -> Action;
+
+// Blocks with mutually exclusive transitions check transition conditions
+// until the first fires. Non-mutually exclusive blocks check and potentially
+// fire all transitions
+abstract Behavior ::=
+    <id:int>
+    <Active:Boolean>
+    <LastStart:Long>
+    <LastEnd:Long>
+    <TransitionsMutuallyExclusive:Boolean>
+    Transition*;
+
+// ComplexBehavior (CB shorthand to make modeling syntax more convenient)
+// Models a nested FSM of BBs
+CB : Behavior ::=
+    <name:String>
+    <Sequence:Boolean>
+    Behavior*; // CB can hold BBs and CBs (implements HFSM hierarchy by enabling CB nesting)
+
+// BehaviorBlock (BB) includes a concrete action with parameters,
+// transition and state for switching to the next action in the
+// sequence after performing the action
+BB : Behavior ::=
+    Parameter*
+    <TargetGroupId:int>
+    <TargetUnitId:int>;
+
+rel BB.Action -> Action;
+
+// Since a BB can have multiple transitions, the programmer
+// has to make sure that when multiple fire at once, they trigger
+// blocks on different groups in order to keep behavior deterministic
+abstract Transition;
+
+// null on final block (e.g. with idle as final behavior)
+// This mechanism may be used to model repeats or GOTOs as well
+// though in that case the programmer has to be careful not to use TTimestamp,
+// as they won't fire with repeats.
+rel Transition.NextBehavior? -> Behavior;
+
+// Transitions after duration in ms elapses
+TDuration : Transition ::=
+    <Duration:Long>;
+
+// Transitions if current time is equal or past timestamp
+TTimestamp : Transition ::=
+    <Timestamp:Long>;
+
+// Transitions on custom condition
+TConditional : Transition;
+
+// Custom environment model built according to specific use case
+Environment ::=
+    <WaitingAreaReserved:Boolean>
+    <WaitingAreaOccupied:Boolean>;
+rel Environment.WaitingAreaOccupiedBy? -> SwarmGroup;

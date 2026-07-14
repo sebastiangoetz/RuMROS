@@ -1,0 +1,276 @@
+:root {
+	--col-accent: #009879;
+	--col-accent-light: #72c4b2;
+	--col-accent-light-muted: #e8fffa;
+	--col-text: #ffffff;
+	--col-warning: #d4a300;
+	--col-inactive: #b1b1b1;
+	--col-inactive-light: #e7e7e7;
+	--col-inactive-dark: #727272;
+	--col-emphasized: #ff7300;
+	--col-emphasized-mid: #ffc99a;
+	--col-emphasized-light: #fff1e5;
+}
+
+html {
+	font: 16px sans-serif;
+}
+
+body {
+    margin: 0px;
+}
+
+.warning {
+	font-weight: bold;
+	color: var(--col-warning);
+}
+
+/* Header styling */
+.app-header {
+	display: flex;
+	align-items: center;
+	background-color: var(--col-accent);
+	padding: 10px 20px 0px 10px;
+}
+
+.logo {
+	font-weight: bold;
+	color: var(--col-text);
+	font-size: 1.3em;
+	margin-right: 30px;
+    margin-bottom: 10px;
+}
+
+.tablink {
+	background-color: inherit;
+	border: none;
+	outline: none;
+	cursor: pointer;
+	padding: 10px 16px;
+	font-size: 16px;
+    font-weight: bold;
+	color: var(--col-text);
+	transition: background-color 0.2s;
+    text-decoration: none;
+}
+
+.tablink:hover {
+	background-color: rgba(255,255,255,0.2);
+}
+
+.tablink.active {
+	background-color: var(--col-text);
+	color: var(--col-accent);
+	border-radius: 5px 5px 0 0;
+}
+
+.tabcontent {
+	display: none;
+}
+
+.tabcontent.active {
+	display: block;
+}
+
+/* Tables */
+.styled-table {
+	border-collapse: collapse;
+	margin: 25px 25px;
+	font-size: 0.9em;
+	font-family: sans-serif;
+	box-shadow: 0 0 20px rgba(0,0,0,0.15);
+}
+
+.styled-table thead tr {
+	background-color: var(--col-accent);
+	color: var(--col-text);
+	text-align: left;
+}
+
+.styled-table th {
+	text-align: center;
+}
+
+.styled-table th,.styled-table td {
+	padding: 12px 15px;
+}
+
+.styled-table tbody tr {
+	border-bottom: 1px solid #dddddd;
+}
+
+.styled-table tbody tr:nth-of-type(even) {
+	background-color: #f3f3f3;
+}
+
+.styled-table tbody tr:last-of-type {
+	border-bottom: 2px solid var(--col-accent);
+}
+
+.styled-table tbody tr.active-row {
+	font-weight: bold;
+	color: var(--col-accent);
+}
+
+.styled-table caption {
+	caption-side: top;
+	text-align: left;
+	padding: 10px 0;
+	font-weight: bold;
+	font-size: 1.2em;
+	color: #333;
+}
+
+/* Main container: dashboard default */
+#main-container {
+	display: flex;
+	flex-direction: row;
+	width: 100%;
+	height: 100vh;
+	overflow: hidden;
+}
+
+/* Dashboard layout: tables and actions side by side */
+#table-container {
+	flex-grow: 1;
+	flex-shrink: 1;
+	overflow: auto;
+	padding: 10px;
+	background-color: var(--col-text);
+}
+
+#action-container {
+	flex-grow: 0;
+	flex-shrink: 0;
+	width: auto;
+	min-width: 200px;
+	overflow: auto;
+	padding: 10px;
+	background-color: #d0d0d0;
+	white-space: nowrap;
+}
+
+#divider {
+	width: 5px;
+	background-color: #ccc;
+	cursor: ew-resize;
+	position: relative;
+}
+
+#divider:hover {
+	background-color: #999;
+}
+
+
+#behavior-chart-container {
+	flex-grow: 1;
+	flex-shrink: 1;
+	min-width: 50%;
+	overflow: auto;
+	/*   */
+	background-color: var(--col-text);
+}
+
+@media (max-width: 600px) {
+	#behavior-chart-container {
+		flex-shrink: 0;
+		overflow-x: auto;
+	}
+}
+
+
+#behavior-status-container {
+	flex-grow: 0;
+	flex-shrink: 0;
+	width: auto;
+	min-width: 480px;
+	overflow: auto;
+	padding: 10px;
+	background-color: #d0d0d0;
+	white-space: nowrap;
+}
+
+.action-table {
+	width: 100%;
+}
+
+.goal-button {
+	height: 88%;
+	width: 100%;
+	display: table;
+	padding: 10px 16px;
+	margin: 8px 0;
+	font-size: 1rem;
+	font-weight: 600;
+	background-color: var(--col-accent);
+	color: #ffffff;
+	border: none;
+	border-radius: 6px;
+	cursor: pointer;
+	text-align: center;
+	box-shadow: inset 0 0 0 0 #ffffff;
+	transition: all 0.2s ease-in-out;
+}
+
+.goal-button:hover {
+	background-color: var(--col-accent-light);
+}
+
+.goal-button:disabled {
+	background-color: #ccc;
+	color: #666;
+	cursor: not-allowed;
+	box-shadow: none;
+	opacity: 0.7;
+}
+
+.goal-button:disabled:hover {
+	background-color: #ccc;
+}
+
+.action-input {
+	width: 100%;
+}
+
+/* Tables tab styling */
+body.tables #table-container {
+	width: 100%;
+	flex-grow: 1;
+
+	/* Flex layout for side-by-side items */
+	display: flex;
+	flex-wrap: wrap;      /* wrap items to new row if they don't fit */
+	gap: 20px;            /* spacing between items */
+	padding: 20px;
+	box-sizing: border-box;
+	overflow-y: auto;     /* allow vertical scrolling if too many items */
+}
+
+/* Actions tab styling */
+body.actions #action-container {
+	width: 100%;
+	flex-grow: 1;
+
+	/* Flex layout for side-by-side items */
+	display: flex;
+	flex-wrap: wrap;
+	gap: 20px;
+	padding: 20px;
+	box-sizing: border-box;
+	overflow-y: auto;
+}
+
+body.actions .tablink.active {
+	background-color: #d0d0d0 !important;
+}
+
+/* Actions page: card-style for forms and settings */
+#action-container > *, #behavior-status-container > * {
+    background-color: #ffffff;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    flex: 1 1 300px;
+    box-sizing: border-box;
+    margin-bottom: 20px;
+}

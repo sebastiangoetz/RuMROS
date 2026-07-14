@@ -1,0 +1,209 @@
+// This file contains definitions for RAGConnect message to AST attribute mappings.
+// For primitive types, they can be specified without a <def> maps <type> to <ASTNode> definition,
+// but for more sophisticated message types, like ROS Pose, Twist, etc., mapping functions are required.
+
+receive PosePositionReference.Position using PoseToPosition;
+receive OdomPositionReference.Position using OdomToPosition;
+
+send SwarmGroup.CurrentState using StateToString;
+send SwarmUnit.SendCommand using CommandToString;
+receive with add CommandManager.ReceivedMsg using StringToCommand; // RAGConnect supports list attributes, allowing incoming messages to be added to a queue
+
+// Mapper for received Pose messages
+PoseToPosition maps byte[] b to Position {:
+    // If desired, enable latency recording here and at the end of the method
+    //long t0 = LatencyRecorder.start();
+    com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+    String json = ROS2SerializeUtils.toPoseJson(b);
+
+    com.fasterxml.jackson.databind.JsonNode jsonNode = objectMapper.readTree(json);
+
+    double xPos = jsonNode.get("position").get("x").asDouble();
+    double yPos = jsonNode.get("position").get("y").asDouble();
+    double zPos = jsonNode.get("position").get("z").asDouble();
+
+    double qx = jsonNode.get("orientation").get("x").asDouble();
+    double qy = jsonNode.get("orientation").get("y").asDouble();
+    double qz = jsonNode.get("orientation").get("z").asDouble();
+    double qw = jsonNode.get("orientation").get("w").asDouble();
+
+    double yaw = Math.atan2(2.0 * (qy * qz + qw * qx), qw * qw - qx * qx - qy * qy + qz * qz);
+    double pitch = Math.asin(-2.0 * (qx * qz - qw * qy));
+    double roll = Math.atan2(2.0 * (qx * qy + qw * qz), qw * qw + qx * qx - qy * qy - qz * qz);
+
+    double theta = roll;
+
+    //LatencyRecorder.record(t0);
+    return new Position(xPos, yPos, zPos, theta);
+:}
+
+// Mapper for received Odometry messages
+OdomToPosition maps byte[] b to Position {:
+    com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+    String json = ROS2SerializeUtils.toOdometryJson(b);
+
+    com.fasterxml.jackson.databind.JsonNode jsonNode = objectMapper.readTree(json);
+
+    double xPos = jsonNode.get("position").get("x").asDouble();
+    double yPos = jsonNode.get("position").get("y").asDouble();
+    double zPos = jsonNode.get("position").get("z").asDouble();
+
+    double qx = jsonNode.get("orientation").get("x").asDouble();
+    double qy = jsonNode.get("orientation").get("y").asDouble();
+    double qz = jsonNode.get("orientation").get("z").asDouble();
+    double qw = jsonNode.get("orientation").get("w").asDouble();
+
+    double yaw = Math.atan2(2.0 * (qy * qz + qw * qx), qw * qw - qx * qx - qy * qy + qz * qz);
+    double pitch = Math.asin(-2.0 * (qx * qz - qw * qy));
+    double roll = Math.atan2(2.0 * (qx * qy + qw * qz), qw * qw + qx * qx - qy * qy - qz * qz);
+
+    double theta = roll;
+
+    return new Position(xPos, yPos, zPos, theta);
+:}
+
+// Currently unused mapper, could be useful for adding an 'active' status to robots for instance
+StateToBoolean maps State s to String {:
+    return s.getname().equals("shut down") ? "false" : "true";
+:}
+
+// Mapper for sending the robot state as a String message
+StateToString maps State s to byte[] {:
+    com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+    com.fasterxml.jackson.databind.node.ObjectNode stringJson = objectMapper.createObjectNode();
+
+    //Serialize parameters to json string
+    //Avoids using a custom message type for simplicity
+    //and better legacy compatibility with Gazebo
+    com.fasterxml.jackson.databind.node.ObjectNode stateJson = objectMapper.createObjectNode();
+    com.fasterxml.jackson.databind.node.ObjectNode parameterJson = objectMapper.createObjectNode();
+    stateJson.put("name", s.getname());
+    for (Parameter p : s.getParameterList()) {
+        String name = p.getname();
+
+        if (p instanceof DoubleParameter) {
+            parameterJson.put(name, ((DoubleParameter) p).getvalue());
+        } else if (p instanceof IntParameter) {
+            parameterJson.put(name, ((IntParameter) p).getvalue());
+        } else if (p instanceof StringParameter) {
+            parameterJson.put(name, ((StringParameter) p).getvalue());
+        }
+    }
+    stateJson.set("parameters", parameterJson);
+    String stateString = objectMapper.writer().writeValueAsString(stateJson);
+    stringJson.put("data", stateString);
+
+    String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(stringJson);
+    return ROS2SerializeUtils.fromStringJson(json);
+:}
+
+// Mapper for receiving JSON command messages
+StringToCommand maps byte[] b to JastAddList<CommandMsg> {:
+    com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+
+    String json = ROS2SerializeUtils.toStringJson(b);
+    com.fasterxml.jackson.databind.JsonNode jsonNode = objectMapper.readTree(json);
+
+    String receiver = jsonNode.get("receiver").textValue();
+    if (receiver.equals("__controller__")) {
+        String sender = jsonNode.get("sender").textValue();
+        int type = jsonNode.get("type").asInt();
+        String uuid = jsonNode.get("content").textValue();
+        switch (type) {
+            case 0:
+                //Received ACK
+                System.out.println("[RAGConnect] Received ACK for " + uuid);
+                AckMsg msg = new AckMsg(sender, receiver, type, uuid);
+                JastAddList<CommandMsg> cmdList = new JastAddList<>();
+                cmdList.add(msg);
+                return cmdList;
+            default:
+                //Unknown message
+                System.out.println("[RAGConnect] Received unknown message type: " + type);
+                return new JastAddList<CommandMsg>();
+        }
+    }
+
+    //Message is not intended for the controller
+    return new JastAddList<CommandMsg>();
+:}
+
+// Mapper for sending commands to robots as JSON string messages
+CommandToString maps CommandMsg cmd to byte[] {:
+    //Check type, etc.
+    com.fasterxml.jackson.databind.ObjectMapper objectMapper = new com.fasterxml.jackson.databind.ObjectMapper();
+    com.fasterxml.jackson.databind.node.ObjectNode stringJson = objectMapper.createObjectNode();
+    com.fasterxml.jackson.databind.node.ObjectNode cmdJson = objectMapper.createObjectNode();
+    
+    cmdJson.put("sender", cmd.getsender());
+    cmdJson.put("receiver", cmd.getreceiver());
+    cmdJson.put("type", cmd.gettype());
+    cmdJson.put("uuid", cmd.getuuid());
+
+    if (cmd instanceof ChangeGroupCommand) {
+        ChangeGroupCommand chgrp_cmd = (ChangeGroupCommand)cmd;
+
+        com.fasterxml.jackson.databind.node.ObjectNode contentJson = objectMapper.createObjectNode();
+        contentJson.put("id", chgrp_cmd.getnewGroupId());
+        //New group name used by ARGoS ROS node to update visuals in simulator
+        contentJson.put("name", chgrp_cmd.getnewGroupName());
+        contentJson.put("behavior", chgrp_cmd.getnewBehavior());
+
+        //Add position to move to if specified
+        com.fasterxml.jackson.databind.node.ObjectNode moveParameterJson = objectMapper.createObjectNode();
+        Position pos = chgrp_cmd.getPosition();
+        if (pos != null) {
+            moveParameterJson.put("x", pos.getx());
+            moveParameterJson.put("y", pos.gety());
+            moveParameterJson.put("z", pos.getz());
+            moveParameterJson.put("theta", pos.gettheta());
+            moveParameterJson.put("velocity", 4.0); //Simple default value
+            contentJson.set("move_parameters", moveParameterJson);
+        }
+
+        com.fasterxml.jackson.databind.node.ObjectNode parameterJson = objectMapper.createObjectNode();
+        for (Parameter p : chgrp_cmd.getnewBehaviorParams()) {
+            String name = p.getname();
+
+            if (p instanceof DoubleParameter) {
+                parameterJson.put(name, ((DoubleParameter) p).getvalue());
+            } else if (p instanceof IntParameter) {
+                parameterJson.put(name, ((IntParameter) p).getvalue());
+            } else if (p instanceof StringParameter) {
+                parameterJson.put(name, ((StringParameter) p).getvalue());
+            }                
+        }
+        contentJson.set("parameters", parameterJson);
+        cmdJson.set("content", contentJson);
+
+        System.out.println("[RAGConnect] Sending ChangeGroupCommand with ID " + chgrp_cmd.getuuid() + " to " + chgrp_cmd.getreceiver());
+    } else if (cmd instanceof PositionCommand) {
+        PositionCommand pos_cmd = (PositionCommand)cmd;
+
+        com.fasterxml.jackson.databind.node.ObjectNode contentJson = objectMapper.createObjectNode();
+        com.fasterxml.jackson.databind.node.ObjectNode parameterJson = objectMapper.createObjectNode();
+        Position pos = pos_cmd.getPosition();
+        parameterJson.put("x", pos.getx());
+        parameterJson.put("y", pos.gety());
+        parameterJson.put("z", pos.getz());
+        parameterJson.put("theta", pos.gettheta());
+        parameterJson.put("velocity", pos_cmd.getvelocity());
+
+        contentJson.set("parameters", parameterJson);
+        cmdJson.set("content", contentJson);
+
+        System.out.println("[RAGConnect] Sending PositionCommand with ID " + pos_cmd.getuuid() + " to " + pos_cmd.getreceiver());
+
+    } else {
+        throw new RuntimeException("Cannont send message, invalid CommandMessage type: " + cmd.getClass().getName());
+    }
+    //Add further types here..
+
+    String cmdString = objectMapper.writer().writeValueAsString(cmdJson);
+    stringJson.put("data", cmdString);
+    
+    String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(stringJson);
+    return ROS2SerializeUtils.fromStringJson(json);
+:}

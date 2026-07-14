@@ -1,0 +1,3 @@
+[submodule "ros/rumros_swarm_ws/src/simple_launch"]
+	path = ros/rumros_swarm_ws/src/simple_launch
+	url = https://github.com/oKermorgant/simple_launch

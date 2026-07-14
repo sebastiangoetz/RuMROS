@@ -1,12 +1,21 @@
+/**
+ * This aspect implements the state machine for directly steering a mobile ground robot
+ * in the non-MRS Gazebo version. The actuator commands in ROS are TWist messages, which
+ * are created via conversion from Velocity2D structures, that sent to the robots via
+ * RAGConnect. The conversion is done in GazeboModel.connect, while the computational
+ * logic to compute the movement command resides here. In the MRS version, this is not
+ * required and replaced by the behavior model instead, as the basic behavior blocks of
+ * robots subject to composition in the runtime model are implemented on the ROS layer.
+ */
 aspect RobotImpl {
-    syn boolean Robot.getTargetReached() = this.getDistanceToTarget() <= 0.3;
+syn boolean Robot.getTargetReached() = this.getDistanceToTarget() <= 0.3;
 
     syn Velocity2D Robot.getVelocity2D() {
-        State waiting = getStateWithName("waiting");
+        State idle = getStateWithName("idle");
 
         if (this.getTargetPosition() == null || this.getTargetReached()) {
             if(this.getTargetPosition() != null && this.getTargetReached()) {
-                setCurrentState(waiting);
+                setCurrentState(idle);
             }
             return new Velocity2D(0.0, 0.0);
         }
@@ -79,13 +88,4 @@ aspect RobotImpl {
         headingError -= Math.PI;
         return headingError;
     }
-
-    syn PositionReference Robot.getPositionReference() {
-        if(this instanceof Turtlebot) {
-            return ((Turtlebot) this).getPosePositionReference();
-        } else {
-            return ((Rover) this).getOdomPositionReference();
-        }
-    }
-
 }

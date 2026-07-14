@@ -1,0 +1,10 @@
+/**
+ * Simple exemplary aspect, which adds an additional constructor
+ * to simplify the setup code for actions.
+ */
+aspect InputExtensions {
+    // Additional constructor for omitting default values
+    public Input.Input(String id, String label, String type) {
+        this(id, label, type, "");
+    }
+}

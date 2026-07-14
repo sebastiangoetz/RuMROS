@@ -15,7 +15,7 @@ PORT = 65431
 bufferSize = 65507
 
 # full Path is neccessary for the Systemtest
-app = Flask("Runtimemodel", template_folder=os.path.dirname(__file__) + "/templates/")
+app = Flask("Runtimemodel", template_folder=os.path.dirname(__file__) + "/templates/", static_folder=os.path.dirname(__file__) + "/static/")
 app.config.from_object(config.Config)
 socketio = SocketIO(app, cors_allowed_origins='*')
 
@@ -35,7 +35,7 @@ def background_thread():
         if udpClientSocket is None:
             continue  # Wait until the socket is initialized
         msg, addr = udpClientSocket.recvfrom(bufferSize) # BLOCKS
-#         print(msg.decode())
+        #print(msg.decode())
         socketio.emit('updateSensorData', msg.decode())
 
 """
@@ -43,7 +43,28 @@ Serve root index file
 """
 @app.route('/')
 def index():
-    return render_template('model.html', round_decimals=app.config["ROUND_DECIMALS"])
+    return render_template('model.html', active_tab="dashboard", round_decimals=app.config["ROUND_DECIMALS"])
+
+"""
+Serve tables view
+"""
+@app.route("/tables")
+def tables():
+    return render_template("tables.html", active_tab="tables", round_decimals=app.config["ROUND_DECIMALS"])
+
+"""
+Serve actions view
+"""
+@app.route("/actions")
+def actions():
+    return render_template("actions.html", active_tab="actions", round_decimals=app.config["ROUND_DECIMALS"])
+
+"""
+Serve behavior view
+"""
+@app.route("/behavior")
+def behavior():
+    return render_template("behavior.html", active_tab="behavior", round_decimals=app.config["ROUND_DECIMALS"])
 
 
 """
@@ -83,5 +104,15 @@ def getInput(args):
         msg , addr = udpClientSocket.recvfrom(bufferSize) # BLOCKS
         socketio.emit('updateSensorData', msg.decode())
 
+@socketio.on('sendCommand')
+def getInput(args):
+    global updClientSocket
+    print(args)
+    print(udpClientSocket)
+    if(udpClientSocket != None):
+        udpClientSocket.sendto(str.encode(args['type']), (HOST, PORT))
+        msg , addr = udpClientSocket.recvfrom(bufferSize) # BLOCKS
+        socketio.emit('updateSensorData', msg.decode())
+
 if __name__ == '__main__':
-    socketio.run(app)
+    socketio.run(app, allow_unsafe_werkzeug=True, use_reloader=False)

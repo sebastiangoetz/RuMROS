@@ -1,0 +1,100 @@
+/**
+ * Implements Actions that can be invoked on the web interface or in the behavior model
+ * This direct implementation does not set command parameters to be sent to ROS nodes
+ * in contrast to the MRS version. Instead, it directly sets AST and class attributes
+ * within the model, which then computes the movement commands accordingly.
+ */
+aspect GazeboActions {
+
+    // Actions are structured as follows:
+    // 1) set new desired state
+    // 2) setup required action parameters
+    // 3) return a result to be displayed on the web interface 
+    Result Action.driveToArea(Model model, SwarmUnit robot, Area area) {
+        robot.setCurrentState(robot.getStateWithName("targeting"));
+        robot.setTargetPosition(model.getCenterPositionReference(area));
+
+        Result result = new Result(ActionResultType.SUCCESS, "Driving to area '" + area.getname() + "'", 2000);
+        return result;
+    }
+
+    Result Action.stop(Model model, SwarmUnit robot) {
+        robot.setCurrentState(robot.getStateWithName("idle"));
+
+        Result result = new Result(ActionResultType.SUCCESS, "Stopped", 2000);
+        return result;
+    }
+
+    Result Action.resume(Model model, SwarmUnit robot) {
+        if(robot.getTargetPosition() == null) {
+            Result result = new Result(ActionResultType.ERROR, "Can't resume, no target is set!", 3000);
+            return result;
+        } else {
+            robot.setCurrentState(robot.getStateWithName("targeting"));
+            Result result = new Result(ActionResultType.SUCCESS, "Resumed", 2000);
+            return result;
+        }
+    }
+
+    Result Action.cancel(Model model, SwarmUnit robot) {
+        robot.setCurrentState(robot.getStateWithName("idle"));
+        robot.setTargetPosition(null);
+
+        Result result = new Result(ActionResultType.SUCCESS, "Canceled", 2000);
+        return result;
+    }
+
+    Result Action.flyToArea(Model model, Drone drone, Area area) {
+        drone.setCurrentState(drone.getStateWithName("targeting"));
+        drone.setTargetPosition(model.getCenterPositionReference(area));
+
+        Result result = new Result(ActionResultType.SUCCESS, "Flying to area '" + area.getname() + "'", 2000);
+        return result;
+    }
+
+    Result Action.landOnRobot(Model model, Drone drone, Robot robot) {
+        drone.setCurrentState(drone.getStateWithName("targeting"));
+        drone.setTargetPosition(robot.getPositionReference());
+
+        Result result = new Result(ActionResultType.SUCCESS, "Landing on robot '" + robot.getname() + "'", 2000);
+        return result;
+    }
+
+    Result Action.hover(Model model, Drone drone) {
+        drone.setCurrentState(drone.getStateWithName("idle"));
+
+        Result result = new Result(ActionResultType.SUCCESS, "Hovering", 2000);
+        return result;
+    }
+
+    Result Action.shutDown(Model model, Drone drone) {
+        drone.setCurrentState(drone.getStateWithName("shut down"));
+
+        Result result = new Result(ActionResultType.SUCCESS, "Shutting down", 2000);
+        return result;
+    }
+
+    Result Action.flyToHeight(Model model, Drone drone, Double height) {
+        Position targetPosition = null;
+        try {
+            targetPosition = drone.getOdomPositionReference().getPosition().clone();
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
+        }
+        targetPosition.setz(height);
+        drone.setTargetPosition(model.getOrAddPositionReference(targetPosition));
+        drone.setCurrentState(drone.getStateWithName("targeting"));
+
+        Result result = new Result(ActionResultType.SUCCESS, "Flying drone to height: " + height + " m", 2000);
+        return result;
+    }
+
+    Result Action.flyToPosition(Model model, Drone drone, PositionReference position) {
+        drone.setCurrentState(drone.getStateWithName("targeting"));
+        drone.setTargetPosition(position);
+
+        Result result = new Result(ActionResultType.SUCCESS, "Flying to position " + position.toString(), 2000);
+        return result;
+    }
+
+}

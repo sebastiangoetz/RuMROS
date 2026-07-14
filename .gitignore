@@ -1,4 +1,9 @@
+.vscode/
+.idea/
+webapp/venv/
+bin/
 log/
 install/
 build/
+perflogs/
 __pycache__

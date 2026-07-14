@@ -1,0 +1,436 @@
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+
+/**
+ * This aspect implements the various behavior nodes and transition types of the behavior model.
+ * The implementation is akin to Hierarchical Finite State Machines (HFSMs), with some subtle differences
+ * and extensions to better match the use case. For instance, a state can transition to multiple subsequent
+ * states, which are then executed in parallel, as the HFSM models the entire system, not each group separately.
+ * Therefore, this is required to make different groups perform actions at the same time.
+ * Concrete models are created and evaluated in a loop, this is done in MainLoop.jadd.
+ */
+aspect BehaviorModel {
+    // === Action ===
+    // Uses reflection to call the method for executing the behavior
+    public Result Action.run(Model model, Object target, JastAddList<Parameter> parameters) {
+        try {
+            List<Object> args = new ArrayList<>();
+            List<Class<?>> paramTypes = new ArrayList<>();
+
+            // Model is always first Action parameter
+            if (model != null) {
+                args.add(model);
+                paramTypes.add(model.getClass());
+            }
+            
+            if (target != null) {
+                // Group or unit always second
+                args.add(target);
+                if (target instanceof SwarmUnit)
+                    paramTypes.add(SwarmUnit.class);
+                else
+                    paramTypes.add(target.getClass());
+            }
+
+            int skipTo = args.size();
+
+            // Add all other arguments
+            for (int i = 0; i < getNumInput(); i++) {
+                Input input = getInput(i);
+
+                // Model is not part of inputs, but target needs to be skipped
+                if (i < skipTo - 1 && (input.gettype().equals("de.tudresden.inf.st.rumros.runtimemodel.SwarmUnit") ||
+                                       input.gettype().equals("de.tudresden.inf.st.rumros.runtimemodel.SwarmGroup")))
+                    continue;
+
+                // Map parameters to method arguments
+                Parameter param = null;
+                if (parameters != null) {
+                    for (Parameter p : parameters) {
+                        if (p.getname().equals(input.getid())) {
+                            param = p;
+                            break;
+                        }
+                    }
+
+                    Object arg = null;
+                    if (param == null) {
+                        // No parameter provided, use defaultValue
+                        String def = input.getdefaultValue();
+                        String typeName = input.gettype();
+                        switch (typeName) {
+                            case "java.lang.String":
+                                arg = def;
+                                break;
+                            case "java.lang.Double":
+                                arg = Double.valueOf(def);
+                                break;
+                            case "java.lang.Integer":
+                                arg = Integer.valueOf(def);
+                                break;
+                            default:
+                                throw new IllegalArgumentException("Unsupported default type: " + typeName);
+                        }
+                    } else {
+                        // Parameter is present, unwrap its value
+                        if (param instanceof StringParameter) {
+                            arg = ((StringParameter) param).getvalue();
+                        } else if (param instanceof DoubleParameter) {
+                            arg = ((DoubleParameter) param).getvalue();
+                        } else if (param instanceof IntParameter) {
+                            arg = ((IntParameter) param).getvalue();
+                        } else if (param instanceof BooleanParameter) {
+                            arg = ((BooleanParameter) param).getvalue();
+                        } else if (param instanceof SwarmGroupParameter) {
+                            int groupId = ((SwarmGroupParameter) param).getvalue();
+                            arg = model.getSwarmGroupById(groupId);
+                        } else if (param instanceof AreaParameter) {
+                            int areaId = ((AreaParameter) param).getvalue();
+                            arg = model.getAreaById(areaId);
+                        } else
+                            throw new IllegalArgumentException("Unsupported parameter type: " + param);
+                    }
+
+                    args.add(arg);
+
+                    // Map parameter type string to class
+                    Class<?> clazz = Class.forName(input.gettype());
+                    paramTypes.add(clazz);
+                }
+            }
+
+            //Invoke method
+            Method m = Action.class.getDeclaredMethod(getid(), paramTypes.toArray(new Class<?>[0]));
+            m.setAccessible(true);
+            Result res = (Result) m.invoke(this, args.toArray());
+            setResult(res);
+            return res;
+        }
+        catch (Exception e) {
+            return new Result(ActionResultType.TECHNICAL_ERROR,
+                              "Execution of " + getid() + " failed: " + e.getMessage(), 2000);
+        }
+    }
+
+    // === Behavior ===
+    // Abstract superclass for complex behaviors (CBs) and basic behaviors or behavior blocks (BBs)
+    protected static int Behavior.idCounter = 0; // For automatically assigning IDs
+
+    // Template methods
+    // Starts the behavior, designed to be extended in subclasses
+    protected abstract Result Behavior.start_();
+
+    public Result Behavior.start() {
+        // Returning to an active behavior is valid if the transition comes from a nested CB
+        // TODO: add modelchecking
+        //if (getActive())
+        //    return new Result(ActionResultType.ERROR, "Behavior " + getid() + " is already running", 2000);
+
+        Result res = start_();
+        if (res.gettype() == ActionResultType.SUCCESS || res.gettype() == ActionResultType.WAIT) {
+            setActive(true);
+            setLastStart(System.currentTimeMillis());
+            System.out.println("[BehaviorModel] Behavior " + getid() + " started");
+        } else {
+            System.out.println("[BehaviorModel] Behavior " + getid() + " returned error: " + res.getmessage());
+        }
+        Model.writeEvent("startBehavior " + String.valueOf(getid()));
+
+        return res;
+    }
+
+    // Stops the behavior
+    protected abstract Result Behavior.stop_();
+    public Result Behavior.stop(boolean withoutStop) {
+        if (!getActive())
+            return new Result(ActionResultType.ERROR, "Behavior " + getid() + " is already stopped", 2000);
+        
+        setActive(false);
+        setLastEnd(System.currentTimeMillis());
+        System.out.println("[BehaviorModel] Behavior " + getid() + " finished");
+        Model.writeEvent("stopBehavior " + String.valueOf(getid()));
+
+        if (withoutStop)
+            return new Result(ActionResultType.SUCCESS, "BB" + getid() + " finished successfully", 2000);
+        else
+            return stop_();
+    }
+
+    // Concrete evaluation behavior of the nodes is implemented in subclasses
+    public abstract void Behavior.step();
+
+    // Define how transitions are processed, this is independent of subclasses
+    public void Behavior.processTransitions() {
+        if (getActive()) {
+            // Process transitions
+            for (Transition t : getTransitions()) {
+                
+                if (t != null && t.shouldFire(this, System.currentTimeMillis())) {
+                    Behavior next = t.getNextBehavior();
+                    boolean hasNext = next != null;
+                    stop(hasNext); // Stop current block, if it has a following block, skip the stop action
+                    
+                    if (hasNext)
+                        next.start(); // Start next block
+
+                    // Mutually exclusive transitions only fire the first one
+                    if (getTransitionsMutuallyExclusive())
+                        return;
+                }
+            }
+        }
+    }
+
+    // === CB ===
+    // Complex behaviors contain multiple basic behaviors or more nested complex behaviors
+    // but they do not execute actions themselves. Instead, they delegate this to contained
+    // CBs and BBs, in a manner which is defined in the CB implementation below.
+    // Convenience constructor
+    public CB.CB(String name) {
+        this(idCounter++, false, 0L, 0L, false, new JastAddList<Transition>(), name, false, new JastAddList<Behavior>());
+    }
+
+    public CB.CB(String name, boolean isSequence) {
+        this(idCounter++, false, 0L, 0L, false, new JastAddList<Transition>(), name, isSequence, new JastAddList<Behavior>());
+    }
+
+    protected Result CB.stop_() {
+        List<Result> results = new ArrayList<>();
+        for (Behavior b : getBehaviors()) {
+            results.add(b.stop(false));
+        }
+
+        for (Result r : results) {
+            if (r.gettype() == ActionResultType.ERROR || r.gettype() == ActionResultType.TECHNICAL_ERROR)
+                return r; //Return on first error
+        }
+
+        getModel().getBehaviorModel().removeActiveCB(this);
+        return new Result(ActionResultType.SUCCESS,
+                          "Stopped CB " + getid(), 2000);
+    }
+
+    protected Result CB.start_() {
+        if (getBehaviors().getNumChild() > 0) {
+            BehaviorModel bm = getModel().getBehaviorModel();
+
+            if (getSequence()) {
+                // If sequence, execute all behaviors at once
+                List<Result> results = new ArrayList<>();
+                for (Behavior b : getBehaviors()) {
+                    results.add(b.start());
+                }
+
+                for (Result r : results) {
+                    if (r.gettype() == ActionResultType.ERROR || r.gettype() == ActionResultType.TECHNICAL_ERROR)
+                        return r; //Return on first error
+                }
+
+                bm.addActiveCB(this);
+                return new Result(ActionResultType.SUCCESS,
+                                "Started sequential CB " + getid(), 2000);
+            } else {
+                // If not a sequence, always start with first behavior
+                Result res = getBehavior(0).start();
+                if (res.gettype() == ActionResultType.SUCCESS || res.gettype() == ActionResultType.WAIT) {
+                    bm.addActiveCB(this);
+                    return res;
+                }
+            }
+        } 
+        
+        setActive(false);
+        return new Result(ActionResultType.ERROR,
+                          "Could not start CB " + getid() + " because it is empty", 2000); 
+    }
+
+    public void CB.step() {
+        for (Behavior b : getBehaviors()) {
+            b.step();
+            // If only one behavior within a CB should be active at a time
+            // the following optimization can be applied: 
+            // return;
+        }
+        processTransitions();
+    }
+
+    // === BB ===
+    // Basic behaviors or behavior blocks cannot be nested and represent leaves in the hierarchy.
+    // Each one is associated with an action, which gets executed once the BB is activated.
+    // Convenience constructors
+    public BB.BB(Action action) {
+        this(idCounter++, false, 0L, 0L, false, new JastAddList<Transition>(), new JastAddList<Parameter>(), -1, -1, action);
+    }
+
+    public BB.BB(Action action, SwarmGroup group) {
+        this(idCounter++, false, 0L, 0L, false, new JastAddList<Transition>(), new JastAddList<Parameter>(), group.getid(), -1, action);
+    }
+
+    public BB.BB(Action action, SwarmUnit unit) {
+        this(idCounter++, false, 0L, 0L, false, new JastAddList<Transition>(), new JastAddList<Parameter>(), -1, unit.getid(), action);
+    }
+
+    public BB BB.copyBB() {
+        BB bb = new BB(getAction());
+        bb.setTransitionsMutuallyExclusive(getTransitionsMutuallyExclusive());
+        bb.setTargetGroupId(getTargetGroupId());
+        bb.setTargetUnitId(getTargetUnitId());
+
+        return bb;
+    }
+
+    // Copy methods currently don't work as intended
+    // low-prio fix
+    public BB BB.copyBBWithParams() {
+        BB bb = copyBB();
+
+        for (Parameter p : getParameters())
+            bb.addParameter(p.treeCopyNoTransform());
+
+        return bb;
+    }
+
+    // Copy methods currently don't work as intended
+    // low-prio fix
+    public BB BB.copyBB(SwarmUnit targetUnit) {
+        BB bb = copyBB();
+        bb.setTargetUnitId(targetUnit.getid());
+        return bb;
+    }
+
+    public BB BB.copyBB(SwarmGroup targetGroup) {
+        BB bb = copyBB();
+        bb.setTargetGroupId(targetGroup.getid());
+        return bb;
+    }
+
+    // Sets an existing or adds a new parameter
+    public void BB.setParameter(Parameter parameter, String name) {
+        int i = 0;
+        for (Parameter p : getParameters()) {
+            if (p.getname().equals(name)) {
+                setParameter(parameter, i);
+                return;
+            }
+            i++;
+        }
+        
+        addParameter(parameter);
+    }
+
+    // Syntactic sugar for parameter creation
+    public void BB.addStringParameter(String name, String value) {
+        addParameter(new StringParameter(name, value));
+    }
+    public void BB.addIntParameter(String name, Integer value) {
+        addParameter(new IntParameter(name, value));
+    }
+    public void BB.addDoubleParameter(String name, Double value) {
+        addParameter(new DoubleParameter(name, value));
+    }
+    public void BB.addBooleanParameter(String name, Boolean value) {
+        addParameter(new BooleanParameter(name, value));
+    }
+    public void BB.addSwarmGroupParameter(String name, SwarmGroup group) {
+        addParameter(new SwarmGroupParameter(name, group.getid()));
+    }
+    public void BB.addAreaParameter(String name, Area area) {
+        addParameter(new AreaParameter(name, area.getid()));
+    }
+
+    // Transition creation methods
+    public TDuration Behavior.transitionAfterTimeElapsed(long durationMillis, Behavior next) {
+        TDuration t = new TDuration(durationMillis);
+        t.setNextBehavior(next);
+        addTransition(t);
+        return t;
+    }
+
+    public TTimestamp Behavior.transitionAtTime(long timestampMillis, Behavior next) {
+        TTimestamp t = new TTimestamp(timestampMillis);
+        t.setNextBehavior(next);
+        addTransition(t);
+        return t;
+    }
+
+    public TConditional Behavior.transitionConditional(java.util.function.BiPredicate<Behavior, Long> callback, Behavior next) {
+        TConditional t = new TConditional();
+        t.setConditionCallback(callback);
+        t.setNextBehavior(next);
+        addTransition(t);
+        return t;
+    }
+
+    // Executes the action
+    protected Result BB.start_() {
+        Model model = getModel();
+        SwarmGroup group = model.getSwarmGroupById(getTargetGroupId());
+        SwarmUnit unit = model.getSwarmUnitById(getTargetUnitId());
+
+        // Optional
+        // if (getAction().getid() == model.getBehaviorModel().getStopAction().getid() &&
+        //     getTransitions().getNumChild() == 0) {
+        //     //Instead of starting stop behavior with no transitions
+        //     //consider this block stopped
+        //     return stop_();
+        // }
+
+        // For dynamic parameters, whose value is computed at runtime
+        ParameterExecutionContext ctx = new ParameterExecutionContext(model, group, unit, this);
+        for (Parameter p : getParameters()) {
+            p.prepare(ctx);
+        }
+
+        //Only one should be set at a time
+        if (group != null)
+            return getAction().run(model, group, getParameters());
+        if (unit != null)
+            return getAction().run(model, unit, getParameters());
+        return new Result(ActionResultType.TECHNICAL_ERROR,
+                          "Could not start BehaviorBlock " + getid() + " because no target group or unit are specified", 2000); 
+    }
+
+    protected Result BB.stop_() {
+        Model model = getModel();
+        SwarmGroup group = model.getSwarmGroupById(getTargetGroupId());
+        SwarmUnit unit = model.getSwarmUnitById(getTargetUnitId());
+        //Only one should be set at a time
+        if (group != null)
+            return model.getBehaviorModel().getStopAction().run(model, group, null); //Assumes no parameters on stop action!
+        if (unit != null)
+            return model.getBehaviorModel().getStopAction().run(model, unit, null);
+        return new Result(ActionResultType.TECHNICAL_ERROR,
+                          "Could not stop BehaviorBlock " + getid() + " because no target group or unit are specified", 2000); 
+    }
+
+    public void BB.step() {
+        processTransitions();
+    }
+
+    // == Transition ===
+    // Transitions are the most important part for the implementation of reactive functionality.
+    // Currently, this can be time, allowing for periodic execution of behavior, also enabling
+    // Complex behaviors to be built from multiple chained BBs with timed transitions.
+    // Alternatively, conditional transitions may be used, which can implement reacting to any
+    // events that can be expressed as changes of conditions based on available data in the
+    // runtime model.
+    public abstract boolean Transition.shouldFire(Behavior b, long now);
+
+    public boolean TDuration.shouldFire(Behavior b, long now) {
+        return now - b.getLastStart() >= getDuration();
+    }
+
+    public boolean TTimestamp.shouldFire(Behavior b, long now) {
+        return now >= getTimestamp();
+    }
+
+    private java.util.function.BiPredicate<Behavior, Long> TConditional.conditionCallback;
+
+    public void TConditional.setConditionCallback(java.util.function.BiPredicate<Behavior, Long> callback) {
+        this.conditionCallback = callback;
+    }
+
+    public boolean TConditional.shouldFire(Behavior b, long now) {
+        return conditionCallback != null && conditionCallback.test(b, now);
+    }
+}

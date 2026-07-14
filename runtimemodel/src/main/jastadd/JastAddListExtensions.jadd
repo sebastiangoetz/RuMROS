@@ -1,0 +1,16 @@
+/**
+ * Simple exemplary aspect, which extends the functionality
+ * of the JastAddList data structure, showcasing that
+ * classes that are provided by JastAdd by default may also
+ * be extended.
+ */
+aspect JastAddListExtensions {
+    public void JastAddList.removeFirstChild(T node) {
+        for (int i = 0; i < getNumChild(); i++) {
+            if (getChild(i) == node) {
+                removeChild(i);
+                return;
+            }
+        }
+    }
+}

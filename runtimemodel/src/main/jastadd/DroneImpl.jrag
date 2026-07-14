@@ -1,14 +1,20 @@
+/**
+ * This aspect implements the attributes required to compute the actuator values that
+ * steer a drone, when the framework is used to directly send movement commands to robots,
+ * in combination with Gazebo simulation.
+ */
 aspect DroneImpl {
     syn boolean Drone.getTargetReached() = this.getHorizontalDistanceToTarget() <= 0.2 && Math.abs(this.getVerticalError()) <= 0.1;
 
-    syn Velocity3D Drone.getVelocity3D() {
+    syn Velocity3D Drone.getVelocity3D();
+    eq Drone.getVelocity3D() {
 
-        State waiting = getStateWithName("waiting");
+        State idle = getStateWithName("idle");
         State shutDown = getStateWithName("shut down");
 
         if (this.getTargetPosition() == null || this.getTargetReached() || getCurrentState() == shutDown) {
             if(this.getTargetPosition() != null && this.getTargetReached() && getCurrentState() != shutDown) {
-                setCurrentState(waiting);
+                setCurrentState(idle);
             }
             return new Velocity3D(0.0, 0.0, 0.0);
         }
@@ -114,5 +120,4 @@ aspect DroneImpl {
         headingError -= Math.PI;
         return headingError;
     }
-
 }

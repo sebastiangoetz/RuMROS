@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>swarm_controller</name>
+  <version>0.0.0</version>
+  <description>This package contains a generic mobile robot control node, which steers robots with a differential drive.
+  Currently only supports the Turtlebot3 and Foot-Bot. It contains a library of basic behaviors that can be customized
+  via parameters. The node is directly connected to the runtime model of RuMROS, receiving commands on which behavior to
+  activate. Via the behavior model of the runtime model, coordination between robots can be organized and behaviors can
+  be adjusted accordingly.
+  Usage: ros2 run swarm_controller node_main [group_id] [robot_id]</description>
+  <maintainer email="mail@example.com">TBA</maintainer>
+  <license>TBA</license>
+
+  <depend>rclpy</depend>
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <exec_depend>rosidl_default_runtime</exec_depend>
+
+  <depend>rumros_msgs</depend>
+
+  <test_depend>ament_copyright</test_depend>
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+    <rosidl_generate_interfaces/>
+  </export>
+</package>

@@ -4,41 +4,99 @@
       host: localhost
       port: 1883
     bridge:
-      ros2mqtt:
-        ros_topics:
-          - /turtlebot_1/pose
-          - /turtlebot_2/pose
-          - /rover_1/odom
-          - /drone_1/odom
-        /turtlebot_1/pose:
-          mqtt_topic: turtlebot_1/pose
-        /turtlebot_2/pose:
-          mqtt_topic: turtlebot_2/pose
-        /rover_1/odom:
-          mqtt_topic: rover_1/odom
-        /drone_1/odom:
-          mqtt_topic: drone_1/odom
-
       mqtt2ros:
+        rumros/cmd_ctrl:
+          ros_type: std_msgs/msg/String
+          ros_topic: /rumros/cmd_ctrl
+        swarm0/cmd_behavior:
+          ros_type: std_msgs/msg/String
+          ros_topic: /swarm0/cmd_behavior
+        swarm1/cmd_behavior:
+          ros_type: std_msgs/msg/String
+          ros_topic: /swarm1/cmd_behavior
+        swarm2/cmd_behavior:
+          ros_type: std_msgs/msg/String
+          ros_topic: /swarm2/cmd_behavior
+        swarm3/cmd_behavior:
+          ros_type: std_msgs/msg/String
+          ros_topic: /swarm3/cmd_behavior
+        swarm4/cmd_behavior:
+          ros_type: std_msgs/msg/String
+          ros_topic: /swarm4/cmd_behavior
+        swarm5/cmd_behavior:
+          ros_type: std_msgs/msg/String
+          ros_topic: /swarm5/cmd_behavior
+        swarm6/cmd_behavior:
+          ros_type: std_msgs/msg/String
+          ros_topic: /swarm6/cmd_behavior
+        swarm7/cmd_behavior:
+          ros_type: std_msgs/msg/String
+          ros_topic: /swarm7/cmd_behavior
+        swarm8/cmd_behavior:
+          ros_type: std_msgs/msg/String
+          ros_topic: /swarm8/cmd_behavior
+        swarm9/cmd_behavior:
+          ros_type: std_msgs/msg/String
+          ros_topic: /swarm9/cmd_behavior
         mqtt_topics:
-          - turtlebot_1/cmd_vel
-          - turtlebot_2/cmd_vel
-          - rover_1/cmd_vel
-          - drone_1/cmd_vel
-          - drone_1/enable
-        turtlebot_1/cmd_vel:
-          ros_topic: /turtlebot_1/cmd_vel
-          ros_type: geometry_msgs/msg/Twist
-        turtlebot_2/cmd_vel:
-          ros_topic: /turtlebot_2/cmd_vel
-          ros_type: geometry_msgs/msg/Twist
-        rover_1/cmd_vel:
-          ros_topic: /rover_1/cmd_vel
-          ros_type: geometry_msgs/msg/Twist
-        drone_1/cmd_vel:
-          ros_topic: /drone_1/cmd_vel
-          ros_type: geometry_msgs/msg/Twist
-        drone_1/enable:
-          ros_topic: /drone_1/enable
-          ros_type: std_msgs/msg/Bool
-          primitive: true
+        - rumros/cmd_ctrl
+        - swarm0/cmd_behavior
+        - swarm1/cmd_behavior
+        - swarm2/cmd_behavior
+        - swarm3/cmd_behavior
+        - swarm4/cmd_behavior
+        - swarm5/cmd_behavior
+        - swarm6/cmd_behavior
+        - swarm7/cmd_behavior
+        - swarm8/cmd_behavior
+        - swarm9/cmd_behavior
+      ros2mqtt:
+        /rumros/cmd_ack:
+          mqtt_topic: rumros/cmd_ack
+        /cf231/pose:
+          mqtt_topic: cf231/pose
+        /cf232/pose:
+          mqtt_topic: cf232/pose
+        /cf233/pose:
+          mqtt_topic: cf233/pose
+        /cf234/pose:
+          mqtt_topic: cf234/pose
+        /tb0/pose:
+          mqtt_topic: tb0/pose
+        /tb1/pose:
+          mqtt_topic: tb1/pose
+        /tb2/pose:
+          mqtt_topic: tb2/pose
+        /tb3/pose:
+          mqtt_topic: tb3/pose
+        /tb4/pose:
+          mqtt_topic: tb4/pose
+        /tb5/pose:
+          mqtt_topic: tb5/pose
+        /tb6/pose:
+          mqtt_topic: tb6/pose
+        /tb7/pose:
+          mqtt_topic: tb7/pose
+        /tb8/pose:
+          mqtt_topic: tb8/pose
+        /tb9/pose:
+          mqtt_topic: tb9/pose
+        /tb10/pose:
+          mqtt_topic: tb10/pose
+        ros_topics:
+        - /rumros/cmd_ack
+        - /cf231/pose
+        - /cf232/pose
+        - /cf233/pose
+        - /cf234/pose
+        - /tb0/pose
+        - /tb1/pose
+        - /tb2/pose
+        - /tb3/pose
+        - /tb4/pose
+        - /tb5/pose
+        - /tb6/pose
+        - /tb7/pose
+        - /tb8/pose
+        - /tb9/pose
+        - /tb10/pose

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<argos-configuration>
+  <framework>
+    <system threads="0"/>
+    <experiment length="0" random_seed="123" ticks_per_second="10"/>
+  </framework>
+  <controllers />
+  <arena center="0,0,0.5" size="16, 16, 16">
+  </arena>
+  <media/>
+  <physics_engines>
+    <dynamics2d id="dyn2d"/>
+  </physics_engines>
+  <visualization>
+    <qt-opengl>
+      <camera>
+        <placements>
+          <placement index="0" lens_focal_length="35" look_at="0,0,0" position="0,0,22" up="1,0,0"/>
+        </placements>
+      </camera>
+    </qt-opengl>
+  </visualization>
+</argos-configuration>

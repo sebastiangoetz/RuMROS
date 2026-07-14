@@ -1,0 +1,44 @@
+/**
+ * This aspect implements the nested state of robots and groups.
+ * Groups have an aggregated state, that is computed in a bottom-up
+ * manner from the contained robot states.
+ */
+aspect State {
+    // Make state lookup available to groups and individual robots
+    syn State Model.getStateWithName(String name);
+    eq Model.getStateWithName(String name) {
+        return java.util.stream.StreamSupport.stream(
+            this.getStateList().spliterator(), false)
+            .filter(s -> s.getname().equals(name))
+            .findFirst().get();
+    }
+
+    inh State SwarmGroup.getStateWithName(String name);
+    eq Model.getSwarmGroup(int i).getStateWithName(String name) {
+        return this.getStateWithName(name);
+    }
+
+    inh State SwarmUnit.getStateWithName(String name);
+    eq Model.getSwarmUnit(int i).getStateWithName(String name) {
+        return this.getStateWithName(name);
+    }
+
+    syn State SwarmGroup.getCurrentState();
+    eq SwarmGroup.getCurrentState() {
+        // Return aggregated state
+        return this.getAggregatedState();
+
+        // Below code currently leads to sending state twice, with the first
+        // always being 'error', therefore it is not used anymore
+        // if (getNumSwarmUnit() == 0) {
+        //     return getStateWithName("error"); // No units assigned -> no valid state
+        // }
+        // State first = getSwarmUnit(0).getCurrentState();
+        // for (int i = 1; i < getNumSwarmUnit(); i++) {
+        //     if (getSwarmUnit(i).getCurrentState() != first) {
+        //         return getStateWithName("error"); // Not all units share the same state
+        //     }
+        // }
+        // return first;
+    }
+}

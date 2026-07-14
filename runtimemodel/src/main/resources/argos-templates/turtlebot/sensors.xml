@@ -1,0 +1,5 @@
+<?xml version="1.0" ?>
+<sensors>
+  <turtlebot3_lidar implementation="default" num_readings="360" show_rays="false"/>
+  <positioning implementation="default"/>
+</sensors>

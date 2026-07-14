@@ -1,0 +1,51 @@
+/**
+ * This aspect implements the nested state of robots and groups.
+ * Groups have an aggregated state, that is computed in a bottom-up
+ * manner from the contained robot states.
+ */
+aspect State {
+    // Additional constructor without parameters
+    public State.State(int id, String name, double speedFactor, double angleTolerance) {
+        state().enterConstruction();
+        setid(id);
+        setname(name);
+        setspeedFactor(speedFactor);
+        setangleTolerance(angleTolerance);
+        setChild(new JastAddList<Parameter>(), 0);
+        state().exitConstruction();
+    }
+
+    // Additional constructor without parameters and Gazebo-related
+    // speedFactor and angleTolerance
+    public State.State(int id, String name) {
+        state().enterConstruction();
+        setid(id);
+        setname(name);
+        setspeedFactor(0.0);
+        setangleTolerance(0.0);
+        setChild(new JastAddList<Parameter>(), 0);
+        state().exitConstruction();
+    }
+
+    public void SwarmGroup.setCurrentState(State s) {
+        for (SwarmUnit unit : this.getSwarmUnits()) {
+            unit.setCurrentState(s);
+        }
+
+        // Also set cosmetic attribute AggregatedState
+        this.setAggregatedState(s);
+
+        // Recursively call on nested groups
+        for (SwarmGroup group : this.getSwarmGroups()) {
+            group.setCurrentState(s);
+        }
+    }
+
+    public void SwarmGroup.addAndSyncSwarmUnit(SwarmUnit u) {
+        this.addSwarmUnit(u);
+
+        // Sync the unit's state upon adding to the group
+        State s = this.getAggregatedState();
+        u.setCurrentState(s);
+    }
+}

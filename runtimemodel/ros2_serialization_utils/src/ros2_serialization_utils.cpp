@@ -1,6 +1,7 @@
 #include <jni.h>
 #include <geometry_msgs/msg/pose_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
+#include <std_msgs/msg/string.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/serialization.hpp>
 #include <rclcpp/serialized_message.hpp>
@@ -120,6 +121,52 @@ geometry_msgs::msg::Twist jsonToTwist(const nlohmann::json &j) {
     return twist_msg;
 }
 
+// Function to convert String message to JSON
+nlohmann::json stringToJson(const std_msgs::msg::String &string_msg) {
+    return nlohmann::json::parse(string_msg.data);
+}
+
+extern "C"
+JNIEXPORT jstring JNICALL Java_de_tudresden_inf_st_rumros_runtimemodel_ROS2SerializeUtils_deserializeToStringJson
+  (JNIEnv *env, jclass clazz, jbyteArray byteArray) {
+    jsize length = env->GetArrayLength(byteArray);
+    jbyte* bytes = env->GetByteArrayElements(byteArray, 0);
+
+    std::vector<uint8_t> byte_vector(bytes, bytes + length);
+
+    try {
+        // Create a SerializedMessage
+        rclcpp::SerializedMessage serialized_msg;
+        serialized_msg.reserve(byte_vector.size());
+        memcpy(serialized_msg.get_rcl_serialized_message().buffer, byte_vector.data(), byte_vector.size());
+        serialized_msg.get_rcl_serialized_message().buffer_length = byte_vector.size();
+
+        // Deserialize to Odometry message
+        std_msgs::msg::String string_msg;
+        rclcpp::Serialization<std_msgs::msg::String> serializer;
+        serializer.deserialize_message(&serialized_msg, &string_msg);
+
+        // Convert Odometry message to JSON
+        nlohmann::json j = stringToJson(string_msg);
+
+        // Convert JSON to string and return as jstring
+        std::string json_str = j.dump();
+        return env->NewStringUTF(json_str.c_str());
+    } catch (const std::exception &e) {
+        std::cerr << "Failed to deserialize message: " << e.what() << "\n";
+    }
+
+    env->ReleaseByteArrayElements(byteArray, bytes, 0);
+    return env->NewStringUTF("");
+}
+
+// Function to convert JSON to String message
+std_msgs::msg::String jsonToString(const nlohmann::json &j) {
+    std_msgs::msg::String string_msg;
+    string_msg.data = j["data"];
+    return string_msg;
+}
+
 extern "C"
 JNIEXPORT jbyteArray JNICALL Java_de_tudresden_inf_st_rumros_runtimemodel_ROS2SerializeUtils_serializeTwistJson
   (JNIEnv *env, jclass clazz, jstring json) {
@@ -149,3 +196,31 @@ JNIEXPORT jbyteArray JNICALL Java_de_tudresden_inf_st_rumros_runtimemodel_ROS2Se
     return nullptr;
 }
 
+extern "C"
+JNIEXPORT jbyteArray JNICALL Java_de_tudresden_inf_st_rumros_runtimemodel_ROS2SerializeUtils_serializeStringJson
+  (JNIEnv *env, jclass clazz, jstring json) {
+    const char *nativeString = env->GetStringUTFChars(json, JNI_FALSE);
+    std::string jsonString(nativeString);
+    env->ReleaseStringUTFChars(json, nativeString);
+
+    try {
+        // Parse JSON string to String message
+        nlohmann::json j = nlohmann::json::parse(jsonString);
+        std_msgs::msg::String string_msg = jsonToString(j);
+
+        // Serialize String message
+        rclcpp::SerializedMessage serialized_msg;
+        rclcpp::Serialization<std_msgs::msg::String> serializer;
+        serializer.serialize_message(&string_msg, &serialized_msg);
+
+        // Convert serialized message to byte array
+        jbyteArray byteArray = env->NewByteArray(serialized_msg.get_rcl_serialized_message().buffer_length);
+        env->SetByteArrayRegion(byteArray, 0, serialized_msg.get_rcl_serialized_message().buffer_length, reinterpret_cast<jbyte*>(serialized_msg.get_rcl_serialized_message().buffer));
+
+        return byteArray;
+    } catch (const std::exception &e) {
+        std::cerr << "Failed to serialize message: " << e.what() << "\n";
+    }
+    
+    return nullptr;
+}

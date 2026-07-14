@@ -36,7 +36,11 @@ dependencies {
     implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: "${log4j_version}"
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: "${jackson_version}"
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: "${jackson_version}"
+    implementation 'org.glassfish.jaxb:jaxb-runtime:4.0.0'
     implementation 'org.apache.commons:commons-jexl3:3.4.0'
+
+    // https://mvnrepository.com/artifact/org.yaml/snakeyaml
+    implementation("org.yaml:snakeyaml:2.2")
 }
 
 // --- Preprocessors ---
@@ -44,8 +48,25 @@ File genSrc = file("src/gen/java")
 sourceSets.main.java.srcDir genSrc
 idea.module.generatedSourceDirs += genSrc
 
+// Define simulator
+def simulator = project.hasProperty('simulator') ? project.getProperty('simulator') : 'gazebo'
+
+// Output file for ARGoS simulation
+File argosOutFile = file("../ros/rumros_swarm_ws/simulation/main.argos")
+
 // Input files for relast
 def relastFiles = ["src/gen/jastadd/Model.relast", "src/gen/jastadd/RagConnect.relast"]
+
+// RAGConnect and mqtt_client config files
+def ragConnectConfig = simulator == 'argos' ?
+    "src/main/resources/mqtt-connections.argos.json" :
+    "src/main/resources/mqtt-connections.gazebo.json"
+
+def mqttClientConfig = "mqtt_client/config.yaml"
+
+// ROSLaunch swarm group definitions output file
+File swarmConfigFile = file("../ros/rumros_swarm_ws/config/swarm_config.json")
+File typeConfigFile = file("../ros/rumros_swarm_ws/config/type_config.json")
 
 //task grammar2uml(type: JavaExec) {
 //    group = 'documentation'
@@ -59,6 +80,21 @@ def relastFiles = ["src/gen/jastadd/Model.relast", "src/gen/jastadd/RagConnect.r
 //         ])
 //}
 
+// Separate build tasks for Argos and Gazebo
+task buildGazebo {
+    group = 'build'
+    doFirst {
+        simulator = 'gazebo'
+    }
+}
+
+task buildArgos {
+    group = 'build'
+    doFirst {
+        simulator = 'argos'
+    }
+}
+
 // phases: RagConnect -> RelAst -> JastAdd
 
 // phase: RagConnect
@@ -67,13 +103,17 @@ task ragConnect(type: JavaExec) {
     classpath = configurations.ragconnect
     main = 'org.jastadd.ragconnect.compiler.Compiler'
 
+    def connectFile = simulator == 'argos' ? 
+        'src/main/jastadd/ArgosModel.connect' :
+        'src/main/jastadd/GazeboModel.connect'
+
     args([
             '--o=src/gen/jastadd',
             'src/main/jastadd/Model.relast',
-            'src/main/jastadd/Model.connect',
+            connectFile,
             '--List=JastAddList',
-            '--logReads',
-            '--logWrites',
+            //'--logReads',
+            //'--logWrites',
             '--rootNode=Model',
             '--incremental=param,debug',
             "--tracing=cache,flush",
@@ -103,6 +143,39 @@ task relastToJastAdd(type: JavaExec) {
     outputs.files file("./src/gen/jastadd/model.ast"), file("./src/gen/jastadd/model.jadd")
 }
 
+// phase: Create swarm group ID to robot ID range mappings for ROSLaunch
+task generateRosLaunchConfig(type: JavaExec) {
+    group = 'build'
+    description = 'Create swarm group ID to robot ID range mappings for ROSLaunch'
+
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'de.tudresden.inf.st.rumros.mqttmapper.RosLaunchMapper'
+
+    args(swarmConfigFile, typeConfigFile)
+}
+
+// phase: Update ROS2 mqtt_client config file with values from RAGConnect config
+task updateMqttConfig(type: JavaExec) {
+    group = 'build'
+    description = 'Update ROS2 mqtt_client config file with values from RAGConnect config'
+
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'de.tudresden.inf.st.rumros.mqttmapper.MqttTopicMapper'
+
+    args(mqttClientConfig, ragConnectConfig)
+}
+
+// phase: Generate ARGoS 3 config file
+task generateArgosConfig(type: JavaExec) {
+    group = 'build'
+    description = 'Create ARGoS 3 simulation file for the scenario specified in JastAdd'
+
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'de.tudresden.inf.st.rumros.argosbridge.ArgosConfigManager'
+
+    args(argosOutFile)
+}
+
 // --- JastAdd ---
 // phase: JastAdd
 jastadd {
@@ -118,6 +191,14 @@ jastadd {
                 include "gen/jastadd/**/*.ast"
                 include "gen/jastadd/**/*.jadd"
                 include "gen/jastadd/**/*.jrag"
+
+                if (simulator == 'gazebo') {
+                    exclude "main/jastadd/Argos*.jrag"
+                    exclude "main/jastadd/Argos*.jadd"
+                } else if (simulator == 'argos') {
+                    exclude "main/jastadd/Gazebo*.jrag"
+                    exclude "main/jastadd/Gazebo*.jadd"
+                }
             }
         }
     }
@@ -156,10 +237,21 @@ cleanGen.doFirst {
 mainClassName = 'de.tudresden.inf.st.rumros.runtimemodel.ModelMain'
 
 // --- Task order ---
+buildGazebo.dependsOn generateAst
+buildArgos.dependsOn generateAst
+generateRosLaunchConfig.dependsOn generateAst
+generateArgosConfig.dependsOn generateAst
+updateMqttConfig.dependsOn generateAst
 generateAst.dependsOn relastToJastAdd
 relastToJastAdd.dependsOn ragConnect
 
 // --- Misc ---
 run {
     standardInput = System.in
+
+    if (!project.hasProperty('simulator')) {
+        simulator = 'gazebo'
+    }
+
+    args simulator  // Pass simulator value as argument
 }

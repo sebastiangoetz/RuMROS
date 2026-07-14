@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>argos3_ros2_bridge</name>
+  <version>0.1.0</version>
+  <description>This package bridges the ARGoS 3 simulator to ROS 2.
+  Code is adapted from https://github.com/CPS-Konstanz/argos3-ros2-bridge/tree/dfc12913aa2cf55012c6e221c11e397bfe611881
+  (original Author: Sindiso Mkhatshwa [https://github.com/einstein07])
+  </description>
+  <maintainer email="mail@example.com">TBA</maintainer>
+  <license>TBA</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+  <depend>rumros_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>crazyflie_interfaces</depend>
+  <depend>std_srvs</depend>
+
+  <test_depend>ament_lint_auto</test_depend>
+  <test_depend>ament_lint_common</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

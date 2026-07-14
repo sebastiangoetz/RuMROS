@@ -1,0 +1,516 @@
+/**
+ * This aspect allows for programmatic composition of behaviors.
+ * The Model.step() method allows programmers to freely perform actions.
+ *
+ * The provided runtime model also offers structures to compose behavior
+ * in a structured way, which is recommended over free composition, as it
+ * is compatible with the UI while offering powerful composition helpers:
+ * CompositeBehavior (CB), BasicBehavior (BB) and various Transitions. This
+ * allows building hierarchical finite state machine (HFSM) like graphs modeling
+ * the behavior of all groups and robots. For more details on how to work with
+ * components and transitions, see the provided exemplary behavior model below.
+ * 
+ * As the initialization code as well as model itself differs between ARGoS and
+ * Gazebo, they have separate files for the behavior model.
+ */
+ import java.util.List;
+ import java.util.function.Function;
+
+aspect MainLoop {
+    // Model.step() is called every TIME_STEP milliseconds
+    // Evaluate 10x per second. Caution: very fast timings
+    // may cause unpredictable RAGConnect exceptions at
+    // high robot counts
+    public static final Integer Model.TIME_STEP = 100;
+
+    // For performance evaluation, see also testFunctions.jadd
+    public static final boolean Model.DEBUG = false;
+    public static final long Model.testTimeMs = 300000; // 5 minutes
+
+    // This may be something one would want to configure via
+    // the UI in the future, for now use the variables here
+    public static final boolean Model.AUTOSTART = false; // Start once initialized
+    public static final Integer Model.AUTOSTART_DELAY = 30000; // When autostart is enabled, it is delayed by X ms
+
+    // Helper to access model variable safely
+    private static synchronized boolean BehaviorModel.reserveWaitingAreaAndFire(Model model) {
+        if (!model.getEnvironment().getWaitingAreaReserved()) {
+            // Reserve and fire to switch to dropoff/pickup
+            model.getEnvironment().setWaitingAreaReserved(true);
+            return true;
+        }
+        return false;
+    }
+
+    public static BehaviorModel BehaviorModel.init(Model model) {
+        BehaviorModel bm = new BehaviorModel();
+        bm.setrunning(false);
+        bm.setcurrentTime(System.currentTimeMillis());
+        bm.setStopAction(model.getActionById("stop")); // Requirement: action without parameters
+
+        // // Retrieve objects (groups, actions, areas, etc.) for use with behaviors
+        SwarmGroup gWarehouse = model.getSwarmGroupByName("Ground");
+        SwarmGroup gTransport = model.getSwarmGroupByName("Transport");
+            SwarmGroup gTransport1 = model.getSwarmGroupByName("Transport 1");
+            SwarmGroup gTransport2 = model.getSwarmGroupByName("Transport 2");
+        //SwarmGroup gCleaning = model.getSwarmGroupByName("Cleaning");
+        SwarmGroup gSecurity = model.getSwarmGroupByName("Security");
+        SwarmGroup gDrones = model.getSwarmGroupByName("Drones");
+            SwarmGroup gD1 = model.getSwarmGroupByName("Drone 1");
+            SwarmGroup gD2 = model.getSwarmGroupByName("Drone 2");
+            SwarmGroup gD3 = model.getSwarmGroupByName("Drone 3");
+            SwarmGroup gD4 = model.getSwarmGroupByName("Drone 4");
+            List<SwarmGroup> droneGroups = List.of(gD1, gD2, gD3, gD4);
+
+        // Action aFlockToPos = model.getActionById("flock_to_position");
+        Action aStop = model.getActionById("stop");
+        Action aChangeGroup = model.getActionById("change_group");
+        Action aDrive = model.getActionById("drive");
+        Action aUnitGoTo = model.getActionById("unit_go_to_position");
+        Action aGroupMoveToArea = model.getActionById("group_move_to_area");
+        Action aTakeoff = model.getActionById("group_takeoff");
+        Action aGroupGoTo = model.getActionById("group_go_to_position");
+        Action aGroupRelativeGoTo = model.getActionById("group_relative_go_to_position");
+
+        Area aPickup = model.getAreaByName("Pickup");
+        Area aWaiting = model.getAreaByName("Waiting");
+        Area aStorage1 = model.getAreaByName("Storage 1");
+        Area aStorage2 = model.getAreaByName("Storage 2");
+        Area aDockTransport = model.getAreaByName("Transport");
+        //Area aDockCleaning = model.getAreaByName("Cleaning");
+
+        // ----------------------------------------------------
+        // Warehouse scenario example: 
+        // There are 3 groups of robots inside the warehouse (inner walls):
+        // 2 Transport groups and a Security group. In the warehouse area, there are
+        // also 2 zones for storage, a waiting area and a dock for transport
+        // robots. Each transport group conceptually moves imaginary goods from and to storage 1
+        // and 2, respectively. Their behavior can be described as follows:
+        //   Start: Move to assigned transport area
+        //   (Pick up goods which need to be picked up, not yet supported in simulation)
+        //   If waiting area vacant: Reserve it and move thereDesignate as occupied (automatically done via Environment.jrag), 
+        //     When arrived in waiting area, instruct security to move aside and clear gate
+        //     When open, move through gate to pickup
+        //     (place goods in pickup area and pick up goods that were shipped to the warehouse, simulated)
+        //     Move back to the waiting area, instruct security to move back to close gate position once arrived
+        //   Move back to designated storage area, clear waiting area, and finally store the imaginary goods, then repeat cycle
+        //   Else: Move imaginary goods between storage areas, simulating sorting operations
+        // Since both groups have this behavior, they contend for the waiting area, which will be
+        // reserved by the group that checks and reserves it first
+        //
+        // The drones outside the warehouse are tasked with surveying the perimeter
+        // and follow a simple, non-conditional pattern by moving in a circular manner
+        // along the outside corridors
+        // 
+        // This scenario cannot showcase all available behaviors. For instance, decentralized
+        // swarm movement patterns like flocking and dispersion are not used here. Users
+        // are encouraged to play around with different arenas in ArgosInit.jadd
+        // (large open arenas work best for swarm behaviors) and testing different behaviors
+        // by invoking them on the UI and then using them to build their own behavior models
+        //for their specific scenarios. Furthermore, the group structure is dynamic, so robots
+        // can change groups using the change_group action, enabling even more variation, like
+        // reinforcing groups on-demand.
+        //
+        // Important for modeling: if transitioning to a BB, the source of the transition
+        // must be within the same CB, otherwise side-effects may occur. Model checking is not yet implemented.
+        // ----------------------------------------------------
+
+        // ---------------- Security logic ---------------------
+        // The gate guards have the simplest job, as thei behavior is invoked
+        // by the model when transport robots want to pass and once passed.
+        CB cbOpenGate = new CB("Security: open gate (on-demand)");
+        CB cbCloseGate = new CB("Security: close gate (on-demand)");
+            // 2 on-demand behaviors which each need to move robots and stop
+            BB stopSecurity1 = new BB(aStop, gSecurity); // No parameters required
+            BB openGate = new BB(aDrive, gSecurity);
+                openGate.addDoubleParameter("v_lin", 2.0);
+                openGate.addDoubleParameter("v_ang", 0.0);
+                openGate.transitionAfterTimeElapsed(3500, stopSecurity1);
+                cbOpenGate.addBehavior(openGate); // Make sure this is first
+                cbOpenGate.addBehavior(stopSecurity1);
+            BB stopSecurity2 = new BB(aStop, gSecurity);
+            BB closeGate = new BB(aDrive, gSecurity);
+                closeGate.addDoubleParameter("v_lin", -2.0);
+                closeGate.addDoubleParameter("v_ang", 0.0);
+                closeGate.transitionAfterTimeElapsed(3500, stopSecurity2);
+                cbCloseGate.addBehavior(closeGate); // Make sure this is first
+                cbCloseGate.addBehavior(stopSecurity2);
+        bm.addCB(cbOpenGate);
+        bm.addCB(cbCloseGate);
+
+        // ---------------- Transport logic ---------------------
+        // Initially, move to designated areas
+        CB cbTransportLoop1 = new CB("Transport group 1");
+        CB cbTransportLoop2 = new CB("Transport group 2");
+        CB cbTransportStartup = new CB("Transport: move to storage", true);
+            BB moveToStorage1 = new BB(aGroupMoveToArea, gTransport1);
+                moveToStorage1.addAreaParameter("area", aStorage1);
+                moveToStorage1.addDoubleParameter("vel", 4.0);
+                moveToStorage1.transitionConditional((b, now) -> ConditionHelpers.groupInside(gTransport1, aStorage1), cbTransportLoop1);
+                cbTransportStartup.addBehavior(moveToStorage1);
+            BB moveToStorage2 = new BB(aGroupMoveToArea, gTransport2);
+                moveToStorage2.addAreaParameter("area", aStorage2);
+                moveToStorage2.addDoubleParameter("vel", 4.0);
+                moveToStorage2.transitionConditional((b, now) -> ConditionHelpers.groupInside(gTransport2, aStorage2), cbTransportLoop2);
+                cbTransportStartup.addBehavior(moveToStorage2);
+        bm.addCB(cbTransportStartup);
+        bm.addStartBehavior(cbTransportStartup); // Designate as initial behavior invoked when model starts
+
+        // In storage area: pickup imaginary goods (currently only simple movement behaviors, so pickup not simulated yet)
+        // Transport picker checks if waiting area reserved, reserves it and moves there if not, otherwise starts moving
+        // between storage areas.
+        // --- Transport loop 1 ---
+            // When waiting area is clear, perform dropoff/pickup, otherwise perform inventory organization
+            BB transportPicker1 = new BB(aStop, gTransport1);
+            CB cbTransportOrganize1 = new CB("Organize inventory");
+            CB cbTransportDropoffPickup1 = new CB("Dropoff/Pickup");
+        
+            // --- TransportPicker1 ---
+            transportPicker1.setTransitionsMutuallyExclusive(true); // When multiple transitions are attached and one evaluates to true, do not evaluate any other transition
+            transportPicker1.transitionConditional((b, now) -> model.getEnvironment().getWaitingAreaReserved(), cbTransportOrganize1);
+            transportPicker1.transitionConditional((b, now) -> reserveWaitingAreaAndFire(model), cbTransportDropoffPickup1);
+            cbTransportLoop1.addBehavior(transportPicker1);
+
+            // --- TransportOrganize1: Move between storage areas ---
+                BB mts1 = new BB(aGroupMoveToArea, gTransport1);
+                mts1.addAreaParameter("area", aStorage1);
+                mts1.addDoubleParameter("vel", 4.0);
+                mts1.setTransitionsMutuallyExclusive(true);
+                BB mts2 = new BB(aGroupMoveToArea, gTransport1);
+                mts2.addAreaParameter("area", aStorage2);
+                mts2.addDoubleParameter("vel", 4.0);
+                mts1.transitionConditional((b, now) -> {
+                    // In home area, check if waiting area clear and transition to dropoff/pickup if true
+                    if (ConditionHelpers.groupInside(gTransport1, aStorage1)) {
+                        return reserveWaitingAreaAndFire(model);
+                    }
+                    return false;
+                }, cbTransportDropoffPickup1);
+                mts1.transitionConditional((b, now) -> ConditionHelpers.groupInside(gTransport1, aStorage1), mts2);
+                mts2.transitionConditional((b, now) -> ConditionHelpers.groupInside(gTransport1, aStorage2), mts1);
+                cbTransportOrganize1.addBehavior(mts2); // Start in storage 1, move to storage 2 first
+                cbTransportOrganize1.addBehavior(mts1);
+            cbTransportLoop1.addBehavior(cbTransportOrganize1);
+            //bm.addCB(cbTransportOrganize1); // Not required for nested CBs that are not rooted
+
+            // --- TransportDropoffPickup1: Go to waiting area, clear security, return to home area ---
+                BB goToWaitingArea1 = new BB(aGroupMoveToArea, gTransport1);
+                goToWaitingArea1.addAreaParameter("area", aWaiting);
+                goToWaitingArea1.addDoubleParameter("vel", 4.0);
+                cbTransportDropoffPickup1.addBehavior(goToWaitingArea1);
+
+                BB waitOpenGate1 = new BB(aStop, gTransport1);
+                cbTransportDropoffPickup1.addBehavior(waitOpenGate1);
+
+                BB goToPickup1 = new BB(aGroupMoveToArea, gTransport1);
+                goToPickup1.addAreaParameter("area", aPickup);
+                cbTransportDropoffPickup1.addBehavior(goToPickup1);
+
+                //BB returnToWaitingArea1 = goToWaitingArea1.copyBBWithParams();
+                BB returnToWaitingArea1 = new BB(aGroupMoveToArea, gTransport1);
+                returnToWaitingArea1.addAreaParameter("area", aWaiting);
+                returnToWaitingArea1.addDoubleParameter("vel", 4.0);
+                cbTransportDropoffPickup1.addBehavior(returnToWaitingArea1);
+
+                //BB returnToStorageArea1 = mts1.copyBBWithParams();
+                BB returnToStorageArea1 = new BB(aGroupMoveToArea, gTransport1);
+                returnToStorageArea1.addAreaParameter("area", aStorage1);
+                returnToStorageArea1.addDoubleParameter("vel", 4.0);
+                cbTransportDropoffPickup1.addBehavior(returnToStorageArea1);
+
+                // Not mutually exclusive -> all transitions can fire 
+                goToWaitingArea1.transitionConditional((b, now) -> ConditionHelpers.groupInside(gTransport1, aWaiting), waitOpenGate1);
+                goToWaitingArea1.transitionConditional((b, now) -> ConditionHelpers.groupInside(gTransport1, aWaiting), cbOpenGate);
+
+                waitOpenGate1.transitionConditional((b, now) -> ConditionHelpers.areaVacant(model,
+                    new Position(-3.0, -0.5, 0.0, 0.0), new Position(-3.5, 0.5, 0.5, 0.0)), goToPickup1);
+
+                goToPickup1.transitionConditional((b, now) -> ConditionHelpers.groupInside(gTransport1, aPickup), returnToWaitingArea1);
+                returnToWaitingArea1.transitionConditional((b, now) -> ConditionHelpers.groupInside(gTransport1, aWaiting), returnToStorageArea1);
+                returnToWaitingArea1.transitionConditional((b, now) -> {
+                    // About to leave, clear waiting area so other group can start moving
+                    if (ConditionHelpers.groupInside(gTransport1, aWaiting)) {
+                        model.getEnvironment().setWaitingAreaReserved(false);
+                        return true;
+                    }
+                    return false;
+                }, cbCloseGate); // Loop
+                returnToStorageArea1.transitionConditional((b, now) -> ConditionHelpers.groupInside(gTransport1, aStorage1), cbTransportLoop1);
+            cbTransportLoop1.addBehavior(cbTransportDropoffPickup1);
+            //bm.addCB(cbTransportDropoffPickup1); // Not required for nested CBs that are not rooted
+        bm.addCB(cbTransportLoop1);
+
+        // --- Transport loop 2 ---
+        // When waiting area is clear, perform dropoff/pickup, otherwise perform inventory organization
+        BB transportPicker2 = new BB(aStop, gTransport2);
+        CB cbTransportOrganize2 = new CB("Organize inventory");
+        CB cbTransportDropoffPickup2 = new CB("Dropoff/Pickup");
+    
+        // --- TransportPicker2 ---
+        transportPicker2.setTransitionsMutuallyExclusive(true); // When multiple transitions are attached and one evaluates to true, do not evaluate any other transition
+        transportPicker2.transitionConditional((b, now) -> model.getEnvironment().getWaitingAreaReserved(), cbTransportOrganize2);
+        transportPicker2.transitionConditional((b, now) -> reserveWaitingAreaAndFire(model), cbTransportDropoffPickup2);
+        cbTransportLoop2.addBehavior(transportPicker2);
+
+        // --- TransportOrganize2: Move between storage areas ---
+            BB mts21 = new BB(aGroupMoveToArea, gTransport2);
+            mts21.addAreaParameter("area", aStorage1);
+            mts21.addDoubleParameter("vel", 4.0);
+            BB mts22 = new BB(aGroupMoveToArea, gTransport2);
+            mts22.addAreaParameter("area", aStorage2);
+            mts22.addDoubleParameter("vel", 4.0);
+            mts22.setTransitionsMutuallyExclusive(true);
+            mts22.transitionConditional((b, now) -> {
+                // In home area, check if waiting area clear and transition to dropoff/pickup if true
+                if (ConditionHelpers.groupInside(gTransport2, aStorage2)) {
+                    return reserveWaitingAreaAndFire(model);
+                }
+                return false;
+            }, cbTransportDropoffPickup2);
+            mts22.transitionConditional((b, now) -> ConditionHelpers.groupInside(gTransport2, aStorage2), mts21);
+            mts21.transitionConditional((b, now) -> ConditionHelpers.groupInside(gTransport2, aStorage1), mts22);
+            cbTransportOrganize2.addBehavior(mts21); // Start in storage 2, move to storage 1 first
+            cbTransportOrganize2.addBehavior(mts22);
+        cbTransportLoop2.addBehavior(cbTransportOrganize2);
+        //bm.addCB(cbTransportOrganize2); // Not required for nested CBs that are not rooted
+
+        // --- TransportDropoffPickup2: Go to waiting area, clear security, return to home area ---
+            BB goToWaitingArea2 = new BB(aGroupMoveToArea, gTransport2);
+            goToWaitingArea2.addAreaParameter("area", aWaiting);
+            goToWaitingArea2.addDoubleParameter("vel", 4.0);
+            cbTransportDropoffPickup2.addBehavior(goToWaitingArea2);
+
+            BB waitOpenGate2 = new BB(aStop, gTransport2);
+            cbTransportDropoffPickup2.addBehavior(waitOpenGate2);
+
+            BB goToPickup2 = new BB(aGroupMoveToArea, gTransport2);
+            goToPickup2.addAreaParameter("area", aPickup);
+            cbTransportDropoffPickup2.addBehavior(goToPickup2);
+
+            //BB returnToWaitingArea2 = goToWaitingArea2.copyBBWithParams();
+            BB returnToWaitingArea2 = new BB(aGroupMoveToArea, gTransport2);
+            returnToWaitingArea2.addAreaParameter("area", aWaiting);
+            returnToWaitingArea2.addDoubleParameter("vel", 4.0);
+            cbTransportDropoffPickup2.addBehavior(returnToWaitingArea2);
+
+            //BB returnToStorageArea2 = mts22.copyBBWithParams();
+            BB returnToStorageArea2 = new BB(aGroupMoveToArea, gTransport2);
+            returnToStorageArea2.addAreaParameter("area", aStorage2);
+            returnToStorageArea2.addDoubleParameter("vel", 4.0);
+            cbTransportDropoffPickup2.addBehavior(returnToStorageArea2);
+
+            // Not mutually exclusive -> all transitions can fire 
+            goToWaitingArea2.transitionConditional((b, now) -> ConditionHelpers.groupInside(gTransport2, aWaiting), waitOpenGate2);
+            goToWaitingArea2.transitionConditional((b, now) -> ConditionHelpers.groupInside(gTransport2, aWaiting), cbOpenGate);
+
+            waitOpenGate2.transitionConditional((b, now) -> ConditionHelpers.areaVacant(model,
+                new Position(-3.0, -0.5, 0.0, 0.0), new Position(-3.5, 0.5, 0.5, 0.0)), goToPickup2);
+
+            goToPickup2.transitionConditional((b, now) -> ConditionHelpers.groupInside(gTransport2, aPickup), returnToWaitingArea2);
+            returnToWaitingArea2.transitionConditional((b, now) -> ConditionHelpers.groupInside(gTransport2, aWaiting), returnToStorageArea2);
+            returnToWaitingArea2.transitionConditional((b, now) -> {
+                // About to leave, clear waiting area so other group can start moving
+                if (ConditionHelpers.groupInside(gTransport2, aWaiting)) {
+                    model.getEnvironment().setWaitingAreaReserved(false);
+                    return true;
+                }
+                return false;
+            }, cbCloseGate); // Loop
+            returnToStorageArea2.transitionConditional((b, now) -> ConditionHelpers.groupInside(gTransport2, aStorage2), cbTransportLoop2);
+        cbTransportLoop2.addBehavior(cbTransportDropoffPickup2);
+        //bm.addCB(cbTransportDropoffPickup2); // Not required for nested CBs that are not rooted
+        bm.addCB(cbTransportLoop2);
+
+        // ---------------- Drone logic ---------------------
+        // Define boundaries of invisible areas in corners of outside perimeter
+        Position bl1 = new Position(-4.55, -4.55, 1.49, 0.0);
+        Position tr2 = new Position(4.55, 5.55, 1.51, 0.0);
+        double takeoffHeight = 1.5;
+        CB cbLaunchDrones = new CB("Drones: Launch");
+        CB cbCirclePerimeter = new CB("Drones: Circle Perimeter", true);
+        BB launchDrones = new BB(aTakeoff, gDrones);
+            launchDrones.addDoubleParameter("height", takeoffHeight);
+            launchDrones.addDoubleParameter("duration", 2.0);
+            launchDrones.transitionConditional((b, now) -> ConditionHelpers.groupInside(gDrones, bl1, tr2), cbCirclePerimeter);
+            cbLaunchDrones.addBehavior(launchDrones);
+        bm.addCB(cbLaunchDrones);
+        bm.addStartBehavior(cbLaunchDrones);
+
+        // Here we showcase how dynamic parameters can be used to adapt behavior
+        // according to information available in the runtime model.
+        // There are 4 drones which need to be shuffled in order to circle the
+        // perimeter. This is realized by a continuously running loop of BBs, each
+        // of which instruct one of the drones to move to the next corner, which
+        // is determined by dynamic parameters.
+
+        // Corners: (-4.5, -4.5), (4.5, -4.5), (4.5, 4.5), (-4.5, 4.5)
+        // Target position computation functions for dynamic parameters
+        // Assume group with a single swarm unit
+        Function<ParameterExecutionContext, Double> nextX = ctx -> {
+            if (ctx.group == null) return 0.0;
+            Position pos = ctx.group.getSwarmUnits().get(0).getPositionReference().getPosition();
+            double x = pos.getx();
+            double y = pos.gety();
+            
+            // Determine current corner and return next X
+            if (x < 0 && y < 0) return 4.5;
+            if (x > 0 && y < 0) return 4.5;
+            if (x > 0 && y > 0) return -4.5;
+            return -4.5;
+        };
+
+        Function<ParameterExecutionContext, Double> nextY = ctx -> {
+            if (ctx.group == null) return 0.0;
+            Position pos = ctx.group.getSwarmUnits().get(0).getPositionReference().getPosition();
+            double x = pos.getx();
+            double y = pos.gety();
+            
+            // Determine current corner and return next Y
+            if (x < 0 && y < 0) return -4.5;
+            if (x > 0 && y < 0) return 4.5;
+            if (x > 0 && y > 0) return 4.5;
+            return -4.5;
+        };
+
+        // Create 1 BB per drone that loops to itself
+        for (int i = 0; i < 4; i++) {
+            SwarmGroup gDrone = droneGroups.get(i);
+            SwarmUnit u = gDrone.getSwarmUnits().get(0);
+            BB bbPatrol = new BB(aGroupGoTo, gDrone);
+            
+            bbPatrol.addParameter(new ComputedDoubleParameter("x", nextX));
+            bbPatrol.addParameter(new ComputedDoubleParameter("y", nextY));
+            bbPatrol.addDoubleParameter("z", takeoffHeight);
+            bbPatrol.addDoubleParameter("theta", 0.0);
+            bbPatrol.addDoubleParameter("vel", 0.0);
+            bbPatrol.addDoubleParameter("duration", 2.0);
+
+            DefaultPositionReference targetPos = (DefaultPositionReference)model.getOrAddPositionReference(
+                new Position(
+                    ((ComputedDoubleParameter)bbPatrol.getParameterByName("x")).getvalue(),
+                    ((ComputedDoubleParameter)bbPatrol.getParameterByName("y")).getvalue(),
+                    takeoffHeight,
+                    0.0
+                )
+            );
+            u.setTargetPosition(targetPos);
+            
+            // Transition to itself on arrival in the designated corner
+            // triggering re-assignment of next corner
+            bbPatrol.transitionConditional((b, now) -> {
+                BB bb = (BB)b;
+                if (!u.hasTargetPosition())
+                    return false;
+
+                Position target = u.getTargetPosition().getPosition();
+                if (ConditionHelpers.groupInside(gDrone, target.getx() - 0.1, target.gety() - 0.1,
+                                                 target.getx() + 0.1, target.gety() + 0.1)) {
+                    targetPos.setPosition(
+                        new Position(
+                            ((ComputedDoubleParameter)bb.getParameterByName("x")).getvalue(),
+                            ((ComputedDoubleParameter)bb.getParameterByName("y")).getvalue(),
+                            takeoffHeight,
+                            0.0
+                        )
+                    );
+                    return true;
+                }
+                return false;
+            }, bbPatrol); 
+            
+            cbCirclePerimeter.addBehavior(bbPatrol);
+        }
+        bm.addCB(cbCirclePerimeter);
+        
+
+        model.setBehaviorModel(bm);
+        return bm;
+    }
+
+    /** Starts the modeled behavior */
+    public void BehaviorModel.run() {
+        System.out.println("[BehaviorModel] Starting behavior sequence");
+        for (CB cb : getStartBehaviors()) {
+            // Start first block in all complex behavior nodes
+            cb.start();
+            System.out.println("[BehaviorModel] Started " + cb.getname());
+        }
+        setrunning(true);
+
+        Model.writeEvent("start"); // Only triggers if Model.DEBUG = true
+        if (Model.DEBUG) {
+            System.out.println("[BehaviorModel] Debugging enabled, logging metrics to " + Model.LOG_DIR);
+            System.out.println("[BehaviorModel] Debugging for " + Model.testTimeMs + " ms before terminating");
+            Model.testStartTime = System.currentTimeMillis();
+        }
+    }
+
+    /** Stops the modeled behavior */
+    public void BehaviorModel.stop() {
+        System.out.println("[BehaviorModel] Stopping behavior sequence");
+        for (CB cb : getCBs()) {
+            cb.stop(false);
+        }
+        setrunning(false);
+        Model.writeEvent("stop");
+    }
+
+    /** Called once at the start by runtime model controller */
+    public void Model.start() throws InterruptedException {
+        if (Model.AUTOSTART) {
+            System.out.println("[Model] BehaviorModel autostart enabled, starting in " + AUTOSTART_DELAY + " ms");
+            Thread.sleep(Model.AUTOSTART_DELAY);
+            getBehaviorModel().run(); //Delegate to behavior model
+        }
+    }
+
+    // This function is called every TIME_STEP milliseconds by the backend
+    // It may be used to modify the model programmatically, as opposed to using the UI
+    public Model Model.step() {
+        // Update environment
+        updateEnvironment();
+
+        long now = System.currentTimeMillis();
+        BehaviorModel bm = getBehaviorModel();
+
+        if (Model.DEBUG) {
+            loopStepTimestamps.add(now);
+            if (testStartTime > 0 && now >= testStartTime + testTimeMs) {
+                // Write results to file and stop runtime model application
+                // Launch script will then exit the other loggers (if any)
+                System.out.println("[BehaviorModel] Debug time elapsed, writing results and terminating...");
+                writeResultsFile();
+
+                bm.stop();
+                LatencyRecorder.flushSafely();
+                System.exit(5); //Code 5 unique to debug timed stop
+            }
+        }
+        
+        // Workaround for RAGConnect exceptions at high loop speeds
+        // For production, this issue should be investigated further
+        try {
+            bm.setcurrentTime(now);
+        } catch (Exception e) {
+            System.out.println("[Model] Warning: Error setting current time in BehaviorModel, try decreasing behavior loop runs per second");
+        }
+        
+
+        if (bm.getrunning()) {
+            // Make shallow copy, as step can start and stop CBs, adding or removing them to the active list
+            // These should only be processed in the next tick
+            for (CB cb : new ArrayList<>(bm.getActiveCBs())) {
+                cb.step();
+            }
+        }
+
+        // Process results for AwaitableActions
+        // This is currently done for actions on the UI by ModelMain, in order to
+        // properly display results. However, when an action is called by the
+        // BehaviorModel via reflection, this handler is bypassed, hence
+        // the need for manual processing here
+        processAllAwaitables();
+
+        return this;
+    }
+}

@@ -1,0 +1,310 @@
+import java.util.UUID;
+
+/**
+ * Implements Actions that can be invoked on the web interface or in the behavior model
+ * Instead of a direct implementation that computes actuator commands, the multi-robot
+ * system (MRS) version either sets a group's state, which is then transmitted to the
+ * appropriate ROS nodes, or invokes custom commands to be sent to robots.
+ */
+aspect ArgosActions {
+
+    Result Action.drive(Model model, SwarmGroup group,
+        Double v_lin, Double v_ang) {
+        State s = group.getStateWithName("driving");
+
+        // Set parameters
+        JastAddList<Parameter> parameters = new JastAddList<>();
+        parameters.add(new DoubleParameter("v_lin", v_lin));
+        parameters.add(new DoubleParameter("v_ang", v_ang));
+        s.setParameterList(parameters);
+
+        group.setCurrentState(s);
+        
+        Result result = new Result(ActionResultType.SUCCESS, "Driving", 2000);
+        return result;
+    }
+
+    Result Action.random_walk(Model model, SwarmGroup group,
+        Double v_lin, Double v_ang,
+        Double t_lin_min, Double t_lin_max,
+        Double t_ang) {
+        State s = group.getStateWithName("random_walking");
+
+        // Set parameters
+        JastAddList<Parameter> parameters = new JastAddList<>();
+        parameters.add(new DoubleParameter("v_lin", v_lin));
+        parameters.add(new DoubleParameter("v_ang", v_ang));
+        parameters.add(new DoubleParameter("t_lin_min", t_lin_min));
+        parameters.add(new DoubleParameter("t_lin_max", t_lin_max));
+        parameters.add(new DoubleParameter("t_ang", t_ang));
+        s.setParameterList(parameters);
+
+        group.setCurrentState(s);
+        
+        Result result = new Result(ActionResultType.SUCCESS, "Random Walking", 2000);
+        return result;
+    }
+
+    Result Action.diffuse(Model model, SwarmGroup group,
+        Double angle_tolerance_deg, Double d_min, Double d_max,
+        Double velocity, Double turn_velocity) {
+        State s = group.getStateWithName("diffusing");
+
+        // Set parameters
+        JastAddList<Parameter> parameters = new JastAddList<>();
+        parameters.add(new DoubleParameter("angle_tolerance_deg", angle_tolerance_deg));
+        parameters.add(new DoubleParameter("d_min", d_min));
+        parameters.add(new DoubleParameter("d_max", d_max));
+        parameters.add(new DoubleParameter("velocity", velocity));
+        parameters.add(new DoubleParameter("turn_velocity", turn_velocity));
+        s.setParameterList(parameters);
+
+        group.setCurrentState(s);
+        
+        Result result = new Result(ActionResultType.SUCCESS, "Diffusing", 2000);
+        return result;
+    }
+
+    Result Action.flock(Model model, SwarmGroup group, Area area,
+                        Double neighbor_radius, Double spacing, Double k_align,
+                        Double k_spacing, Double k_heading, Double cluster_epsilon,
+                        Double max_speed) {
+                            
+        return flock_to_position(model, group, area.getXCenter(), area.getYCenter(),
+                                 neighbor_radius, spacing, k_align, k_spacing,
+                                 k_heading, cluster_epsilon, max_speed);
+    }
+
+    // Helper function to be used with BehaviorModel
+    Result Action.flock_to_position(Model model, SwarmGroup group, Double target_x,
+                                    Double target_y, Double neighbor_radius, Double spacing,
+                                    Double k_align, Double k_spacing, Double k_heading,
+                                    Double cluster_epsilon, Double max_speed) {
+        State s = group.getStateWithName("flocking");
+
+        // Set parameters
+        JastAddList<Parameter> parameters = new JastAddList<>();
+        parameters.add(new DoubleParameter("target_x", target_x));
+        parameters.add(new DoubleParameter("target_y", target_y));
+        parameters.add(new DoubleParameter("neighbor_radius", neighbor_radius));
+        parameters.add(new DoubleParameter("spacing", spacing));
+        parameters.add(new DoubleParameter("k_align", k_align));
+        parameters.add(new DoubleParameter("k_spacing", k_spacing));
+        parameters.add(new DoubleParameter("k_heading", k_heading));
+        parameters.add(new DoubleParameter("cluster_epsilon", cluster_epsilon));
+        parameters.add(new DoubleParameter("max_speed", max_speed));
+        s.setParameterList(parameters);
+
+        group.setCurrentState(s);
+        
+        Result result = new Result(ActionResultType.SUCCESS, "Flocking", 2000);
+        return result;
+    }
+
+    Result Action.stop(Model model, SwarmGroup group) {
+        group.setCurrentState(group.getStateWithName("idle"));
+
+        Result result = new Result(ActionResultType.SUCCESS, "Stopped", 2000);
+        return result;
+    }
+
+    Result Action.cancel(Model model, SwarmGroup group) {
+        group.setCurrentState(group.getStateWithName("idle"));
+
+        Result result = new Result(ActionResultType.SUCCESS, "Canceled", 2000);
+        return result;
+    }
+
+    Result Action.change_group(Model model, SwarmUnit unit, SwarmGroup new_group, Boolean move_to_group) {
+        SwarmGroup old_group = model.getUnitGroup(unit);
+        State new_state = new_group.getCurrentState();
+
+        if (new_group.getid() == old_group.getid())
+            return new Result(ActionResultType.SUCCESS, "Group changed", 2000);
+
+        UUID uuid = UUID.randomUUID();
+        String id = uuid.toString();
+
+        Position pos = null;
+        if (move_to_group) {
+            // Instruct robot to move to group center
+            pos = new_group.getGroupCenter();
+        }
+
+        Position closest = null;
+        Position subjectPos = unit.getPositionReference().getPosition();
+        if (move_to_group) {
+            // Move to neareast group perimiter point instead of center
+            // This prevents the robot from indefinitely circling the group
+            double minDist = Double.MAX_VALUE;
+            JastAddList<SwarmUnit> group_units = new_group.getUnitsRecursive();
+            for (SwarmUnit u : group_units) {
+                Position upos = u.getPositionReference().getPosition();
+                double dist = Math.sqrt(Math.pow(upos.getx() - subjectPos.getx(), 2) + Math.pow(upos.gety() - subjectPos.gety(), 2));
+
+                if (dist < minDist) {
+                    minDist = dist;
+                    closest = upos;
+                }
+            }
+        }
+
+        ChangeGroupCommand cmd = new ChangeGroupCommand("__controller__", unit.getname(), 1, //0x1 corresponds to change group command type
+                                                        id, new_group.getid(), new_group.getname(),
+                                                        new_state.getname(), closest, new_state.getParameters());
+
+        unit.setSendCommand(cmd);
+        unit.setCurrentState(model.getStateWithName("changing_group"));
+
+        // Use subclass of AwaitableResult to only perform switch once ACK is received
+        // Awaitable results delayed until an ACK is received. Corresponding code can be
+        // set in Command.jrag's AwaitableResult.execute() method
+        ChangeGroupResult result = new ChangeGroupResult(ActionResultType.WAIT, "Changing Group", 1000, id,
+                                                         old_group.getid(), new_group.getid(), unit.getid());
+        model.getPendingResults().add(result);
+        return result;
+    }
+
+    // CF only
+    Result Action.group_takeoff(Model model, SwarmGroup group, Double height, Double duration) {
+        State s = model.getStateWithName("takeoff");
+        JastAddList<Parameter> parameters = new JastAddList<>();
+        parameters.add(new DoubleParameter("height", height));
+        parameters.add(new DoubleParameter("duration", duration));
+        s.setParameterList(parameters);
+
+        group.setCurrentState(s);
+
+        Result result = new Result(ActionResultType.SUCCESS, "Taking off", 2000);
+        return result;
+    }
+
+    // CF only
+    Result Action.group_land(Model model, SwarmGroup group, Double height, Double duration) {
+        State s = model.getStateWithName("landing");
+        JastAddList<Parameter> parameters = new JastAddList<>();
+        parameters.add(new DoubleParameter("height", height));
+        parameters.add(new DoubleParameter("duration", duration));
+        s.setParameterList(parameters);
+
+        group.setCurrentState(s);
+
+        Result result = new Result(ActionResultType.SUCCESS, "Landing", 2000);
+        return result;
+    }
+
+    Result Action.group_go_to_position(Model model, SwarmGroup group, Double x, Double y,
+                                       Double z, Double theta, Double vel, Double duration) {
+        State s = model.getStateWithName("moving");
+        JastAddList<Parameter> parameters = new JastAddList<>();
+        parameters.add(new DoubleParameter("x", x));
+        parameters.add(new DoubleParameter("y", y));
+        parameters.add(new DoubleParameter("z", z));
+        parameters.add(new DoubleParameter("theta", theta));
+        parameters.add(new DoubleParameter("velocity", vel)); // used by ground robots only
+        parameters.add(new DoubleParameter("duration", duration)); // Used by CF only
+        s.setParameterList(parameters);
+
+        group.setCurrentState(s);
+
+        Result result = new Result(ActionResultType.SUCCESS, "Moving to position", 2000);
+        return result;
+    }
+
+    // CF only
+    // Holds the formation of the group while moving towards the new position by
+    // computing the group center of mass, then a vector from it to the new position
+    // and having every member move along that vector 
+    Result Action.group_relative_go_to_position(Model model, SwarmGroup group, Double x, Double y, Double z,
+                                       Double theta, Double duration) {
+        Position center = group.getGroupCenter();
+        State s = model.getStateWithName("moving_relative");
+
+        JastAddList<Parameter> parameters = new JastAddList<>();
+        parameters.add(new DoubleParameter("x", x - center.getx()));
+        parameters.add(new DoubleParameter("y", y - center.gety()));
+        parameters.add(new DoubleParameter("z", z - center.getz()));
+        parameters.add(new DoubleParameter("theta", theta));
+        parameters.add(new DoubleParameter("duration", duration));
+        s.setParameterList(parameters);
+
+        group.setCurrentState(s);
+
+        Result result = new Result(ActionResultType.SUCCESS, "Moving relatively to position", 2000);
+        return result;
+    }
+
+    // Ground robots only for now
+    Result Action.group_go_to_area(Model model, SwarmGroup group, Area area,
+                                       Double theta, Double vel) {
+        return group_go_to_position(model, group, area.getXCenter(), area.getYCenter(), 0.0, theta, vel, 0.0);
+    }
+
+    Result Action.group_move_to_position(Model model, SwarmGroup group, Double x, Double y,
+                                         Double theta, Double vel) {
+        State s = model.getStateWithName("moving_oa");
+        JastAddList<Parameter> parameters = new JastAddList<>();
+        parameters.add(new DoubleParameter("x", x));
+        parameters.add(new DoubleParameter("y", y));
+        parameters.add(new DoubleParameter("z", 0.0));
+        parameters.add(new DoubleParameter("theta", theta));
+        parameters.add(new DoubleParameter("velocity", vel));
+        s.setParameterList(parameters);
+
+        group.setCurrentState(s);
+
+        Result result = new Result(ActionResultType.SUCCESS, "Moving to position", 2000);
+        return result;
+    }
+
+    Result Action.group_move_to_area(Model model, SwarmGroup group, Area area,
+                                         Double theta, Double vel) {
+        return group_move_to_position(model, group, area.getXCenter(), area.getYCenter(), theta, vel);
+    }
+
+    Result Action.unit_go_to_position(Model model, SwarmUnit unit, Double x, Double y, Double theta, Double vel) {
+        UUID uuid = UUID.randomUUID();
+        String id = uuid.toString();
+
+        State s = model.getStateWithName("moving");
+        JastAddList<Parameter> parameters = new JastAddList<>();
+        parameters.add(new DoubleParameter("x", x));
+        parameters.add(new DoubleParameter("y", y));
+        parameters.add(new DoubleParameter("theta", theta));
+        parameters.add(new DoubleParameter("velocity", vel));
+        s.setParameterList(parameters);
+
+        PositionCommand cmd = new PositionCommand("__controller__", unit.getname(), 2,
+                                                  id, new Position(x, y, 0.0, theta), vel); //0x2 corresponds to position command
+        unit.setSendCommand(cmd);
+        unit.setCurrentState(s);
+
+        DoNothingResult result = new DoNothingResult(ActionResultType.WAIT, "Moving to position", 1000, id);
+        result.setUnit(unit);
+        model.getPendingResults().add(result);
+        return result;
+    }
+
+    Result Action.unit_move_to_position(Model model, SwarmUnit unit, Double x, Double y, Double theta, Double vel) {
+        UUID uuid = UUID.randomUUID();
+        String id = uuid.toString();
+
+        State s = model.getStateWithName("moving_oa");
+        JastAddList<Parameter> parameters = new JastAddList<>();
+        parameters.add(new DoubleParameter("x", x));
+        parameters.add(new DoubleParameter("y", y));
+        parameters.add(new DoubleParameter("theta", theta));
+        parameters.add(new DoubleParameter("velocity", vel));
+        s.setParameterList(parameters);
+
+        PositionCommand cmd = new PositionCommand("__controller__", unit.getname(), 2,
+                                                  id, new Position(x, y, 0.0, theta), vel); //0x2 corresponds to position command
+        unit.setSendCommand(cmd);
+        unit.setCurrentState(s);
+
+        DoNothingResult result = new DoNothingResult(ActionResultType.WAIT, "Moving to position (OA)", 1000, id);
+        result.setUnit(unit);
+        model.getPendingResults().add(result);
+        return result;
+    }
+}

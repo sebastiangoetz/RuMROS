@@ -1,0 +1,22 @@
+/**
+ * This aspect extends the SwarmUnit definition by adding functionality
+ * related to their location with respect to defined areas. 
+*/
+aspect SwarmUnitInArea {
+    inh JastAddList<Area> SwarmGroup.getAreaList();
+    eq Model.getSwarmGroup(int i).getAreaList() {
+        return this.getAreaList();
+    }
+
+    // Find the current area a unit is in (or null if in no defined area)
+    inh Area SwarmUnit.getArea();
+    eq Model.getSwarmUnit(int i).getArea() {
+        SwarmUnit unit = this.getSwarmUnit(i);
+        for (Area area : this.getAreaList()) {
+            if (unit.getPositionReference().getPosition().getx() >= area.getxPos1() && unit.getPositionReference().getPosition().getx() < area.getxPos2() && unit.getPositionReference().getPosition().gety() >= area.getyPos1() && unit.getPositionReference().getPosition().gety() < area.getyPos2()) {
+                return area;
+            }
+        }
+        return null;
+    }
+}

@@ -1,0 +1,19 @@
+/**
+ * The ARGoS MRS version implements commands that can be sent to individual robots.
+ * In the few-robot Gazebo version, this is not implemented, but requires a mock
+ * implementation due to the shared structural definitions in the relational RAG.
+ */
+aspect GazeboCommand {
+
+    public void SwarmUnit.setSendCommand(CommandMsg command) {
+        // Mock method required to compile
+    }
+
+    // Awaitables are partially handled by ModelMain. For instance,
+    // it removes processed ACKs from the message list and cleans up pending results
+    // Action-specific code can be implemented here
+    public Result AwaitableResult.execute(Model model) {
+        // No object matches, error
+        return new Result(ActionResultType.TECHNICAL_ERROR, "SendCommands are not yet implemented with Gazebo", 2000);
+    }
+}

@@ -1,0 +1,150 @@
+import java.lang.Math;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
+import de.tudresden.inf.st.rumros.argosbridge.ArgosConfigManager;
+import de.tudresden.inf.st.rumros.argosbridge.ObjectUtils;
+import de.tudresden.inf.st.rumros.argosbridge.model.*;
+import org.w3c.dom.Element;
+
+/**
+ * This file contains declarative parts of the Argos simulation initialization.
+ * Make sure to adjust the group and robot quantities for the scenario defined
+ * in ArgosInit.jrag.
+ */
+aspect ArgosInit {
+
+    // Select Argos config template
+    public static final String Model.ARGOS_TEMPLATE = "warehouse.argos";
+    
+    // Set Argos drawing options
+    public static final Boolean Model.ARGOS_DRAW_ROBOT_NAME = false;  // Draw name on top of each robot
+    public static final Boolean Model.ARGOS_DRAW_ROBOT_GROUP = false; // Draw group on top of each robot
+
+    /**
+     * This method acts as a hook for main() of the generateArgosConfig gradle task.
+     * It sets up the ARGoS 3 simulation (robot controllers, arena with obstacles and robots, etc.).
+     */
+    public void Model.setupArgosSimulation(ArgosConfigManager configManager, Model model) {
+        // Create controllers for each robot type used in the application
+        // For available robot names check folder names in resources/argos-templates
+        String controllerFootbot = configManager.addRobotROSController("footbot");
+        String controllerTurtlebot = configManager.addRobotROSController("turtlebot");
+        String controllerCrazyflie = configManager.addRobotROSController("crazyflie");
+
+        // Add LEDs medium for Crazyflie
+        configManager.addMedium("led", "leds");
+
+        // Add 3D physics engine for Crazyflie
+        configManager.addPhysicsEngine("pointmass3d", "pm3d", Map.of("iterations", "10"));
+
+        // Loop functions can be used to run code every tick during the simulation
+        // Here we use it to draw a floor texture, which displays areas. Make sure
+        // the declared areas here match the areas of the runtime model, declared
+        // in ArgosInit.jrag.
+        configManager.addLoopFunctions("ros_bridge_loop_functions",
+                                "build/argos3_ros2_bridge/plugins/loop_functions/libros_bridge_loop_functions");
+
+        LoopFunctions loopFuncs = configManager.getConfig().getLoopFunctions();
+
+        // Setup areas of the given model
+        for (Area a : model.getAreas()) {
+            loopFuncs.addAreaOption(Map.of("name", a.getname(),
+                                           "x1", a.getxPos1().toString(), "y1", a.getyPos1().toString(),
+                                           "x2", a.getxPos2().toString(), "y2", a.getyPos2().toString()));
+        }
+
+        // loop_functions node is also used to store custom options for both
+        // loop functions and QT user functions.
+        loopFuncs.addBooleanOptions(Map.of("draw_robot_name", Model.ARGOS_DRAW_ROBOT_NAME,
+                                            "draw_robot_group", Model.ARGOS_DRAW_ROBOT_GROUP));
+
+        
+        // User functions can be used to draw on the simulation screen
+        // The current implementation simply draws area names
+        configManager.addUserFunctions("ros_bridge_user_functions",
+                                       "build/argos3_ros2_bridge/plugins/user_functions/libros_bridge_user_functions");
+
+        // Get arena to add objects and robots
+        Arena arena = configManager.getConfig().getArena();
+
+        // Add floor to arena to make use of area loop functions
+        arena.addFloor("floor", "loop_functions", "50");
+
+        // Add some obstacles to arena
+        //Element cylinder = ObjectUtils.createCylinder("c", "0.5", "0.15", "false");
+        //arena.distributePhysicalObjects(cylinder, 5, "uniform",
+        //                                "-2,-2,0", "2,2,0", "0,0,0", 100);
+
+        // Robots can be distributed in the arena or manually placed.
+        //arena.distributeRobots("turtlebot3", "tb", configManager.ROS_CONTROLLER_ID, Footbot.NUM_OBJECTS,
+        //"uniform", "-2,-2,0", "2,2,0");
+
+        // Add robots of the model
+        // Single group, 2 rows of 15
+        for (SwarmUnit u : model.getSwarmUnits()) {
+            Position pos = u.getPositionReference().getPosition();
+            String posStr = pos.getx() + "," + pos.gety() + "," + pos.getz();
+            String rotStr = Math.toDegrees(pos.gettheta()) + ",0,0";
+
+            // Add robot-specific tags to arena
+            if (u instanceof Footbot)
+                arena.addRobot("foot-bot", "fb" + u.getid(), getUnitGroupName(u), controllerFootbot, posStr, rotStr);
+            else if (u instanceof Turtlebot)
+                arena.addRobot("turtlebot3", "tb" + u.getid(), getUnitGroupName(u), controllerTurtlebot, posStr, rotStr);
+            else if (u instanceof Crazyflie)
+                arena.addRobot("crazyflie", "cf" + u.getid(), getUnitGroupName(u), controllerCrazyflie, posStr, rotStr);
+        }
+    }
+
+    /**
+     * This method acts as a hook for main() of the generateRosLaunchConfig gradle task.
+     * It creates a swarm config file that the ROS launch script uses to get the number of nodes
+     * and which groups they belong to. 
+     */
+    public Map<Integer, List<Integer>> Model.getSwarmConfig() {
+        Map<Integer, List<Integer>> config = new HashMap<>();
+        for (SwarmGroup sg : this.getSwarmGroups()) {
+            List<Integer> ids = new ArrayList<>();
+            for (SwarmUnit u : sg.getSwarmUnits()) { // No recursive call to only add units once, hierarchy is transparent to ROS side
+                if (u instanceof Footbot)
+                    ids.add(((Footbot)u).getid());
+                else if (u instanceof Turtlebot)
+                    ids.add(((Turtlebot)u).getid());
+                else if (u instanceof Crazyflie)
+                    ids.add(((Crazyflie)u).getid());
+            }
+
+            // The map contains mappings of format <group id>:<list of robot ids>
+            config.put(sg.getid(), ids);
+        }
+        return config;
+    }
+
+    /**
+     * This method acts as a hook for main() of the generateRosLaunchConfig gradle task.
+     * It creates a type config file that the ROS launch script uses to get the type of robot
+     * that each node has. 
+     */
+    public Map<String, List<Integer>> Model.getTypeConfig() {
+        Map<String, List<Integer>> config = new HashMap<>();
+        List<Integer> fbIds = new ArrayList<>();
+        List<Integer> tbIds = new ArrayList<>();
+        List<Integer> cfIds = new ArrayList<>();
+        for (SwarmUnit u : this.getSwarmUnits()) {
+            if (u instanceof Footbot)
+                fbIds.add(((Footbot)u).getid());
+            else if (u instanceof Turtlebot)
+                tbIds.add(((Turtlebot)u).getid());
+            else if (u instanceof Crazyflie)
+                cfIds.add(((Crazyflie)u).getid());
+
+            // The map contains mappings of format <robot type>:<list of robot ids of the type>
+            config.put("Footbot", fbIds);
+            config.put("Turtlebot", tbIds);
+            config.put("Crazyflie", cfIds);
+        }
+        return config;
+    }
+}

@@ -1,0 +1,31 @@
+/**
+ * The ARGoS MRS version implements commands that can be sent to individual robots.
+ * In the few-robot Gazebo version, this is not implemented, but requires a mock
+ * implementation due to the shared structural definitions in the relational RAG.
+ */
+aspect GazeboCommand {
+
+    syn CommandMsg SwarmUnit.getSendCommand() {
+        return null; // Not currently implemented
+    }
+
+    // Propagate model node upwards
+    syn Model ASTNode.root() {
+        if (getParent() == null) {
+            // This is the root node
+            return (Model)this;
+        }
+        return getParent().root();
+    }
+
+    // Check whether ACK was received for the given action
+    syn boolean AwaitableResult.isAcknowledged(Model model) {
+        // Not currently implemented
+        return false;
+    }
+
+    // Only supported with ARGoS
+    syn JastAddList<Result> Model.processAllAwaitables() {
+        return new JastAddList<Result>();
+    }
+}
