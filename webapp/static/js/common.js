@@ -51,9 +51,7 @@ const colEmphasizedLight = getColorByVariable("--col-emphasized-light");
 // Workaround for IAI binder: remove only subpage name from url, keep the rest and append socket.io
 const base = window.location.pathname.replace(/\/[^/]*$/, "") || "";
 
-const socket = io({
-    path: `${base}/socket.io/`
-});
+const socket = io.connect();
 socket.on("updateSensorData", function (msg) {
     if (pendingButtonReset) {
         pendingButtonReset(); //apply delayed reset for awaitable results

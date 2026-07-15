@@ -5,6 +5,7 @@ from flask_socketio import SocketIO
 from threading import Lock
 import os.path
 import config
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 thread = None
 thread_lock = Lock()
@@ -16,6 +17,13 @@ bufferSize = 65507
 
 # full Path is neccessary for the Systemtest
 app = Flask("Runtimemodel", template_folder=os.path.dirname(__file__) + "/templates/", static_folder=os.path.dirname(__file__) + "/static/")
+app.wsgi_app = ProxyFix(
+    app.wsgi_app,
+    x_for=1,
+    x_proto=1,
+    x_host=1,
+    x_prefix=1
+)
 app.config.from_object(config.Config)
 socketio = SocketIO(app, cors_allowed_origins='*')
 
