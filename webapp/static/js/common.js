@@ -48,7 +48,12 @@ const colEmphasizedMid = getColorByVariable("--col-emphasized-mid");
 const colEmphasizedLight = getColorByVariable("--col-emphasized-light");
 
 // Init socket
-var socket = io.connect();
+// Workaround for IAI binder: remove only subpage name from url, keep the rest and append socket.io
+const base = window.location.pathname.replace(/\/[^/]*$/, "") || "";
+
+const socket = io({
+    path: `${base}/socket.io/`
+});
 socket.on("updateSensorData", function (msg) {
     if (pendingButtonReset) {
         pendingButtonReset(); //apply delayed reset for awaitable results
