@@ -19,7 +19,7 @@ else
     exit 1
 fi
 
-PYTHON=${2:-~/venv/ros/bin/python3}
+PYTHON=${2:-$(pwd)/webapp/venv/bin/python3}
 export TRACETOOLS_RUNTIME_DISABLE=true
 
 # Add ROS2 setup.bash
