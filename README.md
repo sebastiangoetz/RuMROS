@@ -1,6 +1,6 @@
 # RuMROS
 
-RuMROS is a runtimemodel driven robotic application with an adaptive GUI. It supports control and simulation (Gazebo) of individual robots, as well as creating swarm applications and simulating swarm behavior via [ARGoS 3](https://github.com/ilpincy/argos3). 
+RuMROS is a runtimemodel driven robotic application with an adaptive GUI. It supports control and simulation (Gazebo) of individual robots, as well as creating swarm applications and simulating swarm behavior via [ARGoS 3](https://github.com/ilpincy/argos3).
 
 RuMROS consists of 3 main modules:
 
@@ -13,6 +13,12 @@ The application is partially generated from the runtime meta-model. This include
 RuMROS comes with support for two main ways of programming robots: Fully runtime-model-based control, as well as swarm programming. In the former case, Gazebo is used for simulation and the runtime model application controls the robots directly via ROS topics. This allows the user to fully define robot's behavior  in JastAdd. A generic ROS node is provided for each robot type (currently supported are turtlebots and drones, rovers are WIP) that simply steers the robots and sends sensor information to the runtime model.
 
 When swarm programming is desired, RuMROS operates differently, due to how swarms operate. As there is no central instance controlling each robot's behavior in contrast to the aforementioned approach, each individual robot has to have a certain 'skillset'. RuMROS uses the same ROS node on every swarm member. It acts as a state machine, which is switched via a control topic that is unique to a swarm group. Different states implement different behavior, and the node comes with pre-defined swarm behavior blocks that can be called from the runtime model. This is the previously mentioned 'skillset', which each robot has. The runtime model only monitors robot states and switches between behaviors. This still allows for global control over swarm actions while keeping localized behavior and thus makes RuMROS a hybrid approach to swarm programming. 
+
+## Demo & Interactive testing
+
+A demo video showcasing functionality is available on [YouTube](https://youtu.be/qfai9XeWDPs). A pre-built docker container with interactive runtime environment can be launched on [AICOR-EASE](https://binder.intel4coro.de/v2/gh/akassuba/rumros-binder/HEAD?labpath=notebooks%2Finstructions.ipynb). Click the link or the button below to launch it.
+
+[![Binder](https://binder.intel4coro.de/badge_logo.svg)](https://binder.intel4coro.de/v2/gh/akassuba/rumros-binder/HEAD?labpath=notebooks%2Finstructions.ipynb)
 
 ## Installation
 
