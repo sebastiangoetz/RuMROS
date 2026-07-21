@@ -237,8 +237,9 @@ class MovingWithOABehavior(MovingBehavior):
             nearest_id = obstructed_ids[int(np.argmin(bins[obstructed_ids]))]
             nearest_dir = ((2.0 * np.pi / self.num_bins) * nearest_id) % (2.0 * np.pi)
             away = -self.angle_to_vector(nearest_dir)
-            self.node.get_logger().warn("No fittable direction found, backing away from nearest obstacle. Try increasing the number of bins or reducing the safety radius.")
+            #self.node.get_logger().warn("No fittable direction found, backing away from nearest obstacle. Try increasing the number of bins or reducing the safety radius.")
             return away * self.velocity
 
         # No obstacle information at all, just push towards the goal
         return goal_dir * self.velocity
+

@@ -109,7 +109,7 @@ echo 'ros2 launch mqtt_client standalone.launch.xml params_file:="$(dirname "$0"
 
 RuMROS can be launched either via Docker or the manual installation, for both methods, launch scripts are provided. Building the individual application parts is included in these launch scripts. Refer to them for detailed steps on how to do so, as well as how to manually launch the individual components.
 
-After launch, the selected simulator will open. With ARGoS, the simulation has to be manually started by pressing the play button on the top left. To control the robots, use the web interface provided on http://127.0.0.1:5000. On the left side, it displays multiple tables with the nodes specified in the runtime meta-model and their current state. On the right side, Actions can be triggered on individual robots or swarm groups. Further tabs are provided for viewing tables and actions separately, as well as to view, start and stop the robot behavior model, which uses a state machine-like controller to steer robots, and can be programmed in JastAdd.
+After launch, the selected simulator will open. With ARGoS, the simulation has to be manually started by pressing the play button on the top left. To control the robots, use the web interface provided on [127.0.0.1:5000](http://127.0.0.1:5000). On the left side, it displays multiple tables with the nodes specified in the runtime meta-model and their current state. On the right side, Actions can be triggered on individual robots or swarm groups. Further tabs are provided for viewing tables and actions separately, as well as to view, start and stop the robot behavior model, which uses a state machine-like controller to steer robots, and can be programmed in JastAdd.
 
 ### Launching with Docker
 
@@ -119,6 +119,8 @@ When launching with Docker, the simulator can be chosen by providing a launch ar
 bash docker_run.sh [argos|gazebo]
 ```
 
+The web interface is accessible from a regular browser outside the container at [127.0.0.1:5000](http://127.0.0.1:5000).
+
 ### Launching a manual installation
 
 RuMROS can be run with either Gazebo or ARGoS. As this involves starting all of the application parts (multiple launch commands) it is recommended to use either one of the provided launch scripts in the project's root folder:
@@ -127,3 +129,5 @@ RuMROS can be run with either Gazebo or ARGoS. As this involves starting all of 
 bash launch_with_gazebo.sh
 bash launch_with_argos.sh
 ```
+
+The web interface is accessible from a regular browser at [127.0.0.1:5000](http://127.0.0.1:5000).

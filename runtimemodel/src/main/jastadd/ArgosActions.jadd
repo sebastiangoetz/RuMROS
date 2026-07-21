@@ -125,33 +125,60 @@ aspect ArgosActions {
         UUID uuid = UUID.randomUUID();
         String id = uuid.toString();
 
-        Position pos = null;
-        if (move_to_group) {
-            // Instruct robot to move to group center
-            pos = new_group.getGroupCenter();
-        }
+        Position c1 = null;
+        Position c2 = null;
 
-        Position closest = null;
-        Position subjectPos = unit.getPositionReference().getPosition();
         if (move_to_group) {
-            // Move to neareast group perimiter point instead of center
-            // This prevents the robot from indefinitely circling the group
-            double minDist = Double.MAX_VALUE;
+            // Compute bounding box
             JastAddList<SwarmUnit> group_units = new_group.getUnitsRecursive();
+
+            double minX = Double.POSITIVE_INFINITY;
+            double minY = Double.POSITIVE_INFINITY;
+            double minZ = Double.POSITIVE_INFINITY;
+            double minT = Double.POSITIVE_INFINITY;
+
+            double maxX = Double.NEGATIVE_INFINITY;
+            double maxY = Double.NEGATIVE_INFINITY;
+            double maxZ = Double.NEGATIVE_INFINITY;
+            double maxT = Double.NEGATIVE_INFINITY;
+
+            boolean hasTheta = false;
+
+            // Unit within 0.5m of other group units bounding volume
+            // is termination criterion, quite lenient for now
+            double offset = 0.5;
+
             for (SwarmUnit u : group_units) {
                 Position upos = u.getPositionReference().getPosition();
-                double dist = Math.sqrt(Math.pow(upos.getx() - subjectPos.getx(), 2) + Math.pow(upos.gety() - subjectPos.gety(), 2));
 
-                if (dist < minDist) {
-                    minDist = dist;
-                    closest = upos;
+                minX = Math.min(minX, upos.getx());
+                minY = Math.min(minY, upos.gety());
+                minZ = Math.min(minZ, upos.getz());
+
+                maxX = Math.max(maxX, upos.getx());
+                maxY = Math.max(maxY, upos.gety());
+                maxZ = Math.max(maxZ, upos.getz());
+
+                double theta = upos.gettheta();
+                if (Double.isFinite(theta)) {
+                    hasTheta = true;
+                    minT = Math.min(minT, theta);
+                    maxT = Math.max(maxT, theta);
                 }
             }
+
+            if (!hasTheta) {
+                minT = 0.0;
+                maxT = 0.0;
+            }
+
+            c1 = new Position(minX - offset, minY - offset, minZ - offset, minT);
+            c2 = new Position(maxX + offset, maxY + offset, maxZ + offset, maxT);
         }
 
         ChangeGroupCommand cmd = new ChangeGroupCommand("__controller__", unit.getname(), 1, //0x1 corresponds to change group command type
                                                         id, new_group.getid(), new_group.getname(),
-                                                        new_state.getname(), closest, new_state.getParameters());
+                                                        new_state.getname(), c1, c2, new_state.getParameters());
 
         unit.setSendCommand(cmd);
         unit.setCurrentState(model.getStateWithName("changing_group"));

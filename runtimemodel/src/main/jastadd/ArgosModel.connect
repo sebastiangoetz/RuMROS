@@ -153,12 +153,17 @@ CommandToString maps CommandMsg cmd to byte[] {:
 
         //Add position to move to if specified
         com.fasterxml.jackson.databind.node.ObjectNode moveParameterJson = objectMapper.createObjectNode();
-        Position pos = chgrp_cmd.getPosition();
-        if (pos != null) {
-            moveParameterJson.put("x", pos.getx());
-            moveParameterJson.put("y", pos.gety());
-            moveParameterJson.put("z", pos.getz());
-            moveParameterJson.put("theta", pos.gettheta());
+        Position bMin = chgrp_cmd.getBoundingMin();
+        Position bMax = chgrp_cmd.getBoundingMax();
+        if (bMin != null && bMax != null) {
+            moveParameterJson.put("min_x", bMin.getx());
+            moveParameterJson.put("min_y", bMin.gety());
+            moveParameterJson.put("min_z", bMin.getz());
+            moveParameterJson.put("min_theta", bMin.gettheta());
+            moveParameterJson.put("max_x", bMax.getx());
+            moveParameterJson.put("max_y", bMax.gety());
+            moveParameterJson.put("max_z", bMax.getz());
+            moveParameterJson.put("max_theta", bMax.gettheta());
             moveParameterJson.put("velocity", 4.0); //Simple default value
             contentJson.set("move_parameters", moveParameterJson);
         }

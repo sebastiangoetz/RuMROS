@@ -148,7 +148,8 @@ ChangeGroupCommand : CommandMsg ::=
     <newGroupId:int>
     <newGroupName:String>
     <newBehavior:String>
-    Position
+    BoundingMin:Position
+    BoundingMax:Position
     newBehaviorParam:Parameter*;
 
 PositionCommand : CommandMsg ::=

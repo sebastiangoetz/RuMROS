@@ -1,4 +1,5 @@
-import rclpy, json
+import rclpy, json, math
+import numpy as np
 from enum import Enum
 from rclpy.node import Node
 from rclpy.qos import QoSProfile, QoSDurabilityPolicy
@@ -13,6 +14,30 @@ from .swarm_behavior.random_walk import RandomWalkBehavior
 from .swarm_behavior.cf_behavior import *
 from .hardware import *
 from std_msgs.msg import String
+
+# Helper
+def bounding_volume_center(x_min, y_min, z_min, theta_min,
+                        x_max, y_max, z_max, theta_max):
+    """
+    Returns the center of a bounding volume.
+
+    Returns:
+        (center_xy, center_theta)
+        where center_xy is a numpy array [x, y].
+    """
+    center_xyz = np.array([
+        (x_min + x_max) / 2.0,
+        (y_min + y_max) / 2.0,
+        (z_min + z_max) / 2.0
+    ])
+
+    # Circular mean of the two angles
+    mean_theta = math.atan2(
+        math.sin(theta_min) + math.sin(theta_max),
+        math.cos(theta_min) + math.cos(theta_max)
+    )
+    
+    return center_xyz, mean_theta
 
 class CmdMsgType(Enum):
     ACK = 0
@@ -123,20 +148,53 @@ class BehaviorController(Node):
                     self.ack_pub.publish(self.create_cmd_ack(data))
 
                 # Check for position parameters
+                move_parameters = {}
                 if 'move_parameters' in data['content']:
-                    self.get_logger().info(f'{self.hardware.robot_id} moving to position {data["content"]["move_parameters"]}')
+                    self.get_logger().info(f'{self.hardware.robot_id} moving to target group with parameters: {data["content"]["move_parameters"]}')
 
                     # Disable commands, move to group, then enable new topic and send ACK
                     self.destroy_group_sub()
 
+                    # Compute move parameters
+                    # For parameter names, check ArgosModel.connect
+                    center, theta = bounding_volume_center(
+                        data['content']['move_parameters']['min_x'],
+                        data['content']['move_parameters']['min_y'],
+                        data['content']['move_parameters']['min_z'],
+                        data['content']['move_parameters']['min_theta'],
+                        data['content']['move_parameters']['max_x'],
+                        data['content']['move_parameters']['max_y'],
+                        data['content']['move_parameters']['max_z'],
+                        data['content']['move_parameters']['max_theta']
+                    )
+
+                    move_parameters['x'] = center[0]
+                    move_parameters['y'] = center[1]
+                    move_parameters['z'] = center[2]
+                    move_parameters['theta'] = theta
+
+                    move_parameters['velocity'] = data['content']['move_parameters']['velocity']
+
+                    move_parameters['bb_min'] = np.array([
+                        data['content']['move_parameters']['min_x'],
+                        data['content']['move_parameters']['min_y'],
+                        data['content']['move_parameters']['min_z']
+                    ])
+            
+                    move_parameters['bb_max'] = np.array([
+                        data['content']['move_parameters']['max_x'],
+                        data['content']['move_parameters']['max_y'],
+                        data['content']['move_parameters']['max_z']
+                    ])
+
                     # Upon finishing, invoke callback to perform switch
-                    data['content']['move_parameters']['on_finish'] = on_move_finished
+                    move_parameters['on_finish'] = on_move_finished
 
                     # Start moving (parameters in move_parameters since parameters occupied by new behavior parameters)
                     if self.hardware.hw_type == 'crazyflie':
-                        self.switch_behavior(self.switch_behavior('moving', data['content']['move_parameters']))
+                        self.switch_behavior('moving', move_parameters)
                     else:
-                        self.switch_behavior("moving_oa", data['content']['move_parameters'])
+                        self.switch_behavior("moving_oa", move_parameters)
                 else:
                     # Perform switch immediately
                     on_move_finished()
@@ -153,7 +211,6 @@ class BehaviorController(Node):
                 else:
                     self.switch_behavior('moving_oa', data['content']['parameters'])
                 
-
     def create_cmd_ack(self, data):
         """Builds the ACK message as an answer to a cmd_ctrl message.
 
@@ -285,3 +342,4 @@ def main(args=None):
 
 if __name__ == '__main__':
     main()
+
