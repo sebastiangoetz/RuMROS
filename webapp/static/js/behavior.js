@@ -1,6 +1,37 @@
 // behavior.js
 // Render BehaviorModel into DOM containers
 
+// Badge for behaviors that are start behaviors within CBs (all direct children in a striped sequence CB or first in a normal CB)
+const startMarker =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><circle cx="8" cy="8" r="6" fill="rgba(192, 28, 40, 1.00)"/></svg>');
+
+const layoutParamsFcose = {
+    name: 'fcose',
+    quality: 'proof',
+    randomize: true,
+    animate: false,
+    fit: true,
+    padding: 40,
+    nodeDimensionsIncludeLabels: true,
+    uniformNodeDimensions: false,
+
+    // Force-based separation
+    nodeSeparation: 100,
+    nodeRepulsion: 6000,
+    nestingFactor: 0.1,
+    gravity: 0.5,
+    gravityRange: 3.8,
+    gravityCompound: 0.5,
+    gravityRangeCompound: 1.5,
+
+    // Connected node distances
+    idealEdgeLength: 120,
+    edgeElasticity: 0.8,
+    numIter: 50,
+    initialEnergyOnIncremental: 0.3
+};
+
 function createSmallHeading(heading, container) {
     var text = document.createElement("span");
     text.style.fontWeight = "bold";
@@ -88,6 +119,23 @@ function createSettings(behaviorModel, container) {
     
     createHeading("Settings and Actions", settingsContainer);
 
+    var viewP = document.createElement("p");
+    viewP.style.fontWeight = "bold";
+    viewP.innerHTML = "View";
+    settingsContainer.appendChild(viewP);
+
+    const autoLayoutButton = document.createElement("button");
+    autoLayoutButton.textContent = "Auto-arrange nodes (Fcose)";
+    autoLayoutButton.style.padding = "10px 20px";
+    autoLayoutButton.style.fontSize = "16px";
+
+    autoLayoutButton.addEventListener("click", (e) => {
+        runLayoutReliably(layoutParamsFcose);
+    });
+
+    settingsContainer.appendChild(autoLayoutButton);
+
+
     var statusP = document.createElement("p");
     statusP.style.fontWeight = "bold";
     statusP.innerHTML = "Status";
@@ -126,11 +174,11 @@ function createSettings(behaviorModel, container) {
     const form = document.createElement("form");
     form.style.margin = "20px 0";
 
-    const button = document.createElement("button");
-    button.type = "submit";
-    button.textContent = behaviorModel.children.running ? "Stop" : "Start";
-    button.style.padding = "10px 20px";
-    button.style.fontSize = "16px";
+    const startStopButton = document.createElement("button");
+    startStopButton.type = "submit";
+    startStopButton.textContent = behaviorModel.children.running ? "Stop" : "Start";
+    startStopButton.style.padding = "10px 20px";
+    startStopButton.style.fontSize = "16px";
 
     // Handle form submission
     form.addEventListener("submit", (e) => {
@@ -139,7 +187,7 @@ function createSettings(behaviorModel, container) {
         socket.emit("sendCommand", cmdData);
     });
 
-    form.appendChild(button);
+    form.appendChild(startStopButton);
     settingsContainer.appendChild(form);
     container.appendChild(settingsContainer);
 }
@@ -147,7 +195,7 @@ function createSettings(behaviorModel, container) {
 let cLegend3 = 0; // Counts cycles mod 3 for background switches
 let cLegendArrowColor = "var(--col-inactive)";
 function createLegend(container) {
-    function addLegendItem(ctn, label, color = null, colorOutline = null, striped = false) {
+    function addLegendItem(ctn, label, color = null, colorOutline = null, striped = false, round = false) {
         if (color == null && colorOutline == null && !striped)
             throw new Error("Legend item must have either color, outline color or both");
 
@@ -162,7 +210,7 @@ function createLegend(container) {
         box.style.width = "14px";
         box.style.height = "14px";
         box.style.marginRight = "8px";
-        box.style.borderRadius = "3px";
+        box.style.borderRadius = round ? "50%" : "3px";
 
         if (striped) {
             
@@ -230,6 +278,7 @@ function createLegend(container) {
     addLegendItem(legendContainer, "Startup BB", "var(--col-emphasized)");
     addLegendItem(legendContainer, "Active BB", "var(--col-accent)");
     addLegendItem(legendContainer, "Inactive BB", "var(--col-inactive-light)");
+    addLegendItem(legendContainer, "Starts on container CB start", "rgba(192, 28, 40, 1.00)", null, false, true);
 
     createSmallHeading("Transitions", legendContainer);
     addLegendArrow(legendContainer, "Inactive transition", "var(--col-inactive)"); 
@@ -250,7 +299,6 @@ function renderBehaviorModelSettings(data, containerId) {
 }
 
 let cy = null;
-
 function initBehaviorGraph(containerId) {
     cy = cytoscape({
         container: document.getElementById(containerId),
@@ -329,6 +377,18 @@ function initBehaviorGraph(containerId) {
                 }
             },
             {
+                selector: 'node.node-sequence.node-on-cb-start',
+                style: {
+                    "background-image": [stripedInactive, startMarker],
+                    "background-fit": ["cover", "none"],
+                    "background-width": ["auto", "16px"],
+                    "background-height": ["auto", "16px"],
+                    "background-position-x": ["0%", "100%"],
+                    "background-position-y": ["0%", "0%"],
+                    "background-image-containment": ["inside", "over"]
+                }
+            },
+            {
                 selector: 'node.node-sequence.node-active',
                 style: {
                     "background-image": stripedActive,
@@ -337,13 +397,50 @@ function initBehaviorGraph(containerId) {
                 }
             },
             {
+                selector: 'node.node-sequence.node-active.node-on-cb-start',
+                style: {
+                    "background-image": [stripedActive, startMarker],
+                    "background-fit": ["cover", "none"],
+                    "background-width": ["auto", "16px"],
+                    "background-height": ["auto", "16px"],
+                    "background-position-x": ["0%", "100%"],
+                    "background-position-y": ["0%", "0%"],
+                    "background-image-containment": ["inside", "over"]
+                }
+            },
+            {
                 selector: 'node.node-sequence.node-start',
                 style: {
                     "background-image": stripedStart,
-                    "border-color": colEmphasized
+                    "border-color": colEmphasized,
+                    "border-width": 4
                 }
             },
-
+            {
+                selector: 'node.node-sequence.node-start.node-on-cb-start',
+                style: {
+                    "background-image": [stripedStart, startMarker],
+                    "background-fit": ["cover", "none"],
+                    "background-width": ["auto", "16px"],
+                    "background-height": ["auto", "16px"],
+                    "background-position-x": ["0%", "100%"],
+                    "background-position-y": ["0%", "0%"],
+                    "background-image-containment": ["inside", "over"]
+                }
+            },
+            {
+                selector: "node.node-on-cb-start:childless",
+                style: {
+                    "background-image": startMarker,
+                    "background-width": "16px",
+                    "background-height": "16px",
+                    "background-position-x": "100%",
+                    "background-position-y": "0%",
+                    "background-clip": "none",
+                    "background-image-containment": "over",
+                    "background-fit": "none"
+                }
+            },
 
             // === Edges ===
             {
@@ -430,7 +527,7 @@ function updateBehaviorGraph(data) {
         const n = cyNodes.find(n => n.data.id === node.id());
         if (!n) return;
 
-        node.removeClass("node-active node-start node-sequence");
+        node.removeClass("node-active node-start node-sequence node-on-cb-start");
 
         const state = n.data.state || {};
         const isStart = startBehaviors.includes(n.data.id);
@@ -445,6 +542,9 @@ function updateBehaviorGraph(data) {
 
         if (state.Sequence)
             node.addClass("node-sequence");
+
+        if (n.data.isStartBehavior)
+            node.addClass("node-on-cb-start");
     });
 
     cy.edges().forEach(edge => {
@@ -456,6 +556,32 @@ function updateBehaviorGraph(data) {
     });
 }
 
+async function runLayoutReliably(opts) {
+    // Wait for fonts.
+    if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+    }
+
+    // Ensure the container has a real, non-zero size, and that
+    // Cytoscape knows about it
+    const c = cy.container();
+    if (!c || c.offsetWidth === 0 || c.offsetHeight === 0) {
+        // Container not visible yet
+        return false;
+    }
+    cy.resize();   // Re-sync Cytoscape to current size
+
+    // Force label/dimension computation synchronously
+    // Reading boundingBox() triggers measurement pass
+    cy.nodes().forEach(n => n.boundingBox());
+
+    const layout = cy.layout(opts);
+    const done = layout.promiseOn('layoutstop');
+    layout.run();
+    await done;
+    return true;
+}
+
 // Render with Cytoscape
 let firstRun = true;
 function renderBehaviorModel(data, containerId) {
@@ -465,7 +591,15 @@ function renderBehaviorModel(data, containerId) {
     updateBehaviorGraph(data);
 
     if (firstRun) {
-        cy.layout({ name: 'breadthfirst', rankDir: 'LR' }).run();
+        if (typeof cytoscapeFcose === 'undefined') {
+            console.warn("cytoscape-fcose could not be loaded, using breadthfirst layout instead");
+            runLayoutReliably({ name: 'breadthfirst', rankDir: 'LR' });
+        }
+        else {
+            cytoscape.use(cytoscapeFcose);
+            runLayoutReliably(layoutParamsFcose);
+        }
+
         firstRun = false;
     }
 }
@@ -518,8 +652,12 @@ function buildBehaviorElements(data) {
             parentChain: parentChain
         });
 
+        const isSequence = !!cbChildren.Sequence;
+        const behaviors = cb.children?.Behavior || [];
+
         // Recurse
-        (cb.children?.Behavior || []).forEach(b => {
+        behaviors.forEach((b, index) => {
+            const isStart = isSequence || index === 0;
             const type = getConcreteType(b.type);
             if (type.includes("BB")) {
                 // Get action
@@ -529,10 +667,14 @@ function buildBehaviorElements(data) {
                     type: "BB",
                     label: (a ? ("BB " + (b.children?.id ?? "") + ": " + "\n" + a.children.label) : ("BB " + (b.children?.id ?? b.id))),
                     state: b.children,
-                    parentChain: newParentChain
+                    parentChain: newParentChain,
+                    isStartBehavior: isStart
                 });
             } else if (type.includes("CB")) {
-                nodes.push(...collectBehaviors(b, newParentChain));
+                const childNodes = collectBehaviors(b, newParentChain);
+                // Mark the first child as a start behavior if this CB is a sequence or the first in its parent
+                if (childNodes.length) childNodes[0].isStartBehavior = isStart;
+                nodes.push(...childNodes);
             }
         });
 
@@ -628,7 +770,8 @@ function buildBehaviorElements(data) {
             label,
             parent: n.parentChain?.at(-1),
             type: n.type,
-            state: n.state
+            state: n.state,
+            isStartBehavior: !!n.isStartBehavior
         }
     };
     });
