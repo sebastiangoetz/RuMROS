@@ -271,7 +271,7 @@ function createLegend(container) {
 
     createSmallHeading("Complex Behavior Blocks (CBs)", legendContainer);
     addLegendItem(legendContainer, "Startup CB", "var(--col-emphasized-light)", "var(--col-emphasized)");
-    addLegendItem(legendContainer, "Active CB", "var(--col-accent-light-muted)", "var(--col-accent)");
+    addLegendItem(legendContainer, "Standard CB", "var(--col-accent-light-muted)", "var(--col-accent)");
     addLegendItem(legendContainer, "Parallel CB (starts contained BBs all at once)", null, null, true);
 
     createSmallHeading("Basic Behaviors (BBs, contained within CBs)", legendContainer);
