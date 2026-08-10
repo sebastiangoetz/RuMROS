@@ -1,6 +1,86 @@
 // behavior.js
 // Render BehaviorModel into DOM containers
 
+// Tooltip helpers
+let tooltipNodeId = null;   // ID of node whose tooltip is currently shown
+let tooltipEl = null;
+
+function buildTooltipContent(node, data) {
+    const action = node.data("action") || {};
+    const parameters = node.data("parameters") || {};
+    const title = action.label || (node.data("label") || "").split("\n")[0];
+
+    let rows = "";
+    parameters.forEach(p => {
+        let name = p.children.name;
+        let value = p.children.value;
+
+        // Treat certain parameters specially for better display
+        if (p.type.includes("AreaParameter")) {
+            value = data.Area[value].children.name;
+        }
+
+        // Denote NaN numeric parameters as dynamic
+        if ((p.type.includes("DoubleParameter") || p.type.includes("IntParameter")) && isNaN(value)) {
+            value = "<i>dynamically assigned</i>";
+        }
+
+        rows += `<div><span style="font-weight:bold">${name}:</span> ${value}</div>`;
+    });
+    if (!rows) rows = "<div><i>No parameters</i></div>";
+
+    return `<div style="font-weight:bold;margin-bottom:4px;color:var(--col-accent)">${title}</div>${rows}`;
+}
+
+function positionTooltip(node) {
+    if (!tooltipEl || node.empty()) return;
+    const pos = node.renderedPosition();
+    const h = node.height() * cy.zoom();
+    tooltipEl.style.left = pos.x + "px";
+    tooltipEl.style.top = (pos.y - h / 2 - 10) + "px";
+}
+
+function showTooltip(node, data) {
+    tooltipNodeId = node.id();
+    if (!tooltipEl) {
+        tooltipEl = document.createElement("div");
+        Object.assign(tooltipEl.style, {
+            position: "absolute",
+            zIndex: "9999",
+            background: "rgba(255,255,255,0.98)",
+            border: "1px solid var(--col-accent)",
+            borderRadius: "6px",
+            padding: "8px 12px",
+            fontSize: "13px",
+            maxWidth: "260px",
+            pointerEvents: "none",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+            transform: "translate(-50%, -100%)"
+        });
+        cy.container().appendChild(tooltipEl);
+    }
+    refreshTooltip(data);
+}
+
+function refreshTooltip(data) {
+    if (!tooltipNodeId || !tooltipEl) return;
+    const node = cy.getElementById(tooltipNodeId);
+    // Node may have been removed, or is no longer a leaf BB -> hide
+    if (node.empty() || node.data("type") !== "BB") {
+        hideTooltip();
+        return;
+    }
+    tooltipEl.innerHTML = buildTooltipContent(node, data);
+    tooltipEl.style.display = "block";
+    positionTooltip(node);
+}
+
+function hideTooltip() {
+    tooltipNodeId = null;
+    if (tooltipEl) tooltipEl.style.display = "none";
+}
+
+
 // Badge for behaviors that are start behaviors within CBs (all direct children in a striped sequence CB or first in a normal CB)
 const startMarker =
   'data:image/svg+xml;utf8,' +
@@ -299,7 +379,7 @@ function renderBehaviorModelSettings(data, containerId) {
 }
 
 let cy = null;
-function initBehaviorGraph(containerId) {
+function initBehaviorGraph(containerId, data) {
     cy = cytoscape({
         container: document.getElementById(containerId),
         layout: { name: "breadthfirst", rankDir: "LR", nodeSep: 30, rankSep: 30 },
@@ -480,6 +560,26 @@ function initBehaviorGraph(containerId) {
             }
         ]
     });
+
+    // Ensure overlay tooltip positions relative to the graph container
+    cy.container().style.position = "relative";
+
+    // Show tooltip only for leaf BB nodes (not composite CB nodes)
+    cy.on("tap", "node", (evt) => {
+        const node = evt.target;
+        if (node.data("type") !== "BB" || !node.isChildless()) return;
+        showTooltip(node, data);
+    });
+
+    // Click on empty canvas dismisses the tooltip
+    cy.on("tap", (evt) => {
+        if (evt.target === cy) hideTooltip();
+    });
+
+    // Keep tooltip glued to the node while panning/zooming
+    cy.on("pan zoom", () => {
+        if (tooltipNodeId) positionTooltip(cy.getElementById(tooltipNodeId));
+    });
 }
 
 function updateBehaviorGraph(data) {
@@ -554,6 +654,9 @@ function updateBehaviorGraph(data) {
         else
             edge.removeClass("edge-from-active");
     });
+
+    // Re-render tooltip content/position so it survives periodic updates
+    refreshTooltip(data);
 }
 
 async function runLayoutReliably(opts) {
@@ -586,7 +689,7 @@ async function runLayoutReliably(opts) {
 let firstRun = true;
 function renderBehaviorModel(data, containerId) {
     if (!cy) {
-        initBehaviorGraph(containerId);
+        initBehaviorGraph(containerId, data);
     }
     updateBehaviorGraph(data);
 
@@ -667,6 +770,8 @@ function buildBehaviorElements(data) {
                     type: "BB",
                     label: (a ? ("BB " + (b.children?.id ?? "") + ": " + "\n" + a.children.label) : ("BB " + (b.children?.id ?? b.id))),
                     state: b.children,
+                    action: a ? a.children : null,
+                    parameters: b.children?.Parameter ?? [],
                     parentChain: newParentChain,
                     isStartBehavior: isStart
                 });
@@ -771,6 +876,8 @@ function buildBehaviorElements(data) {
             parent: n.parentChain?.at(-1),
             type: n.type,
             state: n.state,
+            action: n.action,
+            parameters: n.parameters,
             isStartBehavior: !!n.isStartBehavior
         }
     };
