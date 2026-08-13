@@ -16,7 +16,7 @@ When swarm programming is desired, RuMROS operates differently, due to how swarm
 
 ## Demo & Interactive testing
 
-A demo video showcasing functionality is available on [YouTube](https://youtu.be/qfai9XeWDPs). A pre-built docker container with interactive runtime environment can be launched on [AICOR-EASE](https://binder.intel4coro.de/v2/gh/akassuba/rumros-binder/HEAD?labpath=notebooks%2Finstructions.ipynb). Click the link or the button below to launch it.
+A demo video showcasing functionality is available on [YouTube](https://youtu.be/skEMe4oNP2c). A pre-built docker container with interactive runtime environment can be launched on [AICOR-EASE](https://binder.intel4coro.de/v2/gh/akassuba/rumros-binder/HEAD?labpath=notebooks%2Finstructions.ipynb). Click the link or the button below to launch it.
 
 [![Binder](https://binder.intel4coro.de/badge_logo.svg)](https://binder.intel4coro.de/v2/gh/akassuba/rumros-binder/HEAD?labpath=notebooks%2Finstructions.ipynb)
 
