@@ -275,3 +275,93 @@ body.actions .tablink.active {
     box-sizing: border-box;
     margin-bottom: 20px;
 }
+
+
+/* Settings styles */
+#settings-overlay {
+    position: fixed;      /* mirrors table-container's viewport rect */
+    pointer-events: none; /* invisible to clicks; page underneath stays usable */
+    background: none;
+    z-index: 1000;
+    /* top/left/width/height are set from JS via getBoundingClientRect */
+}
+
+/* Re-enable interaction only for the actual controls */
+#settings-cog,
+#settings-popup {
+    pointer-events: auto;
+    position: absolute; /* positioned relative to the overlay box */
+}
+
+#settings-cog {
+    width: 48px;
+    height: 48px;
+    border: none;
+    border-radius: 50%;
+    background: var(--col-accent);
+    color: var(--col-text);
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease;
+}
+#settings-cog:hover { transform: rotate(45deg); }
+
+#settings-popup {
+    width: 300px;
+    max-height: 60vh;
+    overflow-y: auto;
+    background: var(--col-inactive-dark, #222);
+    color: var(--col-text);
+    border: 1px solid var(--col-accent);
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    z-index: 1001;
+}
+#settings-popup.hidden { display: none; }
+
+.settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: bold;
+    margin-bottom: 6px;
+}
+.settings-header button {
+    background: none; border: none; color: var(--col-text); cursor: pointer;
+}
+.settings-hint { font-size: 12px; opacity: 0.7; margin: 4px 0 10px; }
+
+#settings-hidden-list { list-style: none; padding: 0; margin: 0 0 10px; }
+#settings-hidden-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 4px 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+#settings-hidden-list li button {
+    background: none; border: none; color: var(--col-warning, #e55);
+    cursor: pointer;
+}
+.settings-empty, .settings-default { opacity: 0.5; font-style: italic; }
+.settings-default { justify-content: flex-start; }
+
+.settings-add-row { display: flex; gap: 6px; }
+#settings-add-input {
+    flex: 1;
+    padding: 4px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--col-accent);
+    background: var(--col-inactive, #333);
+    color: var(--col-text);
+}
+#settings-add-btn {
+    border: none;
+    border-radius: 4px;
+    background: var(--col-accent);
+    color: var(--col-text);
+    padding: 0 10px;
+    cursor: pointer;
+}

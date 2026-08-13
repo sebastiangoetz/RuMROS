@@ -1,36 +1,46 @@
 function unifyProperties(objects) {
 
-    function collectProperties(object, unifiedObject) {
+    function collectProperties(object, unifiedObject, isTopLevel) {
+        // Emit an id column only when it is meaningful:
+        //  - top-level objects: always (this outer id is the relation target)
+        //  - nested objects: only if they carry a real inner id in children
+        const hasInnerId = object.children && object.children.id !== undefined;
+        if ((isTopLevel || hasInnerId) &&
+            object.id !== undefined &&
+            !unifiedObject.children.find(c => c.name === "id")) {
+            unifiedObject.children.unshift({ name: "id", children: [] });
+        }
+
         for (let key in object.children) {
-            if (object.children.hasOwnProperty(key)) {
+            if (!object.children.hasOwnProperty(key)) continue;
+            if (key === "id") continue; // handled by the id column above
 
-                if (typeof object.children[key] === "object" && object.children[key].children === undefined) {
-                    //empty object -> ignore
-                    continue;
-                }
+            if (typeof object.children[key] === "object" && object.children[key].children === undefined) {
+                //empty object -> ignore
+                continue;
+            }
 
-                let existingChild = unifiedObject.children.find(child => child.name === key);
+            let existingChild = unifiedObject.children.find(child => child.name === key);
+            if (!existingChild) {
+                existingChild = { name: key, children: [] };
+                unifiedObject.children.push(existingChild);
+            }
 
-                if (!existingChild) {
-                    existingChild = {name: key, children: []};
-                    unifiedObject.children.push(existingChild);
-                }
-
-                if (typeof object.children[key] === "object" && object.children[key] !== null) {
-                    collectProperties(object.children[key], existingChild);
-                }
+            if (typeof object.children[key] === "object" && object.children[key] !== null) {
+                collectProperties(object.children[key], existingChild, false);
             }
         }
     }
 
-    const unified = {name: "root", children: []};
+    const unified = { name: "root", children: [] };
 
     objects.forEach(object => {
-        collectProperties(object, unified);
+        collectProperties(object, unified, true); // top-level entries
     });
 
     return unified.children;
 }
+
 
 function generateMultiRowHeader(properties) {
     const headerRows = [];
@@ -83,22 +93,32 @@ function generateMultiRowHeader(properties) {
 
 function getPropertyValue(object, path) {
     if (path.length === 0) {
-        if(typeof object === "number" && !Number.isInteger(object)) {
-            if(config_round_decimals >= 0) {
+        if (typeof object === "number" && !Number.isInteger(object)) {
+            if (config_round_decimals >= 0) {
                 return Number(object.toFixed(config_round_decimals));
-            }           
+            }
         }
         return object;
     }
 
     let newPath = [...path];
     let nextStep = newPath.shift();
+
+    // "id" columns refer to the object's own (non-nested) id
+    if (nextStep === "id" && newPath.length === 0) {
+        if (object.children && object.children.id !== undefined) return object.children.id; // inner/domain id
+            return object.id !== undefined ? object.id : "";                                    // fall back to outer id
+    }
+
+
+
     if (object.children.hasOwnProperty(nextStep)) {
         return getPropertyValue(object.children[nextStep], newPath);
     } else {
         return "";
     }
 }
+
 
 function calculateWidthOfHeader(headerRows) {
     return headerRows.reduce((maxSum, columns) => {

@@ -1,3 +1,40 @@
+// --- Cookie helpers ---
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+    return match ? decodeURIComponent(match[1]) : null;
+}
+
+function setCookie(name, value, days = 365) {
+    const expires = new Date(Date.now() + days * 864e5).toUTCString();
+    document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires}; path=/; SameSite=Lax`;
+}
+
+// Objects hidden from tables by default (previously hard-coded in processData)
+const DEFAULT_HIDDEN_OBJECTS = [];
+const HIDDEN_OBJECTS_COOKIE = "hiddenObjects";
+
+// User-added hidden object keys (persisted via cookie)
+function getUserHiddenObjects() {
+    const stored = getCookie(HIDDEN_OBJECTS_COOKIE);
+    if (!stored) return [];
+    try {
+        const parsed = JSON.parse(stored);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function setUserHiddenObjects(list) {
+    setCookie(HIDDEN_OBJECTS_COOKIE, JSON.stringify(list));
+}
+
+// Combined set of everything that should be removed from the tables
+function getAllHiddenObjects() {
+    return new Set([...DEFAULT_HIDDEN_OBJECTS, ...getUserHiddenObjects()]);
+}
+
+
 // Required for awaitable results
 let pendingButtonReset = null;
 
@@ -84,16 +121,16 @@ function objectListsToMap(objectEntries) {
         })
     });
 
-    //expand objects
+    //resolve relations into readable references
     objectEntries.forEach(([, components]) => {
         components.forEach(component => {
-            let alreadyVisited = new Set([component.id]);
-            expandObject(component, objectsMap, alreadyVisited)
+            expandObject(component, objectsMap);
         })
     });
 
     return objectsMap;
 }
+
 
 function isInClassList(listString, value) {
     if (!listString) return false;
@@ -211,13 +248,13 @@ function processData(objects, removeNoTableObjects = false) {
     if (objects.BehaviorModel)
         behaviorModelRunning = objects.BehaviorModel.children?.running;
 
-    //remove unwanted tables
     let actions = objects["Action"];
+    //remove unwanted tables (defaults + user-configured via settings cog)
     if (removeNoTableObjects) {
-        if (objects.Action)
-            delete objects.Action;
-        if (objects.BehaviorModel)
-            delete objects.BehaviorModel;
+        getAllHiddenObjects().forEach(key => {
+            if (objects.hasOwnProperty(key))
+                delete objects[key];
+        });
     }
         
 
@@ -273,36 +310,52 @@ function collectObjects(object, objectsMap) {
     }
 }
 
-function expandObject(object, map, alreadyVisited) {
-    if (object.hasOwnProperty("relations")) {
-        Object.entries(object.relations).forEach(([key, objectId]) => {
-            if (!Array.isArray(objectId)) {
-                //Resolve relations that have a single ID as value
-                resolveRelation(object, map, alreadyVisited, key, objectId);
-            } else {
-                //Resolve relations that have an array of IDs as value
-                //Currently unused, as it only resolves 1 level (not recursive!)
-                //and the tables get huge and hard to read
-                // objectId.forEach((id) => {
-                //     resolveRelation(object, map, alreadyVisited, key, id);
-                // });
-                //For better readability, simply display the list of references
-                var resolved_ids = [];
-                objectId.forEach((id) => {
-                    resolved_ids.push(resolveInternalId(map, id));
-                });
+function resolveReference(map, id) {
+    let object = map[id];
+    if (!object) {
+        console.error("Missing related object with id " + id);
+        return id;
+    }
 
-                object.children["Contains " + key + " IDs"] = resolved_ids.toString();
+    let c = object.children;
+    if (c != null) {
+        //prefer a human-readable name
+        if (c.name !== undefined) {
+            return c.name;
+        }
+        //fall back to the object's true internal id
+        if (c.id !== undefined) {
+            return c.id;
+        }
+    }
+
+    return id;
+}
+
+
+function expandObject(object, map) {    
+    if (object.hasOwnProperty("relations")) {
+        Object.entries(object.relations).forEach(([key, target]) => {
+            if (Array.isArray(target)) {
+                //Relation to multiple objects -> comma-separated list of references
+                object.children[key] = target
+                    .map(id => resolveReference(map, id))
+                    .join(", ");
+            } else {
+                //Relation to a single object -> single reference
+                object.children[key] = resolveReference(map, target);
             }
         });
         delete object.relations;
     }
+
     for (let key in object.children) {
-        if (typeof object.children[key] === "object") {
-            expandObject(object.children[key], map, alreadyVisited);
+        if (typeof object.children[key] === "object" && object.children[key] !== null) {
+            expandObject(object.children[key], map);
         }
     }
 }
+
 
 function resolveRelation(object, map, alreadyVisited, key, objectId) {
     if (!alreadyVisited.has(objectId)) {
