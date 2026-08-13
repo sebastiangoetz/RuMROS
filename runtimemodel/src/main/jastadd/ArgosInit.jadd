@@ -90,11 +90,11 @@ aspect ArgosInit {
 
             // Add robot-specific tags to arena
             if (u instanceof Footbot)
-                arena.addRobot("foot-bot", "fb" + u.getid(), getUnitGroupName(u), controllerFootbot, posStr, rotStr);
+                arena.addRobot("foot-bot", "fb" + u.getid(), u.getParentGroup().getname(), controllerFootbot, posStr, rotStr);
             else if (u instanceof Turtlebot)
-                arena.addRobot("turtlebot3", "tb" + u.getid(), getUnitGroupName(u), controllerTurtlebot, posStr, rotStr);
+                arena.addRobot("turtlebot3", "tb" + u.getid(), u.getParentGroup().getname(), controllerTurtlebot, posStr, rotStr);
             else if (u instanceof Crazyflie)
-                arena.addRobot("crazyflie", "cf" + u.getid(), getUnitGroupName(u), controllerCrazyflie, posStr, rotStr);
+                arena.addRobot("crazyflie", "cf" + u.getid(), u.getParentGroup().getname(), controllerCrazyflie, posStr, rotStr);
         }
     }
 

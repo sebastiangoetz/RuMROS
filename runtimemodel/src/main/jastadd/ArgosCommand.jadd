@@ -28,12 +28,14 @@ aspect ArgosCommand {
             SwarmGroup gNew = model.getSwarmGroup(r.getNewGroupId());
             gOld.removeSwarmUnit(u);
             gNew.addSwarmUnit(u);
-            u.setCurrentState(gNew.getCurrentState());
+            u.setStateSafely(gNew.getCurrentState());
+            // Update old group divergent state
+            gOld.unsetDivergentRecursive();
             return getExpectedResult();
         } else if (this instanceof DoNothingResult) {
             // On arrival, set behavior to idle
             DoNothingResult r = (DoNothingResult)this;
-            r.getUnit().setCurrentState(model.getStateWithName("idle"));
+            r.getUnit().setStateSafely(model.getStateWithName("idle"));
             return getExpectedResult();
         }
 

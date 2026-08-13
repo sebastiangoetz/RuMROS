@@ -15,7 +15,7 @@ syn boolean Robot.getTargetReached() = this.getDistanceToTarget() <= 0.3;
 
         if (this.getTargetPosition() == null || this.getTargetReached()) {
             if(this.getTargetPosition() != null && this.getTargetReached()) {
-                setCurrentState(idle);
+                setStateSafely(idle);
             }
             return new Velocity2D(0.0, 0.0);
         }
@@ -38,10 +38,10 @@ syn boolean Robot.getTargetReached() = this.getDistanceToTarget() <= 0.3;
         //state switch
         if(getCurrentState() == targeting && Math.abs(headingError) < targeting.getangleTolerance()) {
             System.out.println("Changing to Driving");
-            setCurrentState(driving);
+            setStateSafely(driving);
         } else if(getCurrentState() == driving && Math.abs(headingError) > driving.getangleTolerance()) {
             System.out.println("Changing to Targeting");
-            setCurrentState(targeting);
+            setStateSafely(targeting);
         }
 
         if (Math.abs(headingError) > getCurrentState().getangleTolerance()) {

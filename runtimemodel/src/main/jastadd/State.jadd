@@ -29,15 +29,71 @@ aspect State {
 
     public void SwarmGroup.setCurrentState(State s) {
         for (SwarmUnit unit : this.getSwarmUnits()) {
-            unit.setCurrentState(s);
+            unit.setCurrentState(s); // Top-down change, no divergent state possible
         }
 
-        // Also set cosmetic attribute AggregatedState
-        this.setAggregatedState(s);
+        this.setCosmeticState(s);
+        // Top-down change is the only way to set the aggregated state
+        // so there is no divergent state possible
+        this.setAggregatedState(s); 
 
         // Recursively call on nested groups
         for (SwarmGroup group : this.getSwarmGroups()) {
             group.setCurrentState(s);
+        }
+
+        // Handle possible divergent state of parent
+        SwarmGroup parent = getParentGroup();
+        if (parent != null && s.getid() != parent.getCosmeticState().getid()) {
+            parent.setDivergentRecursive();
+        }
+    }
+
+    // Includes logic to also set parent group state to the
+    // divergent state if the new state is different from the
+    // current aggregated state. This update will only be
+    // propagated upwards and contained SwarmUnits will not
+    // receive behavior messages since this requires a call
+    // to setCurrentState() instead.
+    public void SwarmUnit.setStateSafely(State s) {
+        setCurrentState(s);
+        SwarmGroup parent = getParentGroup();
+        if (parent != null && s.getid() != parent.getCosmeticState().getid()) {
+            parent.setDivergentRecursive();
+        }
+    }
+
+    // Sets this group and all parents to the divergent state
+    public void SwarmGroup.setDivergentRecursive() {
+        setCosmeticState(getStateWithName("divergent"));
+        SwarmGroup parent = getParentGroup();
+        if (parent != null) {
+            parent.setDivergentRecursive();
+        }
+    }
+
+    // Check divergent state for group recursively and removes
+    // divergent label if all units share the same state
+    public void SwarmGroup.unsetDivergentRecursive() {
+        State groupState = getCurrentState();
+
+        if (getCosmeticState().getid() != getStateWithName("divergent").getid()) {
+            return; // Not divergent, no action required
+        }
+
+        // Probe divergent state
+        for (SwarmUnit unit : getSwarmUnits()) {
+            // If any unit has a different state than the group's aggregated state
+            // make no changes
+            if (unit.getCurrentState().getid() != groupState.getid()) {
+                return;
+            }
+        } 
+        // Unset divergent state and propagate upwards
+        setCosmeticState(groupState);
+        SwarmGroup parent = getParentGroup();
+        if (parent != null) {
+            parent.unsetDivergentRecursive();
         }
     }
 
@@ -45,7 +101,7 @@ aspect State {
         this.addSwarmUnit(u);
 
         // Sync the unit's state upon adding to the group
-        State s = this.getAggregatedState();
-        u.setCurrentState(s);
+        State s = this.getCosmeticState();
+        u.setCurrentState(s); // Top-down change, no divergent state possible
     }
 }

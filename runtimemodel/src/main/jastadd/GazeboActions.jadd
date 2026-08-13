@@ -11,7 +11,7 @@ aspect GazeboActions {
     // 2) setup required action parameters
     // 3) return a result to be displayed on the web interface 
     Result Action.driveToArea(Model model, SwarmUnit robot, Area area) {
-        robot.setCurrentState(robot.getStateWithName("targeting"));
+        robot.setStateSafely(robot.getStateWithName("targeting"));
         robot.setTargetPosition(model.getCenterPositionReference(area));
 
         Result result = new Result(ActionResultType.SUCCESS, "Driving to area '" + area.getname() + "'", 2000);
@@ -19,7 +19,7 @@ aspect GazeboActions {
     }
 
     Result Action.stop(Model model, SwarmUnit robot) {
-        robot.setCurrentState(robot.getStateWithName("idle"));
+        robot.setStateSafely(robot.getStateWithName("idle"));
 
         Result result = new Result(ActionResultType.SUCCESS, "Stopped", 2000);
         return result;
@@ -30,14 +30,14 @@ aspect GazeboActions {
             Result result = new Result(ActionResultType.ERROR, "Can't resume, no target is set!", 3000);
             return result;
         } else {
-            robot.setCurrentState(robot.getStateWithName("targeting"));
+            robot.setStateSafely(robot.getStateWithName("targeting"));
             Result result = new Result(ActionResultType.SUCCESS, "Resumed", 2000);
             return result;
         }
     }
 
     Result Action.cancel(Model model, SwarmUnit robot) {
-        robot.setCurrentState(robot.getStateWithName("idle"));
+        robot.setStateSafely(robot.getStateWithName("idle"));
         robot.setTargetPosition(null);
 
         Result result = new Result(ActionResultType.SUCCESS, "Canceled", 2000);
@@ -45,7 +45,7 @@ aspect GazeboActions {
     }
 
     Result Action.flyToArea(Model model, Drone drone, Area area) {
-        drone.setCurrentState(drone.getStateWithName("targeting"));
+        drone.setStateSafely(drone.getStateWithName("targeting"));
         drone.setTargetPosition(model.getCenterPositionReference(area));
 
         Result result = new Result(ActionResultType.SUCCESS, "Flying to area '" + area.getname() + "'", 2000);
@@ -53,7 +53,7 @@ aspect GazeboActions {
     }
 
     Result Action.landOnRobot(Model model, Drone drone, Robot robot) {
-        drone.setCurrentState(drone.getStateWithName("targeting"));
+        drone.setStateSafely(drone.getStateWithName("targeting"));
         drone.setTargetPosition(robot.getPositionReference());
 
         Result result = new Result(ActionResultType.SUCCESS, "Landing on robot '" + robot.getname() + "'", 2000);
@@ -61,14 +61,14 @@ aspect GazeboActions {
     }
 
     Result Action.hover(Model model, Drone drone) {
-        drone.setCurrentState(drone.getStateWithName("idle"));
+        drone.setStateSafely(drone.getStateWithName("idle"));
 
         Result result = new Result(ActionResultType.SUCCESS, "Hovering", 2000);
         return result;
     }
 
     Result Action.shutDown(Model model, Drone drone) {
-        drone.setCurrentState(drone.getStateWithName("shut down"));
+        drone.setStateSafely(drone.getStateWithName("shut down"));
 
         Result result = new Result(ActionResultType.SUCCESS, "Shutting down", 2000);
         return result;
@@ -83,14 +83,14 @@ aspect GazeboActions {
         }
         targetPosition.setz(height);
         drone.setTargetPosition(model.getOrAddPositionReference(targetPosition));
-        drone.setCurrentState(drone.getStateWithName("targeting"));
+        drone.setStateSafely(drone.getStateWithName("targeting"));
 
         Result result = new Result(ActionResultType.SUCCESS, "Flying drone to height: " + height + " m", 2000);
         return result;
     }
 
     Result Action.flyToPosition(Model model, Drone drone, PositionReference position) {
-        drone.setCurrentState(drone.getStateWithName("targeting"));
+        drone.setStateSafely(drone.getStateWithName("targeting"));
         drone.setTargetPosition(position);
 
         Result result = new Result(ActionResultType.SUCCESS, "Flying to position " + position.toString(), 2000);

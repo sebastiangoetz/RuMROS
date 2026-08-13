@@ -27,36 +27,39 @@ aspect GazeboInit {
         State stateIdle = new State(1, "idle", 0.0, 0.0);
         State stateDriving = new State(2, "driving", 1.0, 0.35);
         State stateTargeting = new State(3, "targeting", 0.8, 0.25);
+        // Set on parent when subgroups or units of a group have different states
+        State divergentState = new State(99, "divergent"); 
         this.addState(stateShutDown);
         this.addState(stateIdle);
         this.addState(stateDriving);
         this.addState(stateTargeting);
+        this.addState(divergentState);
 
         // Turtlebots
         Position startPositionTurtlebot1 = new Position(0.0, 1.0, 0.0, 0.0);
 
         Turtlebot turtlebot1 = new Turtlebot("waffle", 0, new PosePositionReference(startPositionTurtlebot1));
-        turtlebot1.setCurrentState(stateIdle);
+        turtlebot1.setStateSafely(stateIdle);
         this.addSwarmUnit(turtlebot1);
 
         Position startPositionTurtlebot2 = new Position(0.0, -1.0, 0.0, 0.0);
 
         Turtlebot turtlebot2 = new Turtlebot("waffle2", 1, new PosePositionReference(startPositionTurtlebot2));
-        turtlebot2.setCurrentState(stateIdle);
+        turtlebot2.setStateSafely(stateIdle);
         this.addSwarmUnit(turtlebot2);
 
         // Rovers
         Position startPositionRover1 = new Position(-2.0, 0.0, 0.0, 0.0);
 
         Rover rover1 = new Rover("rasp", 0, new OdomPositionReference(startPositionRover1));
-        rover1.setCurrentState(stateIdle);
+        rover1.setStateSafely(stateIdle);
         this.addSwarmUnit(rover1);
 
         // Drone
         Position startPositionDrone1 = new Position(0.0, 0.0, 0.0, 0.0);
 
         Drone drone1 = new Drone("drone1", 0, new OdomPositionReference(startPositionDrone1));
-        drone1.setCurrentState(stateShutDown);
+        drone1.setStateSafely(stateShutDown);
         this.addSwarmUnit(drone1);
 
         // Inputs
@@ -126,7 +129,7 @@ aspect GazeboInit {
         BehaviorModel.init(this);
         return this;
     }
-    
+
     syn Model Model.setupEnvironment();
     eq Model.setupEnvironment() {
         Environment e = new Environment();

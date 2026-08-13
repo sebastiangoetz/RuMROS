@@ -150,7 +150,6 @@ aspect ArgosInit {
         // Set group states. This propagates to all robots and
         // nested groups, so call after group setup
         gGround.setCurrentState(sIdle);
-
         gDrones.setCurrentState(sIdle);
 
         // Setup behavior
@@ -377,6 +376,8 @@ aspect ArgosInit {
         State stateTakeoff = new State(11, "takeoff");
         State stateLanding = new State(12, "landing");
         State movingRelative = new State(13, "moving_relative");
+        // Set on parent when subgroups or units of a group have different states
+        State divergentState = new State(99, "divergent"); 
         this.addState(stateIdle);
         this.addState(stateError);
         this.addState(stateShutDown);
@@ -391,6 +392,7 @@ aspect ArgosInit {
         this.addState(stateTakeoff);
         this.addState(stateLanding);
         this.addState(movingRelative);
+        this.addState(divergentState);
 
         return this;
     }

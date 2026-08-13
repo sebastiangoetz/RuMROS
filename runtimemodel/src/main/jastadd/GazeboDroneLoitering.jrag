@@ -43,7 +43,7 @@ aspect DroneLoitering {
         drone.setTargetPosition(model.getOrAddPositionReference(targetPosition));
         drone.setLoiteringRadius(radius); //Added above, required for getVelocity3D() to set correct velocity
         drone.setLoiterAfterMove(true);
-        drone.setCurrentState(drone.getStateWithName("targeting"));
+        drone.setStateSafely(drone.getStateWithName("targeting"));
 
         Result result = new Result(ActionResultType.SUCCESS, "Beginning to loiter with radius: " + radius + " m", 2000);
         return result;
@@ -56,14 +56,14 @@ aspect DroneLoitering {
 
         if (this.getTargetPosition() != null && this.getTargetReached() && this.loiterAfterMove) {
             // After reaching the position at the radius, turn towards orbit
-            setCurrentState(stateTurning);
+            setStateSafely(stateTurning);
             setLoiterAfterMove(false);
         }
         
         if (getCurrentState() == stateTurning) {
             // Turn until arriving at orbit position, then proceed with orbiting
             if (this.getOdomPositionReference().getPosition().gettheta() + 0.5 * Math.PI <= this.getCurrentState().getangleTolerance())
-                setCurrentState(stateLoitering);
+                setStateSafely(stateLoitering);
             else
                 return new Velocity3D(0.0, 0.0, -this.getCurrentState().getspeedFactor());
         }

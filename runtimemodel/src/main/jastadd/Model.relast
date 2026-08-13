@@ -34,18 +34,24 @@ abstract SwarmUnit ::=
 abstract Robot : SwarmUnit ::=
     /Velocity2D/;
 
-rel SwarmGroup.SwarmUnit* -> SwarmUnit;
+rel SwarmGroup.SwarmUnit* <-> SwarmUnit.ParentGroup?;
 rel SwarmUnit.CurrentState -> State;
 rel SwarmUnit.TargetPosition? -> PositionReference;
 
 // Purely for cosmetic purposes - web UI can not
 // display computed attributes, e.g. /<CurrentState:State>/
 // is missing and has to be displayed separately
-// AggregateState setter is called when group state changes.
+// This state may be divergent from member states and will
+// reflect this with a special "divergent" state.
+rel SwarmGroup.CosmeticState -> State;
+
+// Stores the state a group was set to. The implementation
+// only allows it to be set top-down, so it cannot be divergent,
+// but there may be differences in member unit states.
 rel SwarmGroup.AggregatedState -> State;
 
 // Hierarchical extension for group nesting
-rel SwarmGroup.SwarmGroup* -> SwarmGroup;
+rel SwarmGroup.SwarmGroup* <-> SwarmGroup.ParentGroup?;
 
 Turtlebot : Robot ::=
     PosePositionReference;

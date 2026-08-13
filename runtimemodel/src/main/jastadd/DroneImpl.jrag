@@ -14,7 +14,7 @@ aspect DroneImpl {
 
         if (this.getTargetPosition() == null || this.getTargetReached() || getCurrentState() == shutDown) {
             if(this.getTargetPosition() != null && this.getTargetReached() && getCurrentState() != shutDown) {
-                setCurrentState(idle);
+                setStateSafely(idle);
             }
             return new Velocity3D(0.0, 0.0, 0.0);
         }
@@ -65,10 +65,10 @@ aspect DroneImpl {
         //state switch
         if(getCurrentState() == targeting && Math.abs(headingError) < targeting.getangleTolerance()/2) {
             System.out.println("Changing to Driving");
-            setCurrentState(driving);
+            setStateSafely(driving);
         } else if(getCurrentState() == driving && Math.abs(headingError) > driving.getangleTolerance()/2) {
             System.out.println("Changing to Targeting");
-            setCurrentState(targeting);
+            setStateSafely(targeting);
         }
 
         if (Math.abs(headingError) > getCurrentState().getangleTolerance()/2) {

@@ -116,7 +116,7 @@ aspect ArgosActions {
     }
 
     Result Action.change_group(Model model, SwarmUnit unit, SwarmGroup new_group, Boolean move_to_group) {
-        SwarmGroup old_group = model.getUnitGroup(unit);
+        SwarmGroup old_group = unit.getParentGroup();
         State new_state = new_group.getCurrentState();
 
         if (new_group.getid() == old_group.getid())
@@ -181,7 +181,7 @@ aspect ArgosActions {
                                                         new_state.getname(), c1, c2, new_state.getParameters());
 
         unit.setSendCommand(cmd);
-        unit.setCurrentState(model.getStateWithName("changing_group"));
+        unit.setStateSafely(model.getStateWithName("changing_group"));
 
         // Use subclass of AwaitableResult to only perform switch once ACK is received
         // Awaitable results delayed until an ACK is received. Corresponding code can be
@@ -304,7 +304,7 @@ aspect ArgosActions {
         PositionCommand cmd = new PositionCommand("__controller__", unit.getname(), 2,
                                                   id, new Position(x, y, 0.0, theta), vel); //0x2 corresponds to position command
         unit.setSendCommand(cmd);
-        unit.setCurrentState(s);
+        unit.setStateSafely(s);
 
         DoNothingResult result = new DoNothingResult(ActionResultType.WAIT, "Moving to position", 1000, id);
         result.setUnit(unit);
@@ -327,7 +327,7 @@ aspect ArgosActions {
         PositionCommand cmd = new PositionCommand("__controller__", unit.getname(), 2,
                                                   id, new Position(x, y, 0.0, theta), vel); //0x2 corresponds to position command
         unit.setSendCommand(cmd);
-        unit.setCurrentState(s);
+        unit.setStateSafely(s);
 
         DoNothingResult result = new DoNothingResult(ActionResultType.WAIT, "Moving to position (OA)", 1000, id);
         result.setUnit(unit);

@@ -61,28 +61,6 @@ aspect SwarmGroupExtensions {
         return null;
     }
 
-    syn SwarmGroup Model.getUnitGroup(SwarmUnit u) {
-        for (SwarmGroup g : getSwarmGroups()) {
-            if (g.isUnitDirectChild(u))
-                return g;
-        }
-        return null;
-    }
-
-    syn Integer Model.getUnitGroupId(SwarmUnit u) {
-        SwarmGroup g = getUnitGroup(u);
-        if (g != null)
-            return g.getid();
-        return null;
-    }
-
-    syn String Model.getUnitGroupName(SwarmUnit u) {
-        SwarmGroup g = getUnitGroup(u);
-        if (g != null)
-            return g.getname();
-        return "";
-    }
-
     syn Position SwarmGroup.getGroupCenter() {
         JastAddList<SwarmUnit> group_units = this.getUnitsRecursive();
         double n = (double)group_units.getNumChild();

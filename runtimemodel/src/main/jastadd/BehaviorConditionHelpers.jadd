@@ -100,7 +100,7 @@ aspect BehaviorConditionHelpers {
         public static SwarmGroup getAreaOccupantGroup(Model model, Area area) {
             for (SwarmUnit u : model.getSwarmUnits()) {
                 if (unitInside(u, area))
-                    return model.getUnitGroup(u);
+                    return u.getParentGroup();
             }
             return null;
         }
