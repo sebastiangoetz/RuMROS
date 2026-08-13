@@ -242,4 +242,3 @@ class MovingWithOABehavior(MovingBehavior):
 
         # No obstacle information at all, just push towards the goal
         return goal_dir * self.velocity
-

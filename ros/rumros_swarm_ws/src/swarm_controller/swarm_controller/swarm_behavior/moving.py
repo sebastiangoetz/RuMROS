@@ -54,7 +54,7 @@ class MovingBehavior(SwarmBehavior):
                               target_vector_local: np.ndarray,
                               target_dist: float,
                               lidar_data: Optional[TRadData]) -> np.ndarray:
-        """Computew a heading force in the robot local frame.
+        """Compute a heading force in the robot local frame.
         Subclasses can override this to extend functionality.
 
         Args:
@@ -127,6 +127,6 @@ class MovingBehavior(SwarmBehavior):
 
                 twist = force_to_twist(heading_force,
                                        epsilon=0.2,
-                                       max_linear=self.velocity) 
+                                       max_linear=self.velocity,
+                                       max_angular=self.velocity) 
         return twist
-

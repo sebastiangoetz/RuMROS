@@ -3,7 +3,7 @@ import numpy as np
 
 def force_to_twist(tagging_force: np.ndarray, epsilon: float = 0.1,
                    k_angular: float = 1.5, k_linear: float = 1.0,
-                   max_linear: float = 1.0, max_angular: float = 1.0) -> Twist:
+                   max_linear: float = 1.0, max_angular: float = 1.5) -> Twist:
     """
     Converts a 2D heading vector in the robot's local frame to a Twist command.
     Uses angular deviation from forward vector (0, 1) to decide whether to rotate
