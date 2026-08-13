@@ -38,21 +38,23 @@ function getColorByVariable(varName, opacity = 1.0) {
 const colAccent = getColorByVariable("--col-accent");
 const colAccentLight = getColorByVariable("--col-accent-light");
 const colAccentLightMuted = getColorByVariable("--col-accent-light-muted");
+
 const colText = getColorByVariable("--col-text");
 const colWarning = getColorByVariable("--col-warning");
 const colInactive = getColorByVariable("--col-inactive");
 const colInactiveLight = getColorByVariable("--col-inactive-light");
 const colInactiveDark = getColorByVariable("--col-inactive-dark");
+const colMutuallyExclusive = getColorByVariable("--col-mutually-exclusive");
 const colEmphasized = getColorByVariable("--col-emphasized");
 const colEmphasizedMid = getColorByVariable("--col-emphasized-mid");
 const colEmphasizedLight = getColorByVariable("--col-emphasized-light");
+
 
 // Init socket
 // IAI binder: socket.io has to work on subpage as well
 const socket = io(window.location.origin, {
     path: `${SCRIPT_ROOT}/socket.io/`
 });
-
 socket.on("updateSensorData", function (msg) {
     if (pendingButtonReset) {
         pendingButtonReset(); //apply delayed reset for awaitable results

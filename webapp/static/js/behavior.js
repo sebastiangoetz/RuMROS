@@ -364,6 +364,7 @@ function createLegend(container) {
     addLegendArrow(legendContainer, "Inactive transition", "var(--col-inactive)"); 
     addLegendArrow(legendContainer, "Active transition", colAccent);
     addLegendArrow(legendContainer, "Conditional transition", "var(--col-inactive)", "var(--col-accent)", true);
+    addLegendArrow(legendContainer, "Mutually exclusive transition(s)", colMutuallyExclusive);
 
     container.appendChild(legendContainer);
 }
@@ -556,6 +557,13 @@ function initBehaviorGraph(containerId, data) {
                 selector: 'edge[type="TConditional"]',
                 style: {
                     "line-style": "dashed"
+                }
+            },
+            {
+                selector: 'edge[isMutuallyExclusive = "true"]',
+                style: {
+                    "line-color": colMutuallyExclusive,
+                    "target-arrow-color": colMutuallyExclusive
                 }
             }
         ]
@@ -752,6 +760,7 @@ function buildBehaviorElements(data) {
             label: cbChildren.name || `CB ${cbId}`,
             children: cb.children?.Behavior || [],
             state: cbChildren,
+            transitionsMutuallyExclusive: cbChildren?.TransitionsMutuallyExclusive || false,
             parentChain: parentChain
         });
 
@@ -773,6 +782,7 @@ function buildBehaviorElements(data) {
                     action: a ? a.children : null,
                     parameters: b.children?.Parameter ?? [],
                     parentChain: newParentChain,
+                    transitionsMutuallyExclusive: b.children?.TransitionsMutuallyExclusive || false,
                     isStartBehavior: isStart
                 });
             } else if (type.includes("CB")) {
@@ -850,6 +860,7 @@ function buildBehaviorElements(data) {
                     id: `${n.id}->${target}::${t.id}`,
                     source: n.id,
                     target: target,
+                    mutuallyExclusive: n.transitionsMutuallyExclusive,
                     raw: t
                 });
             }
@@ -891,6 +902,7 @@ function buildBehaviorElements(data) {
             source: e.source,
             target: e.target,
             type: getConcreteType(e.raw?.type),
+            isMutuallyExclusive: e.mutuallyExclusive ? "true" : "false",
             label: getConcreteType(e.raw?.type) === "TDuration" ? "After " + e.raw?.children.Duration + "ms" : getConcreteType(e.raw?.type) === "TTimestamp" ? "At time: " + e.raw?.children.Timestamp : ""
         }
     }));
